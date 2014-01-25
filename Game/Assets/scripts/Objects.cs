@@ -11,6 +11,7 @@ public class Hex
 	public int Elevation { get; private set;}
 	public HexEffect Effects { get; private set; }
 	public Biome BiomeType { get; private set; }
+	public Vector2 Coordinates { get; private set; }
 }
 
 #endregion

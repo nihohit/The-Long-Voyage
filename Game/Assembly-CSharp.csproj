@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{7055BEA3-A86E-EA06-C230-FD1C8ACB43B0}</ProjectGuid>
+    <ProjectGuid>{DDFBC18F-9396-3137-9CFE-DEB2CDB74636}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -45,62 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts - tutorial\BackgroundParallax.cs" />
-    <Compile Include="Assets\Scripts - tutorial\BackgroundPropSpawner.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Bomb.cs" />
-    <Compile Include="Assets\Scripts - tutorial\BombPickup.cs" />
-    <Compile Include="Assets\Scripts - tutorial\CameraFollow.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Destroyer.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Enemy.cs" />
-    <Compile Include="Assets\Scripts - tutorial\FollowPlayer.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Gun.cs" />
-    <Compile Include="Assets\Scripts - tutorial\HealthPickup.cs" />
-    <Compile Include="Assets\Scripts - tutorial\LayBombs.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Pauser.cs" />
-    <Compile Include="Assets\Scripts - tutorial\PickupSpawner.cs" />
-    <Compile Include="Assets\Scripts - tutorial\PlayerControl.cs" />
-    <Compile Include="Assets\Scripts - tutorial\PlayerHealth.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Remover.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Rocket.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Score.cs" />
-    <Compile Include="Assets\Scripts - tutorial\ScoreShadow.cs" />
-    <Compile Include="Assets\Scripts - tutorial\SetParticleSortingLayer.cs" />
-    <Compile Include="Assets\Scripts - tutorial\Spawner.cs" />
+    <Compile Include="Assets\scripts\FileHandler.cs" />
     <Compile Include="Assets\scripts\GenerateLevel.cs" />
     <Compile Include="Assets\scripts\GlobalState.cs" />
     <Compile Include="Assets\scripts\HexReactor.cs" />
     <Compile Include="Assets\scripts\MainScreen.cs" />
     <Compile Include="Assets\scripts\MapGenerationInstructions.cs" />
+    <Compile Include="Assets\scripts\MarkerScript.cs" />
     <Compile Include="Assets\scripts\Objects.cs" />
     <Compile Include="Assets\scripts\Singleton.cs" />
     <Compile Include="Assets\scripts\TactialState.cs" />
-    <None Include="Assets\Standard Assets\Projectors\Guidelines.txt" />
-    <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Basic.shader" />
-    <None Include="Assets\Standard Assets\Projectors\Sources\Shaders\Projector Multiply.shader" />
-    <None Include="Assets\Standard Assets\Tessellation Shaders\BumpedSpecularSmooth.shader" />
-    <None Include="Assets\Standard Assets\Skyboxes\_skybox info.txt" />
-    <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-BasicOutline.shader" />
-    <None Include="Assets\Standard Assets\Projectors\Sources\Shaders\Projector Light.shader" />
-    <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-LightedOutline.shader" />
-    <None Include="Assets\Standard Assets\Toon Shading\Sources\Shaders\Toony-Lighted.shader" />
-    <None Include="Assets\Standard Assets\Tessellation Shaders\BumpedSpecularDisplacement.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Particle Shaders\Mobile Multiply Culled.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Miscellaneous Shaders\Mobile Background.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Vertex Colored Shaders\Mobile Transparent Vertex Color.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Miscellaneous Shaders\Mobile Detail.shader" />
-    <None Include="Assets\Standard Assets\Particles\Sources\Shaders\Particle Alpha Blend %28Queue +100%29.shader" />
-    <None Include="Assets\Standard Assets\Water %28Basic%29\Sources\Shaders\FX-Water Simple.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Lightmap Shaders %28Legacy%29\Mobile Lightmap Reflective.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Particle Shaders\Mobile Particles Additive Culled.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Vertex Colored Shaders\Mobile Vertex Colored.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Lightmap Shaders %28Legacy%29\Mobile Lightmap Only.shader" />
-    <None Include="Assets\Standard Assets %28Mobile%29\Shaders\Lightmap Shaders %28Legacy%29\Mobile Lightmap AlphaTest.shader" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Assembly-UnityScript-firstpass.unityproj">
-      <Project>{F840A019-5A21-EADA-64C7-9468A61CDC12}</Project>
-      <Name>Assembly-UnityScript-firstpass</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

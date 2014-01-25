@@ -5,12 +5,13 @@ public class GenerateLevel : MonoBehaviour {
 
     public GameObject greenHex;
 	public Camera mainCamera;
+	public GUITexture texture;
 
 	void Update()
 	{
 		float xAxisValue = Input.GetAxis("Horizontal");
 		float yAxisValue = Input.GetAxis("Vertical");
-		float zAxisValue =  Input.GetAxisRaw("Mouse ScrollWheel");
+		float zAxisValue =  Input.GetAxisRaw("Zoom");
 
 		if(Camera.current != null)
 		{
@@ -25,16 +26,22 @@ public class GenerateLevel : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
     {
+		//TODO - remove when there's no direct access to level generation
+		FileHandler.Init();
+		HexReactor.Init();
+
 		if(GlobalState.Instance.AmountOfHexes < 1)
 		{
-			GlobalState.Instance.AmountOfHexes = 4;
+			GlobalState.Instance.AmountOfHexes = FileHandler.GetIntProperty(
+				"default map size", 
+				FileAccessor.TerrainGeneration);
 		}
 		var entryPoint = Vector3.zero;
 		var hexSize = greenHex.renderer.bounds.size;
 		
         for (int i = 0; i < GlobalState.Instance.AmountOfHexes; i++)
         {
-			entryPoint = new Vector3(entryPoint.x - ( hexSize.x/2), entryPoint.y , entryPoint.z + (hexSize.x*Mathf.Sqrt(3)/2));
+			entryPoint = new Vector3(entryPoint.x - ( hexSize.x/2), entryPoint.y + (hexSize.x*Mathf.Sqrt(3)/2) , entryPoint.z);
 			var amountOfHexesInRow = i + GlobalState.Instance.AmountOfHexes;
 			for(int j = 0; j < amountOfHexesInRow ; j++)
 			{
@@ -42,12 +49,12 @@ public class GenerateLevel : MonoBehaviour {
 			}
         }
 		
-		mainCamera.transform.position = new Vector3(entryPoint.x  + ((GlobalState.Instance.AmountOfHexes - 1) * hexSize.x), 40, entryPoint.z );
-		mainCamera.transform.Rotate(new Vector3(90,0,0));
+		mainCamera.transform.position = new Vector3(entryPoint.x  + ((GlobalState.Instance.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 40);
+		mainCamera.transform.Rotate(new Vector3(180,180,180));
 		
 		for (int i = GlobalState.Instance.AmountOfHexes - 2 ; i >= 0; i--)
         {
-			entryPoint = new Vector3(entryPoint.x + ( hexSize.x/2), entryPoint.y , entryPoint.z + (hexSize.x*Mathf.Sqrt(3)/2));
+			entryPoint = new Vector3(entryPoint.x + ( hexSize.x/2), entryPoint.y + (hexSize.x*Mathf.Sqrt(3)/2) , entryPoint.z);
 			var amountOfHexesInRow = i + GlobalState.Instance.AmountOfHexes;
 			for(int j = 0; j < amountOfHexesInRow ; j++)
 			{
@@ -61,7 +68,7 @@ public class GenerateLevel : MonoBehaviour {
 	GameObject CreateHex(Vector3 nextPosition)
 	{
 		var hex = (GameObject)Instantiate(greenHex, nextPosition, Quaternion.identity);
-		hex.transform.Rotate(new Vector3(270,0,0));
+		//hex.transform.Rotate(new Vector3(270,0,0));
 		return hex;
 	}
 	

@@ -4,19 +4,13 @@ using System.Collections;
 public class HexReactor : MonoBehaviour 
 {
 	private Hex hex;
-	private Behaviour selected;
-	
-	void Start( ) 
-	{ 
-		selected = (Behaviour)GetComponent("Halo");
-		selected.enabled = false;
-	}
-	
-	void Update( ) 
-	{ 
+	private static MarkerScript selected;
 
+	public static void Init()
+	{
+		selected = GameObject.Find("Marker").GetComponent<MarkerScript>();
 	}
-	
+
 	void OnMouseDown()
 	{
 		TacticalState.Instance.SelectedHex = this;
@@ -33,12 +27,12 @@ public class HexReactor : MonoBehaviour
 	public void Select()
 	{
 		Debug.Log( "Highlighting Unit" ); 
-		selected.enabled = true;
+		selected.Mark(this.transform.position);
 	}
 
 	public void Unselect()
 	{
 		Debug.Log( "Deselecting Unit" ); 
-		selected.enabled = false;
+		selected.Unmark();
 	}
 }
