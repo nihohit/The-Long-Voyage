@@ -7,11 +7,42 @@ using UnityEngine;
 
 public class Hex
 {
+	private static Dictionary<Vector2, Hex> s_repository = new Dictionary<Vector2, Hex>();
+
 	public Entity HexContent { get; set; }
 	public int Elevation { get; private set;}
 	public HexEffect Effects { get; private set; }
 	public Biome BiomeType { get; private set; }
 	public Vector2 Coordinates { get; private set; }
+	public HexReactor Reactor {get; private set;}
+
+	public Hex(Vector2 coordinates, HexReactor reactor)
+	{
+		Coordinates = coordinates;
+		s_repository.Add(coordinates, this);
+		Reactor = reactor;
+	}
+
+	public IEnumerable<Hex> GetNeighbours()
+	{
+		var result = new List<Hex>();
+		CheckAndAdd(result, new Vector2(Coordinates.x - 0.5f , Coordinates.y - 1));
+		CheckAndAdd(result, new Vector2(Coordinates.x + 0.5f , Coordinates.y - 1));
+		CheckAndAdd(result, new Vector2(Coordinates.x + 1.0f , Coordinates.y));
+		CheckAndAdd(result, new Vector2(Coordinates.x - 1.0f , Coordinates.y));
+		CheckAndAdd(result, new Vector2(Coordinates.x - 0.5f , Coordinates.y + 1));
+		CheckAndAdd(result, new Vector2(Coordinates.x + 0.5f , Coordinates.y + 1));
+		return result;
+	}
+
+	private void CheckAndAdd(List<Hex> result, Vector2 coordinates)
+	{
+		Hex temp;
+		if(s_repository.TryGetValue(coordinates, out temp))
+		{
+			result.Add(temp);
+		}
+	}
 }
 
 #endregion

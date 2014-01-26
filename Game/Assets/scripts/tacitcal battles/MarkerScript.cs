@@ -2,22 +2,22 @@
 using System.Collections;
 
 public class MarkerScript : MonoBehaviour {
-	public SpriteRenderer renderer;
+	public SpriteRenderer internalRenderer;
 	
 	// Use this for initialization
 	void Start () 
 	{
-		renderer.enabled = false;
+		internalRenderer.enabled = false;
 	}
 	
 	public void Mark(Vector3 position)
 	{
-		renderer.enabled = true;
-		renderer.transform.position = position;
+		internalRenderer.enabled = true;
+		internalRenderer.transform.position = position;
 	}
 	
 	public void Unmark()
 	{
-		renderer.enabled = false;
+		internalRenderer.enabled = false;
 	}
 }

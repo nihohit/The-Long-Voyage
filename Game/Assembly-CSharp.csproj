@@ -45,16 +45,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\scripts\FileHandler.cs" />
-    <Compile Include="Assets\scripts\GenerateLevel.cs" />
-    <Compile Include="Assets\scripts\GlobalState.cs" />
-    <Compile Include="Assets\scripts\HexReactor.cs" />
-    <Compile Include="Assets\scripts\MainScreen.cs" />
-    <Compile Include="Assets\scripts\MapGenerationInstructions.cs" />
-    <Compile Include="Assets\scripts\MarkerScript.cs" />
-    <Compile Include="Assets\scripts\Objects.cs" />
-    <Compile Include="Assets\scripts\Singleton.cs" />
-    <Compile Include="Assets\scripts\TactialState.cs" />
+    <Compile Include="Assets\scripts\base\Exceptions.cs" />
+    <Compile Include="Assets\scripts\base\Extensions.cs" />
+    <Compile Include="Assets\scripts\base\FileHandler.cs" />
+    <Compile Include="Assets\scripts\base\GlobalState.cs" />
+    <Compile Include="Assets\scripts\base\Randomiser.cs" />
+    <Compile Include="Assets\scripts\base\Singleton.cs" />
+    <Compile Include="Assets\scripts\base\Timer.cs" />
+    <Compile Include="Assets\scripts\main screen\MainScreen.cs" />
+    <Compile Include="Assets\scripts\tacitcal battles\GenerateLevel.cs" />
+    <Compile Include="Assets\scripts\tacitcal battles\HexReactor.cs" />
+    <Compile Include="Assets\scripts\tacitcal battles\MapGenerationInstructions.cs" />
+    <Compile Include="Assets\scripts\tacitcal battles\MarkerScript.cs" />
+    <Compile Include="Assets\scripts\tacitcal battles\Objects.cs" />
+    <Compile Include="Assets\scripts\tacitcal battles\TactialState.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -5,7 +5,6 @@ public class GenerateLevel : MonoBehaviour {
 
     public GameObject greenHex;
 	public Camera mainCamera;
-	public GUITexture texture;
 
 	void Update()
 	{
@@ -38,51 +37,55 @@ public class GenerateLevel : MonoBehaviour {
 		}
 		var entryPoint = Vector3.zero;
 		var hexSize = greenHex.renderer.bounds.size;
-		
-        for (int i = 0; i < GlobalState.Instance.AmountOfHexes; i++)
+
+		var target = 2*GlobalState.Instance.AmountOfHexes - 1;
+
+		//the math became a bit complicated when trying to account for correct coordinates. 
+		for (int i = - GlobalState.Instance.AmountOfHexes + 1 ; i <= 0; i++)
         {
 			entryPoint = new Vector3(entryPoint.x - ( hexSize.x/2), entryPoint.y + (hexSize.x*Mathf.Sqrt(3)/2) , entryPoint.z);
-			var amountOfHexesInRow = i + GlobalState.Instance.AmountOfHexes;
-			for(int j = 0; j < amountOfHexesInRow ; j++)
+			var amountOfHexesInRow = i + target;
+			var entryCoordinate = (float)-i  / 2 - GlobalState.Instance.AmountOfHexes + 1;
+			for(float j = 0 ; j < amountOfHexesInRow  ; j++)
 			{
-				CreateHex(new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z));
+				CreateHex(
+					new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z), 
+					new Vector2(entryCoordinate + j, i));
 			}
         }
 		
 		mainCamera.transform.position = new Vector3(entryPoint.x  + ((GlobalState.Instance.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 40);
 		mainCamera.transform.Rotate(new Vector3(180,180,180));
-		
-		for (int i = GlobalState.Instance.AmountOfHexes - 2 ; i >= 0; i--)
+
+		for (int i = 1 ; i < target - GlobalState.Instance.AmountOfHexes + 1; i++)
         {
 			entryPoint = new Vector3(entryPoint.x + ( hexSize.x/2), entryPoint.y + (hexSize.x*Mathf.Sqrt(3)/2) , entryPoint.z);
-			var amountOfHexesInRow = i + GlobalState.Instance.AmountOfHexes;
-			for(int j = 0; j < amountOfHexesInRow ; j++)
+			var amountOfHexesInRow = target - i;
+			var entryCoordinate = (float)i  / 2 - GlobalState.Instance.AmountOfHexes + 1;
+			for(float j = 0; j < amountOfHexesInRow ; j++)
 			{
-				CreateHex(new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z));
+				CreateHex(
+					new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z), 
+					new Vector2(entryCoordinate + j, i));
 			}
         }
 	}
 
 	#region private methods
 
-	GameObject CreateHex(Vector3 nextPosition)
+	void CreateHex(Vector3 nextPosition, Vector2 hexCoordinates)
 	{
 		var hex = (GameObject)Instantiate(greenHex, nextPosition, Quaternion.identity);
 		//hex.transform.Rotate(new Vector3(270,0,0));
-		return hex;
+		var reactor = hex.GetComponent<HexReactor>();
+		reactor.MarkedHex = new Hex(hexCoordinates, reactor);
 	}
 	
-	GameObject CreateHex()
+	void CreateHex(Vector2 hexCoordinates)
 	{
-		return CreateHex(Vector3.zero);
+		CreateHex(Vector3.zero, hexCoordinates);
 	}
-	
-	float GetFlatAngle(Vector3 origin, Vector3 target)
-	{
-		var adjacentLength = GetDistance(origin, Vector3.zero);
-		var hypothenuseLength = GetDistance(origin, target);
-		return Mathf.Cos(adjacentLength / hypothenuseLength);
-	}
+
 	
 	float GetDistance(Vector3 origin, Vector3 target)
 	{

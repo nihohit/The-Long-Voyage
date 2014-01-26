@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Linq;
 
 public class HexReactor : MonoBehaviour 
 {
-	private Hex hex;
+	public Hex MarkedHex { get; set; }
 	private static MarkerScript selected;
 
 	public static void Init()
@@ -26,13 +27,13 @@ public class HexReactor : MonoBehaviour
 
 	public void Select()
 	{
-		Debug.Log( "Highlighting Unit" ); 
+		Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex.Coordinates)); 
 		selected.Mark(this.transform.position);
 	}
 
 	public void Unselect()
 	{
-		Debug.Log( "Deselecting Unit" ); 
+		Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex.Coordinates));
 		selected.Unmark();
 	}
 }
