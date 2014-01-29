@@ -7,7 +7,7 @@ public class TacticalState : Singleton<TacticalState>
 
 	private static TacticalState s_instance;
 	
-	public HexReactor SelectedHex 
+	public HexReactor SelectedHex
 	{ 
 		get
 		{
@@ -15,8 +15,11 @@ public class TacticalState : Singleton<TacticalState>
 		}
 		set
 		{
-			if(m_selectedHex !=null)
+			if(value == null && m_selectedHex != null)
+			{
 				m_selectedHex.Unselect();
+			}
+
 			m_selectedHex = value;
 			if(m_selectedHex !=null)
 				m_selectedHex.Select();

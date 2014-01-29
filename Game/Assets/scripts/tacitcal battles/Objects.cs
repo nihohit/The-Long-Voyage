@@ -9,12 +9,32 @@ public class Hex
 {
 	private static Dictionary<Vector2, Hex> s_repository = new Dictionary<Vector2, Hex>();
 
-	public Entity HexContent { get; set; }
-	public int Elevation { get; private set;}
+	private Entity m_content = null;
+	
 	public HexEffect Effects { get; private set; }
 	public Biome BiomeType { get; private set; }
 	public Vector2 Coordinates { get; private set; }
 	public HexReactor Reactor {get; private set;}
+	public TraversalConditions Conditions { get; private set; }
+	public Entity HexContent 
+	{ 
+		get
+		{
+			return m_content;
+		}
+		set
+		{
+			m_content = value;
+			if(m_content != null)
+			{
+				if(m_content.Hex != null)
+				{
+					m_content.Hex.HexContent = null;
+				}
+				m_content.Hex = this;
+			}
+		}
+	}
 
 	public Hex(Vector2 coordinates, HexReactor reactor)
 	{
@@ -43,6 +63,14 @@ public class Hex
 			result.Add(temp);
 		}
 	}
+
+	public float Dist(Hex other)
+	{
+		return Math.Max(
+			Math.Abs(Coordinates.x - other.Coordinates.x),
+			Math.Max(Math.Abs(Coordinates.y - other.Coordinates.y),
+			Math.Abs(Coordinates.x + Coordinates.y - other.Coordinates.x- other.Coordinates.y)));
+	}
 }
 
 #endregion
@@ -55,10 +83,22 @@ public enum Biome { Tundra, City, Grass, Desert, Swamp}
 public enum HexEffect 
 { 
 	None = 0, 
-	Slowing = 1,
-	Heating = 2,
-	Chilling = 4, 
+	Heating = 1,
+	Chilling = 2, 
 }
+
+//the logic behind the numbering is that the addition of this enumerator and MovementType gives the following result - if the value is between 0-5, no movement penalty. above 4 - slow, above 6 - impossible
+public enum TraversalConditions { 
+	Easy = 0, 
+	Uneven = 1, //hard to crawl, everything else is fine
+	Broken = 2, //hard to crawl or walk, everything else is fine
+	NoLand = 4, //can't crawl or walk, everything else is fine
+	Blocked = 5 //can only fly
+}
+
+// see TraversalAbility's comment
+public enum MovementType { Crawler = 3, Walker = 2, Hover = 1, Flyer = 0 }
+
 
 [Flags]
 public enum VisualProperties
@@ -94,20 +134,17 @@ public delegate bool HexCheck(Hex hex);
 
 public abstract class Entity
 {
-	public Entity(DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals, Hex hex)
+
+	public Entity(DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals)
 	{
-		if(hex.HexContent != null)
-		{
-			throw new Exception("hex not empty");
-		}
 		Decision = decision;
 		Type = type;
 		Health = health;
 		Shield = shield;
 		Visuals = visuals;
-		Hex = hex;
-		hex.HexContent = this;
 	}
+
+	public MarkerScript Marker { get; set; }
 
 	public DecisionType Decision { get; private set; }
 	
@@ -119,13 +156,13 @@ public abstract class Entity
 	
 	public VisualProperties Visuals { get; private set; }
 	
-	public Hex Hex { get; private set; }
+	public Hex Hex { get; set; }
 }
 
 public abstract class ActiveEntity : Entity
 {
-	public ActiveEntity(int actionsAmount, double radarRange, double sightRange, IEnumerable<Subsystem> systems, DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals, Hex hex) : 
-	base(decision, type, health, shield, visuals, hex)
+	public ActiveEntity(int actionsAmount, double radarRange, double sightRange, IEnumerable<Subsystem> systems, DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals) : 
+	base(decision, type, health, shield, visuals)
 	{
 		TotalActions = actionsAmount;
 		RadarRange = radarRange;
@@ -146,28 +183,29 @@ public abstract class ActiveEntity : Entity
 
 public abstract class MovingEntity : ActiveEntity
 {
-	public MovingEntity(double speed, double radarRange, double sightRange, IEnumerable<Subsystem> systems, DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals, Hex hex) : 
-		base(2, radarRange, sightRange, systems, decision, type, health, shield, visuals, hex)
+	public MovingEntity(MovementType movement, double speed, double radarRange, double sightRange, IEnumerable<Subsystem> systems, DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals) : 
+		base(2, radarRange, sightRange, systems, decision, type, health, shield, visuals)
 	{
 		Speed = speed;
+		TraversalMethod = movement;
 	}
 
 	public double Speed { get; private set; }
+
+	public MovementType TraversalMethod {get; private set; }
 }
 
 public class Mech : MovingEntity
 {
-	public Mech(IEnumerable<Subsystem> systems, DecisionType decision, Hex hex, 
+	public Mech(IEnumerable<Subsystem> systems, DecisionType decision,  
 	            double health = 5, 
 	            double shield = 3, 
 	            VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight, 
 	            double speed = 5, 
 	            double radarRange = 20, 
 	            double sightRange = 10) : 
-		base(speed, radarRange, sightRange, systems, decision, EntityType.Mech, health, shield, visuals, hex)
+		base(MovementType.Walker, speed, radarRange, sightRange, systems, decision, EntityType.Mech, health, shield, visuals)
 	{	}
-
-
 }
 
 

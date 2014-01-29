@@ -54,7 +54,7 @@ public class GenerateLevel : MonoBehaviour {
 			}
         }
 		
-		mainCamera.transform.position = new Vector3(entryPoint.x  + ((GlobalState.Instance.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 40);
+		mainCamera.transform.position = new Vector3(entryPoint.x  + ((GlobalState.Instance.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 70);
 		mainCamera.transform.Rotate(new Vector3(180,180,180));
 
 		for (int i = 1 ; i < target - GlobalState.Instance.AmountOfHexes + 1; i++)
