@@ -16,7 +16,7 @@ public class Hex
 	public Vector2 Coordinates { get; private set; }
 	public HexReactor Reactor {get; private set;}
 	public TraversalConditions Conditions { get; private set; }
-	public Entity HexContent 
+	public Entity Content 
 	{ 
 		get
 		{
@@ -24,15 +24,24 @@ public class Hex
 		}
 		set
 		{
-			m_content = value;
-			if(m_content != null)
-			{
-				if(m_content.Hex != null)
-				{
-					m_content.Hex.HexContent = null;
-				}
+            if(value == null)
+            {
+                m_content = value;
+            }
+            else
+            {
+                if(m_content != null)
+                {
+                    throw new Exception("Hex {0} already has entity {1} and can't accept entity {2}".FormatWith(Coordinates, m_content, value));
+                }
+                m_content = value;
+                if(m_content.Hex != null)
+                {
+				    m_content.Hex.Content = null;
+                }
 				m_content.Hex = this;
-			}
+                m_content.Marker.Mark(Reactor.transform.position);
+            }
 		}
 	}
 
@@ -290,4 +299,6 @@ public abstract class AmmoWeapon : WeaponBase
 #endregion
 
 #endregion
+
+
 

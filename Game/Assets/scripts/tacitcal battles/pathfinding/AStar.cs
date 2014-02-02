@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 internal static class AStar
 {
-	private static readonly Dictionary<HexPair, BackwardsAstarNode> s_knownPaths = new Dictionary<HexPair, BackwardsAstarNode>();
+    private static readonly HexDictionary s_knownPaths = new HexDictionary();
 
 	#region public methods
 
@@ -16,7 +16,6 @@ internal static class AStar
 
 	public static List<Hex> FindPath(Hex entry, Hex goal, AStarConfiguration configuration)
 	{
-		var internalState = GenerateInternalState(entry, configuration);
 		return ReconstructPath(FindPathNoReconstruction(entry, goal, configuration), goal, configuration);
 	}
 
@@ -121,19 +120,19 @@ internal static class AStar
 		}
 		else
 		{
-			state.Hexes.Add(temp, newNode);
 			newNode = new AstarNode(temp, 
 			                        current.GValue, 
 			                        CostOfMovement(temp, state), 
 			                        state.Configuration.Heuristic(temp), 
 			                        current);
+            state.Hexes.Add(temp, newNode);
 			state.OpenSet.Push(newNode);
 		}
 	}
 
 	private static int CostOfMovement(Hex temp, AStarInternalState state)
 	{
-		if(temp.HexContent != null)
+		if(temp.Content != null)
 		{
 			return -1;
 		}
@@ -194,7 +193,7 @@ internal static class AStar
 		{
 			Configuration = configuration;
 			AmountOfNodesChecked = 0;
-			Hexes = new Dictionary<Hex, AstarNode>();
+            Hexes = new NodeDictionary();
 			OpenSet = new PriorityQueueB<AstarNode>();
 		}
 
@@ -266,23 +265,27 @@ internal static class AStar
 	}
 
 	#endregion
+
+    //TODO - remove, this is purely for debugging reasons
+    private class HexDictionary : Dictionary<HexPair, BackwardsAstarNode>{}
+    private class NodeDictionary : Dictionary<Hex, AstarNode>{}
 }
 
 #endregion
 
 #region AStarConfiguration
 
-    internal class AStarConfiguration
+internal class AStarConfiguration
+{
+    public AStarConfiguration(MovementType traversalMethod, Heuristic heuristic)
     {
-        public AStarConfiguration(MovementType traversalMethod, Heuristic heuristic)
-        {
-            TraversalMethod = traversalMethod;
-            Heuristic = heuristic;
-        }
-	
-        public MovementType TraversalMethod { get; private set; }
-        public Heuristic Heuristic { get; private set; }
+        TraversalMethod = traversalMethod;
+        Heuristic = heuristic;
     }
 
-    #endregion
+    public MovementType TraversalMethod { get; private set; }
+    public Heuristic Heuristic { get; private set; }
+}
+
+#endregion
 

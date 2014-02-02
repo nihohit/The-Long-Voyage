@@ -23,6 +23,13 @@ public class HexReactor : MonoBehaviour
 				}
 			}
 			s_foundPath = value;
+            if(s_foundPath != null)
+            {
+                foreach(var hex in s_foundPath)
+                {
+                    hex.Reactor.DisplayIndividualMarker();
+                }
+            }
 		}
 	}
 
@@ -36,43 +43,55 @@ public class HexReactor : MonoBehaviour
 		if(m_individualMarker == null)
 		{
 			m_individualMarker = ((GameObject)Instantiate(Resources.Load("PathMarker"), Vector3.zero, Quaternion.identity)).GetComponent<MarkerScript>();
+            m_individualMarker.internalRenderer = m_individualMarker.GetComponent<SpriteRenderer>();
 		}
+        m_individualMarker.Mark(transform.position);
 	}
 
 	public static void Init()
 	{
 		s_selected = GameObject.Find("Marker").GetComponent<MarkerScript>();
+        s_selected.Unmark();
 	}
 
-	void OnMouseOver () 
+	void OnMouseDown () 
 	{
 		if (Input.GetMouseButton(0)) 
 		{
-			if(TacticalState.Instance.SelectedHex == null || this.MarkedHex.HexContent != null)
-			{
-				FoundPath = null;
-				TacticalState.Instance.SelectedHex = this;
-			}
-			var mover = TacticalState.Instance.SelectedHex.MarkedHex.HexContent as MovingEntity;
-			if(mover == null)
+			//if there's no selected hex,
+			//the selected hex is empty, select the hex. 
+			if(TacticalState.Instance.SelectedHex == null || 
+               TacticalState.Instance.SelectedHex.MarkedHex.Content == null)
 			{
 				FoundPath = null;
 				TacticalState.Instance.SelectedHex = this;
 			}
 			else
 			{
-				if(FoundPath == null || !FoundPath.Last().Equals(this.MarkedHex))
+                var mover = TacticalState.Instance.SelectedHex.MarkedHex.Content as MovingEntity;
+				//don't find a path for a non-moving entity
+				if(mover == null)
 				{
-					FoundPath = AStar.FindPath(TacticalState.Instance.SelectedHex.MarkedHex, 
-					                           this.MarkedHex, 
-					                           new AStarConfiguration(
-						mover.TraversalMethod,
-						(hex) => { return TacticalState.Instance.SelectedHex.MarkedHex.Dist (hex); }));
+					FoundPath = null;
+					TacticalState.Instance.SelectedHex = this;
 				}
 				else
 				{
-					FoundPath.Last().HexContent = TacticalState.Instance.SelectedHex.MarkedHex.HexContent;
-					FoundPath = null;
+					//if a path was set to this hex, move the entity to this hex
+					if(FoundPath == null || !FoundPath.Last().Equals(this.MarkedHex))
+					{
+						FoundPath = AStar.FindPath(TacticalState.Instance.SelectedHex.MarkedHex, 
+						                           this.MarkedHex, 
+						                           new AStarConfiguration(
+							mover.TraversalMethod,
+							(hex) => { return TacticalState.Instance.SelectedHex.MarkedHex.Dist (hex); }));
+					}
+					else
+					{
+						FoundPath.Last().Content = TacticalState.Instance.SelectedHex.MarkedHex.Content;
+						FoundPath = null;
+                        TacticalState.Instance.SelectedHex = null;
+					}
 				}
 			}
 		}
@@ -87,8 +106,6 @@ public class HexReactor : MonoBehaviour
 	public void Unselect()
 	{
 		Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex.Coordinates));
-		MarkedHex.HexContent = new Mech(null, DecisionType.PlayerControlled);
-		MarkedHex.HexContent.Marker = ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
 		s_selected.Unmark();
 	}
 }

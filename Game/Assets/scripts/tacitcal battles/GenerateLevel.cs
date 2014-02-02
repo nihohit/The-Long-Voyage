@@ -18,6 +18,13 @@ public class GenerateLevel : MonoBehaviour {
 		}
 		if (Input.GetMouseButton(1)) 
 		{
+            if(TacticalState.Instance.SelectedHex != null && TacticalState.Instance.SelectedHex.MarkedHex.Content == null)
+            {
+                var mech = new Mech(null, DecisionType.PlayerControlled);
+                mech.Marker = ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
+                mech.Marker.internalRenderer = mech.Marker.GetComponent<SpriteRenderer>();
+                TacticalState.Instance.SelectedHex.MarkedHex.Content = mech;
+            }
 			TacticalState.Instance.SelectedHex = null;
 		}
 	}
