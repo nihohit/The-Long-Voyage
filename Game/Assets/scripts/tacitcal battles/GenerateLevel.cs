@@ -18,14 +18,15 @@ public class GenerateLevel : MonoBehaviour {
 		}
 		if (Input.GetMouseButton(1)) 
 		{
-            if(TacticalState.Instance.SelectedHex != null && TacticalState.Instance.SelectedHex.MarkedHex.Content == null)
+            if(TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
             {
-                var mech = new Mech(null, DecisionType.PlayerControlled);
+                //TODO - this is just a temporary measure, to create mechs
+                var mech = new Mech(null);
                 mech.Marker = ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
                 mech.Marker.internalRenderer = mech.Marker.GetComponent<SpriteRenderer>();
-                TacticalState.Instance.SelectedHex.MarkedHex.Content = mech;
+                TacticalState.SelectedHex.MarkedHex.Content = mech;
             }
-			TacticalState.Instance.SelectedHex = null;
+			TacticalState.SelectedHex = null;
 		}
 	}
 
@@ -36,23 +37,25 @@ public class GenerateLevel : MonoBehaviour {
 		FileHandler.Init();
 		HexReactor.Init();
 
-		if(GlobalState.Instance.AmountOfHexes < 1)
+        TacticalState.Init(new[]{Loyalty.Player});
+
+		if(GlobalState.AmountOfHexes < 1)
 		{
-			GlobalState.Instance.AmountOfHexes = FileHandler.GetIntProperty(
+			GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
 				"default map size", 
 				FileAccessor.TerrainGeneration);
 		}
 		var entryPoint = Vector3.zero;
 		var hexSize = greenHex.renderer.bounds.size;
 
-		var target = 2*GlobalState.Instance.AmountOfHexes - 1;
+		var target = 2*GlobalState.AmountOfHexes - 1;
 
 		//the math became a bit complicated when trying to account for correct coordinates. 
-		for (int i = - GlobalState.Instance.AmountOfHexes + 1 ; i <= 0; i++)
+		for (int i = - GlobalState.AmountOfHexes + 1 ; i <= 0; i++)
         {
 			entryPoint = new Vector3(entryPoint.x - ( hexSize.x/2), entryPoint.y + (hexSize.x*Mathf.Sqrt(3)/2) , entryPoint.z);
 			var amountOfHexesInRow = i + target;
-			var entryCoordinate = (float)-i  / 2 - GlobalState.Instance.AmountOfHexes + 1;
+			var entryCoordinate = (float)-i  / 2 - GlobalState.AmountOfHexes + 1;
 			for(float j = 0 ; j < amountOfHexesInRow  ; j++)
 			{
 				CreateHex(
@@ -61,14 +64,14 @@ public class GenerateLevel : MonoBehaviour {
 			}
         }
 		
-		mainCamera.transform.position = new Vector3(entryPoint.x  + ((GlobalState.Instance.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 70);
+		mainCamera.transform.position = new Vector3(entryPoint.x  + ((GlobalState.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 70);
 		mainCamera.transform.Rotate(new Vector3(180,180,180));
 
-		for (int i = 1 ; i < target - GlobalState.Instance.AmountOfHexes + 1; i++)
+		for (int i = 1 ; i < target - GlobalState.AmountOfHexes + 1; i++)
         {
 			entryPoint = new Vector3(entryPoint.x + ( hexSize.x/2), entryPoint.y + (hexSize.x*Mathf.Sqrt(3)/2) , entryPoint.z);
 			var amountOfHexesInRow = target - i;
-			var entryCoordinate = (float)i  / 2 - GlobalState.Instance.AmountOfHexes + 1;
+			var entryCoordinate = (float)i  / 2 - GlobalState.AmountOfHexes + 1;
 			for(float j = 0; j < amountOfHexesInRow ; j++)
 			{
 				CreateHex(

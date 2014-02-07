@@ -119,14 +119,17 @@ public enum VisualProperties
 
 public enum EntityType { Crawler, Mech, Monster, Infantry, Tank, Artilerry}
 
-public enum DecisionType { Passive, PlayerControlled, AI }
-
 public enum DamageType { EMP, Heat, Physical, Energy, }
 
 public enum WeaponType { }
 
+//to be filled with all different sides
+public enum Loyalty { Player, EnemyArmy, Monsters, Bandits }
+
 // there needs to be an order of importance - the more severe damage has a higher value
-public enum Condition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, Destroyed = 3}
+public enum Condition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, Destroyed = 3 }
+
+public enum ActionType { Movement, Subsystem }
 
 #endregion
 
@@ -143,10 +146,8 @@ public delegate bool HexCheck(Hex hex);
 
 public abstract class Entity
 {
-
-	public Entity(DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals)
+	public Entity(EntityType type, double health, double shield, VisualProperties visuals)
 	{
-		Decision = decision;
 		Type = type;
 		Health = health;
 		Shield = shield;
@@ -154,8 +155,6 @@ public abstract class Entity
 	}
 
 	public MarkerScript Marker { get; set; }
-
-	public DecisionType Decision { get; private set; }
 	
 	public EntityType Type { get; private set; }
 	
@@ -170,53 +169,88 @@ public abstract class Entity
 
 public abstract class ActiveEntity : Entity
 {
-	public ActiveEntity(int actionsAmount, double radarRange, double sightRange, IEnumerable<Subsystem> systems, DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals) : 
-	base(decision, type, health, shield, visuals)
+	public ActiveEntity(Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals) : 
+	base(type, health, shield, visuals)
 	{
-		TotalActions = actionsAmount;
 		RadarRange = radarRange;
 		SightRange = sightRange;
 		Systems = systems;
+        Loyalty = Loyalty;
 	}
 
-	public int Actions { get; set; }
-	
-	public int TotalActions { get; private set; }
+    public Loyalty Loyalty { get; private set; }
 	
 	public double RadarRange { get; private set; }
 	
 	public double SightRange { get; private set; }
 	
 	public IEnumerable<Subsystem> Systems { get; private set; }
+
+    public virtual Dictionary<Hex, IEnumerable<PotentialAction>> ComputeActions()
+    {
+        throw new System.NotImplementedException();
+    }
 }
 
 public abstract class MovingEntity : ActiveEntity
 {
-	public MovingEntity(MovementType movement, double speed, double radarRange, double sightRange, IEnumerable<Subsystem> systems, DecisionType decision, EntityType type, double health, double shield, VisualProperties visuals) : 
-		base(2, radarRange, sightRange, systems, decision, type, health, shield, visuals)
+    public MovingEntity(MovementType movement, double speed, Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals) : 
+        base(loyalty, radarRange, sightRange, systems, type, health, shield, visuals)
 	{
 		Speed = speed;
-		TraversalMethod = movement;
+		Movement = movement;
 	}
 
 	public double Speed { get; private set; }
 
-	public MovementType TraversalMethod {get; private set; }
+	public MovementType Movement {get; private set; }
+
+    public override Dictionary<Hex, IEnumerable<PotentialAction>> ComputeActions()
+    {
+        Dictionary<Hex, IEnumerable<PotentialAction>> baseActions = base.ComputeActions();
+        foreach(var hex in AStar.FindAllAvailableHexes(this.Hex, this.Speed, this.Movement).Values)
+        {
+
+        }
+        return baseActions;
+    }
 }
 
 public class Mech : MovingEntity
 {
-	public Mech(IEnumerable<Subsystem> systems, DecisionType decision,  
+	public Mech(IEnumerable<Subsystem> systems,   
 	            double health = 5, 
 	            double shield = 3, 
 	            VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight, 
 	            double speed = 5, 
+                Loyalty loyalty = Loyalty.Player, 
 	            double radarRange = 20, 
 	            double sightRange = 10) : 
-		base(MovementType.Walker, speed, radarRange, sightRange, systems, decision, EntityType.Mech, health, shield, visuals)
+        base(MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, EntityType.Mech, health, shield, visuals)
 	{	}
 }
 
+public abstract class PotentialAction
+{
+    public ActionType Type { get; protected set; }
+
+    public double EnergyCost { get; protected set; }
+
+    public double HeatCost { get; protected set; }
+}
+
+public class MovementAction : PotentialAction
+{
+    private IEnumerable<Hex> m_path;
+
+    public MovementAction(IEnumerable<Hex> path, double energyCost)
+    {
+        m_path = path;
+        EnergyCost = energyCost;
+        HeatCost = 0;
+        Type = ActionType.Movement;
+    }
+}
 
 #endregion
 

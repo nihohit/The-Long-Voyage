@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class MarkerScript : MonoBehaviour {
+public class MarkerScript : MonoBehaviour 
+{
 	public SpriteRenderer internalRenderer;
 	
 	public void Mark(Vector3 position)

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 #region AStar
 
 internal static class AStar
 {
-    private static readonly HexDictionary s_knownPaths = new HexDictionary();
+    private static readonly Dictionary<HexPair, BackwardsAstarNode> s_knownPaths = new Dictionary<HexPair, BackwardsAstarNode>();
 
 	#region public methods
 
@@ -13,6 +14,38 @@ internal static class AStar
 	{
 		s_knownPaths.Clear();
 	}
+
+    public static Dictionary<Hex, IEnumerable<Hex>> FindAllAvailableHexes(Hex entry, double availableDistance, MovementType movementType)
+    {
+        var dict = new Dictionary<Hex, IEnumerable<Hex>>();
+        //no heuristic here - we want accurate results
+        var internalState = GenerateInternalState(entry, new AStarConfiguration(movementType, (check) => 0));
+        while (internalState.OpenSet.Count > 0)
+        {
+            AstarNode current = internalState.OpenSet.Pop();
+            if (current.FValue > availableDistance)
+            {
+                break;
+            }
+            //if there's no parent, it's the first hex, and we don't add it to the result
+            if(current.Parent != null)
+            {
+                IEnumerable<Hex> list;
+                if(!dict.TryGetValue(current.Parent.ChosenHex, out list))
+                {
+                    list = Enumerable.Empty<Hex>();
+                }
+                var newList = new List<Hex>(list);
+                newList.Add(current.ChosenHex);
+                dict.Add(current.ChosenHex, newList);
+            }
+            foreach(var hex in current.ChosenHex.GetNeighbours())
+            {
+
+            }
+        }
+        return dict;
+    }
 
 	public static List<Hex> FindPath(Hex entry, Hex goal, AStarConfiguration configuration)
 	{
@@ -87,8 +120,7 @@ internal static class AStar
 	{
 		var internalState = new AStarInternalState(configuration);
 
-		internalState.Hexes.Add(entry, new AstarNode(entry, configuration.Heuristic(entry)));
-		internalState.OpenSet.Push(internalState.Hexes[entry]);
+        internalState.AddNode(new AstarNode(entry, configuration.Heuristic(entry)));
 
 		return internalState;
 	}
@@ -114,6 +146,7 @@ internal static class AStar
 			{
 				newNode.Parent = current;
 				newNode.GValue = current.GValue;
+                //TODO - is this necessary?
 				state.OpenSet.RemoveLocation(newNode);
 				state.OpenSet.Push(newNode);
 			}
@@ -125,8 +158,7 @@ internal static class AStar
 			                        CostOfMovement(temp, state), 
 			                        state.Configuration.Heuristic(temp), 
 			                        current);
-            state.Hexes.Add(temp, newNode);
-			state.OpenSet.Push(newNode);
+            state.AddNode(newNode);
 		}
 	}
 
@@ -143,7 +175,6 @@ internal static class AStar
 			return -1;
 		}
 		else return Math.Max(1, cost - 2);
-
 	}
 
 	private static List<Hex> ReconstructPath(AstarNode current, Hex goal, AStarConfiguration configuration)
@@ -193,7 +224,7 @@ internal static class AStar
 		{
 			Configuration = configuration;
 			AmountOfNodesChecked = 0;
-            Hexes = new NodeDictionary();
+            Hexes = new Dictionary<Hex, AstarNode>();
 			OpenSet = new PriorityQueueB<AstarNode>();
 		}
 
@@ -201,6 +232,12 @@ internal static class AStar
 		public Dictionary<Hex, AstarNode> Hexes { get; private set; }
 		public PriorityQueueB<AstarNode> OpenSet { get; private set; }
 		public int AmountOfNodesChecked { get; set; }
+
+        public void AddNode(AstarNode node)
+        {
+            OpenSet.Push(node);
+            Hexes.Add(node.ChosenHex, node);
+        }
 	}
 
 	#endregion
@@ -266,9 +303,6 @@ internal static class AStar
 
 	#endregion
 
-    //TODO - remove, this is purely for debugging reasons
-    private class HexDictionary : Dictionary<HexPair, BackwardsAstarNode>{}
-    private class NodeDictionary : Dictionary<Hex, AstarNode>{}
 }
 
 #endregion

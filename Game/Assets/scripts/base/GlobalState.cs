@@ -1,11 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GlobalState : Singleton<GlobalState>
+public static class GlobalState
 {
-	private static GlobalState s_instance;
-
-    public int AmountOfHexes { get; set; }
-
-    private GlobalState() { }
+    public static int AmountOfHexes { get; set; }
 }

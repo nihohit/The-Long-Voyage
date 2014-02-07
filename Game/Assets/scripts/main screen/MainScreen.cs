@@ -36,7 +36,7 @@ public class MainScreen : MonoBehaviour
 
         if(GUI.Button(new Rect(sliderWidth - 40, buttonHeight, 80, 20), "StartGame"))
         {
-            GlobalState.Instance.AmountOfHexes = sliderValue;
+            GlobalState.AmountOfHexes = sliderValue;
             Application.LoadLevel("generateLevel");
         }
 	}

@@ -7,31 +7,6 @@ public class HexReactor : MonoBehaviour
 	public Hex MarkedHex { get; set; }
 	private MarkerScript m_individualMarker;
 	private static MarkerScript s_selected;
-	private static List<Hex> s_foundPath;
-	private static List<Hex> FoundPath { 
-		get
-		{
-			return s_foundPath;
-		}
-		set 
-		{
-			if(s_foundPath != null)
-			{
-				foreach(var hex in s_foundPath)
-				{
-					hex.Reactor.RemoveIndividualMarker();
-				}
-			}
-			s_foundPath = value;
-            if(s_foundPath != null)
-            {
-                foreach(var hex in s_foundPath)
-                {
-                    hex.Reactor.DisplayIndividualMarker();
-                }
-            }
-		}
-	}
 
 	public void RemoveIndividualMarker()
 	{
@@ -58,42 +33,7 @@ public class HexReactor : MonoBehaviour
 	{
 		if (Input.GetMouseButton(0)) 
 		{
-			//if there's no selected hex,
-			//the selected hex is empty, select the hex. 
-			if(TacticalState.Instance.SelectedHex == null || 
-               TacticalState.Instance.SelectedHex.MarkedHex.Content == null)
-			{
-				FoundPath = null;
-				TacticalState.Instance.SelectedHex = this;
-			}
-			else
-			{
-                var mover = TacticalState.Instance.SelectedHex.MarkedHex.Content as MovingEntity;
-				//don't find a path for a non-moving entity
-				if(mover == null)
-				{
-					FoundPath = null;
-					TacticalState.Instance.SelectedHex = this;
-				}
-				else
-				{
-					//if a path was set to this hex, move the entity to this hex
-					if(FoundPath == null || !FoundPath.Last().Equals(this.MarkedHex))
-					{
-						FoundPath = AStar.FindPath(TacticalState.Instance.SelectedHex.MarkedHex, 
-						                           this.MarkedHex, 
-						                           new AStarConfiguration(
-							mover.TraversalMethod,
-							(hex) => { return TacticalState.Instance.SelectedHex.MarkedHex.Dist (hex); }));
-					}
-					else
-					{
-						FoundPath.Last().Content = TacticalState.Instance.SelectedHex.MarkedHex.Content;
-						FoundPath = null;
-                        TacticalState.Instance.SelectedHex = null;
-					}
-				}
-			}
+            TacticalState.SelectedHex = this;
 		}
 	}
 
