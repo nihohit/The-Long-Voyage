@@ -32,17 +32,13 @@ public static class TacticalState
 			m_selectedHex = value;
 			if(m_selectedHex !=null)
 				m_selectedHex.Select();
-            if(ActionCheckOnSelectedHex() != null)
-            {
-                //TODO - create buttons over all hexes
-            }
 		}
 	}
 
     public static Loyalty CurrentTurn { get { return m_currentTurn.Value; } }
 
     //for each entity and each hex, the available actions
-    public static Dictionary<ActiveEntity, Dictionary<Hex, IEnumerable<PotentialAction>>> AvailableActions { get; private set; }
+    public static Dictionary<ActiveEntity, IEnumerable<PotentialAction>> AvailableActions { get; private set; }
 
     #endregion
 
@@ -50,7 +46,7 @@ public static class TacticalState
 
     public static void Init(IEnumerable<Loyalty> players) 
     { 
-        AvailableActions = new Dictionary<ActiveEntity, Dictionary<Hex, IEnumerable<PotentialAction>>>();
+        AvailableActions = new Dictionary<ActiveEntity, IEnumerable<PotentialAction>>();
         SetTurnOrder(players);
     }
 
@@ -63,11 +59,10 @@ public static class TacticalState
         m_currentTurn = m_currentTurn.Next;
     }
 
-    //returns null if can't return actions, otherwise returns a dictionary from hexes to available actions
-    public static Dictionary<Hex, IEnumerable<PotentialAction>> ActionCheckOnSelectedHex()
+    //returns null if can't return actions, otherwise returns all available actions
+    public static IEnumerable<PotentialAction> ActionCheckOnSelectedHex()
     {
-        if(m_selectedHex == null ||
-           m_selectedHex.MarkedHex.Content == null)
+        if(m_selectedHex.MarkedHex.Content == null)
         {
             return null;
         }
@@ -78,12 +73,13 @@ public static class TacticalState
         {
             return null;
         }
-        Dictionary<Hex, IEnumerable<PotentialAction>> hexActions = null;
-        if(!AvailableActions.TryGetValue(activeEntity, out hexActions))
+
+        IEnumerable<PotentialAction> actions = null;
+        if (!AvailableActions.TryGetValue(activeEntity, out actions))
         {
             AvailableActions.Add(activeEntity, activeEntity.ComputeActions());
         }
-        return hexActions;
+        return actions;
     }
 
     #endregion

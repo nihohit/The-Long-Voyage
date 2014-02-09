@@ -41,11 +41,27 @@ public class HexReactor : MonoBehaviour
 	{
 		Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex.Coordinates)); 
 		s_selected.Mark(this.transform.position);
+        var actions = TacticalState.ActionCheckOnSelectedHex();
+        if (actions != null)
+        {
+            foreach(var action in actions)
+            {
+                action.DisplayButton();
+            }
+        }
 	}
 
 	public void Unselect()
 	{
 		Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex.Coordinates));
 		s_selected.Unmark();
+        var actions = TacticalState.ActionCheckOnSelectedHex();
+        if (actions != null)
+        {
+            foreach (var action in actions)
+            {
+                action.RemoveDisplay();
+            }
+        }
 	}
 }

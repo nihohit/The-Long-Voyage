@@ -10,6 +10,12 @@ public class MarkerScript : MonoBehaviour
 		internalRenderer.enabled = true;
 		internalRenderer.transform.position = position;
 	}
+
+    public void Mark()
+    {
+        internalRenderer.enabled = true;
+        internalRenderer.transform.position = this.transform.position;
+    }
 	
 	public void Unmark()
 	{

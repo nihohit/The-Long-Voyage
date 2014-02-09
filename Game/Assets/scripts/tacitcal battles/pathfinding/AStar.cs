@@ -15,9 +15,9 @@ internal static class AStar
 		s_knownPaths.Clear();
 	}
 
-    public static Dictionary<Hex, IEnumerable<Hex>> FindAllAvailableHexes(Hex entry, double availableDistance, MovementType movementType)
+    public static Dictionary<Hex, MovementAction> FindAllAvailableHexes(Hex entry, double availableDistance, MovementType movementType)
     {
-        var dict = new Dictionary<Hex, IEnumerable<Hex>>();
+        var dict = new Dictionary<Hex, MovementAction>();
         //no heuristic here - we want accurate results
         var internalState = GenerateInternalState(entry, new AStarConfiguration(movementType, (check) => 0));
         while (internalState.OpenSet.Count > 0)
@@ -30,18 +30,19 @@ internal static class AStar
             //if there's no parent, it's the first hex, and we don't add it to the result
             if(current.Parent != null)
             {
-                IEnumerable<Hex> list;
-                if(!dict.TryGetValue(current.Parent.ChosenHex, out list))
+                MovementAction action;
+                if(dict.TryGetValue(current.Parent.ChosenHex, out action))
                 {
-                    list = Enumerable.Empty<Hex>();
+                    dict.Add(current.ChosenHex, new MovementAction(action, current.ChosenHex));
                 }
-                var newList = new List<Hex>(list);
-                newList.Add(current.ChosenHex);
-                dict.Add(current.ChosenHex, newList);
+                else
+                {
+                    dict.Add(current.ChosenHex, new MovementAction(new[] { current.ChosenHex }));
+                }
             }
-            foreach(var hex in current.ChosenHex.GetNeighbours())
+            foreach (var neighbour in current.ChosenHex.GetNeighbours())
             {
-
+                CheckHex(neighbour, current, internalState);
             }
         }
         return dict;

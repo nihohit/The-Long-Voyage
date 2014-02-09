@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 using UnityEngine;
 
-#region hex
+#region Hex
 
 public class Hex
 {
+    //holds all the hexes by their hex-coordinates
 	private static Dictionary<Vector2, Hex> s_repository = new Dictionary<Vector2, Hex>();
 
 	private Entity m_content = null;
@@ -14,7 +16,8 @@ public class Hex
 	public HexEffect Effects { get; private set; }
 	public Biome BiomeType { get; private set; }
 	public Vector2 Coordinates { get; private set; }
-	public HexReactor Reactor {get; private set;}
+    public HexReactor Reactor { get; private set; }
+    public Vector3 Position { get { return Reactor.transform.position; } }
 	public TraversalConditions Conditions { get; private set; }
 	public Entity Content 
 	{ 
@@ -40,7 +43,7 @@ public class Hex
 				    m_content.Hex.Content = null;
                 }
 				m_content.Hex = this;
-                m_content.Marker.Mark(Reactor.transform.position);
+                m_content.Marker.Mark(Position);
             }
 		}
 	}
@@ -49,7 +52,7 @@ public class Hex
 	{
 		Coordinates = coordinates;
 		s_repository.Add(coordinates, this);
-		Reactor = reactor;
+        Reactor = reactor;
 	}
 
 	public IEnumerable<Hex> GetNeighbours()
@@ -186,9 +189,11 @@ public abstract class ActiveEntity : Entity
 	
 	public IEnumerable<Subsystem> Systems { get; private set; }
 
-    public virtual Dictionary<Hex, IEnumerable<PotentialAction>> ComputeActions()
+    public virtual IEnumerable<PotentialAction> ComputeActions()
     {
-        throw new System.NotImplementedException();
+        var result = new List<PotentialAction>();
+        //TODO - check for subsystems
+        return result;
     }
 }
 
@@ -205,14 +210,15 @@ public abstract class MovingEntity : ActiveEntity
 
 	public MovementType Movement {get; private set; }
 
-    public override Dictionary<Hex, IEnumerable<PotentialAction>> ComputeActions()
+    public override IEnumerable<PotentialAction> ComputeActions()
     {
-        Dictionary<Hex, IEnumerable<PotentialAction>> baseActions = base.ComputeActions();
-        foreach(var hex in AStar.FindAllAvailableHexes(this.Hex, this.Speed, this.Movement).Values)
+        var baseActions = base.ComputeActions();
+        var possibleHexes = AStar.FindAllAvailableHexes(this.Hex, this.Speed, this.Movement);
+        foreach(var movement in possibleHexes.Values)
         {
-
+            movement.Entity = this;
         }
-        return baseActions;
+        return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
     }
 }
 
@@ -222,34 +228,12 @@ public class Mech : MovingEntity
 	            double health = 5, 
 	            double shield = 3, 
 	            VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight, 
-	            double speed = 5, 
+	            double speed = 2, 
                 Loyalty loyalty = Loyalty.Player, 
 	            double radarRange = 20, 
 	            double sightRange = 10) : 
         base(MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, EntityType.Mech, health, shield, visuals)
 	{	}
-}
-
-public abstract class PotentialAction
-{
-    public ActionType Type { get; protected set; }
-
-    public double EnergyCost { get; protected set; }
-
-    public double HeatCost { get; protected set; }
-}
-
-public class MovementAction : PotentialAction
-{
-    private IEnumerable<Hex> m_path;
-
-    public MovementAction(IEnumerable<Hex> path, double energyCost)
-    {
-        m_path = path;
-        EnergyCost = energyCost;
-        HeatCost = 0;
-        Type = ActionType.Movement;
-    }
 }
 
 #endregion
@@ -331,6 +315,92 @@ public abstract class AmmoWeapon : WeaponBase
 }
 
 #endregion
+
+#endregion
+
+#region actions
+
+/*
+ * Potential action represents a certain action, commited by a certain Entity. 
+ * When ordered to it can create a button that when pressed activates it, 
+ * it can remove the button from the display and it should destroy the button when destroyed.
+ * The button should receive the item's commit method as it's response when pressed.
+ */
+public abstract class PotentialAction
+{
+    protected CircularButton m_button;
+
+    public ActiveEntity Entity { get; set; }
+
+    public ActionType Type { get; protected set; }
+
+    public virtual void DisplayButton()
+    {
+        m_button.Mark();
+    }
+
+    public virtual void RemoveDisplay()
+    {
+        m_button.Unmark();
+    }
+
+    public void Destroy()
+    {
+        UnityEngine.Object.Destroy(m_button.gameObject);
+    }
+
+    public virtual void Commit()
+    {
+        //TODO - affects on entity? Energy / heat cost, etc.?
+        Destroy();
+    }
+}
+
+public class MovementAction : PotentialAction
+{
+    public MovementAction(IEnumerable<Hex> path)
+    {
+        Path = path;
+        Type = ActionType.Movement;
+    }
+
+    public MovementAction(MovementAction action, Hex hex)
+    {
+        m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("movementMarker"), hex.Position, Quaternion.identity)).GetComponent<CircularButton>();
+        m_button.Action = Commit;
+        m_button.OnMouseOverProperty = DisplayPath;
+        m_button.OnMouseExitProperty = RemovePath;
+        m_button.Unmark();
+        var list = new List<Hex>(action.Path);
+        list.Add(hex);
+        Path = list;
+        Type = ActionType.Movement;
+    }
+
+    public IEnumerable<Hex> Path { get; private set; }
+
+    public void DisplayPath()
+    {
+        foreach (var hex in Path)
+        {
+            hex.Reactor.DisplayIndividualMarker();
+        }
+    }
+
+    public void RemovePath()
+    {
+        foreach (var hex in Path)
+        {
+            hex.Reactor.RemoveIndividualMarker();
+        }
+    }
+
+    public override void Commit()
+    {
+        Path.Last().Content = Entity;
+        base.Commit();
+    }
+}
 
 #endregion
 
