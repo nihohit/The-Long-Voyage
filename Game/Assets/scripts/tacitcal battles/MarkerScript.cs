@@ -7,18 +7,19 @@ public class MarkerScript : MonoBehaviour
 	
 	public void Mark(Vector3 position)
 	{
+        this.enabled = true;
 		internalRenderer.enabled = true;
 		internalRenderer.transform.position = position;
 	}
 
     public void Mark()
     {
-        internalRenderer.enabled = true;
-        internalRenderer.transform.position = this.transform.position;
+        Mark(this.transform.position);
     }
 	
 	public void Unmark()
 	{
 		internalRenderer.enabled = false;
+        this.enabled = false;
 	}
 }

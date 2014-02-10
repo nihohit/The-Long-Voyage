@@ -76,13 +76,10 @@ public class Hex
 		}
 	}
 
-	public float Dist(Hex other)
-	{
-		return Math.Max(
-			Math.Abs(Coordinates.x - other.Coordinates.x),
-			Math.Max(Math.Abs(Coordinates.y - other.Coordinates.y),
-			Math.Abs(Coordinates.x + Coordinates.y - other.Coordinates.x- other.Coordinates.y)));
-	}
+    public override string ToString()
+    {
+        return "Hex {0},{1} : {2}".FormatWith(Coordinates.x, Coordinates.y, Content);
+    }
 }
 
 #endregion
@@ -228,7 +225,7 @@ public class Mech : MovingEntity
 	            double health = 5, 
 	            double shield = 3, 
 	            VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight, 
-	            double speed = 2, 
+	            double speed = 4, 
                 Loyalty loyalty = Loyalty.Player, 
 	            double radarRange = 20, 
 	            double sightRange = 10) : 
@@ -344,8 +341,9 @@ public abstract class PotentialAction
         m_button.Unmark();
     }
 
-    public void Destroy()
+    public virtual void Destroy()
     {
+        m_button.Unmark();
         UnityEngine.Object.Destroy(m_button.gameObject);
     }
 
@@ -362,19 +360,16 @@ public class MovementAction : PotentialAction
     {
         Path = path;
         Type = ActionType.Movement;
-    }
-
-    public MovementAction(MovementAction action, Hex hex)
-    {
-        m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("movementMarker"), hex.Position, Quaternion.identity)).GetComponent<CircularButton>();
+        m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("movementMarker"), Path.Last().Position, Quaternion.identity)).GetComponent<CircularButton>();
         m_button.Action = Commit;
         m_button.OnMouseOverProperty = DisplayPath;
         m_button.OnMouseExitProperty = RemovePath;
         m_button.Unmark();
-        var list = new List<Hex>(action.Path);
-        list.Add(hex);
-        Path = list;
-        Type = ActionType.Movement;
+    }
+
+    public MovementAction(MovementAction action, Hex hex) : 
+        this(action.Path.Union(new[]{hex}))
+    {
     }
 
     public IEnumerable<Hex> Path { get; private set; }
@@ -395,9 +390,18 @@ public class MovementAction : PotentialAction
         }
     }
 
+    public override void Destroy()
+    {
+        RemovePath();
+        base.Destroy();
+    }
+
     public override void Commit()
     {
-        Path.Last().Content = Entity;
+        var lastHex = Path.Last();
+        lastHex.Content = Entity;
+        TacticalState.RecalculateActions(Entity);
+        TacticalState.SelectedHex = lastHex.Reactor;
         base.Commit();
     }
 }

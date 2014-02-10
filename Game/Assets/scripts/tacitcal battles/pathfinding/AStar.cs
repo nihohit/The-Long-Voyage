@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 #region AStar
 
@@ -23,7 +24,8 @@ internal static class AStar
         while (internalState.OpenSet.Count > 0)
         {
             AstarNode current = internalState.OpenSet.Pop();
-            if (current.FValue > availableDistance)
+            current.Open = false;
+            if (current.FValue >= availableDistance)
             {
                 break;
             }
@@ -136,31 +138,37 @@ internal static class AStar
 
 	private static void CheckHex(Hex temp, AstarNode current, AStarInternalState state)
 	{
-		state.AmountOfNodesChecked++;
 		AstarNode newNode;
+        var cost = CostOfMovement(temp, state);
+        if (cost > -1)
+        {
+            var costToMove = cost + current.GValue;
+	        //check if the hex is in the list
+	        if (state.Hexes.TryGetValue(temp, out newNode))
+	        {
+                if (!newNode.Open)
+                {
+                    return;
 
-		//check if the hex is in the list
-		if (state.Hexes.TryGetValue(temp, out newNode))
-		{
-			if (!newNode.Open) return;
-			if (current.GValue < newNode.GValue) 
-			{
-				newNode.Parent = current;
-				newNode.GValue = current.GValue;
-                //TODO - is this necessary?
-				state.OpenSet.RemoveLocation(newNode);
-				state.OpenSet.Push(newNode);
-			}
-		}
-		else
-		{
-			newNode = new AstarNode(temp, 
-			                        current.GValue, 
-			                        CostOfMovement(temp, state), 
-			                        state.Configuration.Heuristic(temp), 
-			                        current);
-            state.AddNode(newNode);
-		}
+                }
+                if (costToMove < newNode.GValue) 
+		        {
+			        newNode.Parent = current;
+                    newNode.GValue = costToMove;
+			        state.OpenSet.RemoveLocation(newNode);
+			        state.OpenSet.Push(newNode);
+		        }
+	        }
+	        else
+	        {
+		        newNode = new AstarNode(temp,
+                                        costToMove,
+                                        0, 
+			                            state.Configuration.Heuristic(temp), 
+			                            current);
+                state.AddNode(newNode);
+	        }
+        }
 	}
 
 	private static int CostOfMovement(Hex temp, AStarInternalState state)
@@ -224,7 +232,6 @@ internal static class AStar
 		public AStarInternalState(AStarConfiguration configuration)
 		{
 			Configuration = configuration;
-			AmountOfNodesChecked = 0;
             Hexes = new Dictionary<Hex, AstarNode>();
 			OpenSet = new PriorityQueueB<AstarNode>();
 		}
@@ -232,7 +239,6 @@ internal static class AStar
 		public AStarConfiguration Configuration { get; private set; }
 		public Dictionary<Hex, AstarNode> Hexes { get; private set; }
 		public PriorityQueueB<AstarNode> OpenSet { get; private set; }
-		public int AmountOfNodesChecked { get; set; }
 
         public void AddNode(AstarNode node)
         {

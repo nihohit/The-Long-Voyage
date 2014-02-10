@@ -12,84 +12,74 @@ internal delegate float Heuristic(Hex check);
 
 internal class AstarNode : IComparable<AstarNode>
 {
-private readonly int m_gTotalValue; //the value of the size-portion, for clearance
-private float m_gValue;
+    private readonly int m_gTotalValue; //the value of the size-portion, for clearance
+    private float m_gValue;
 
-#region constructors
+    #region constructors
 
-public AstarNode(Hex value, float g, int g_total, float h, AstarNode parent)
-{
-    ChosenHex = value;
-    m_gTotalValue = g_total;
-    GValue = g;
-    FValue = GValue + h + g_total;
-    HValue = h;
-    Parent = parent;
-    Open = true;
-}
+    public AstarNode(Hex value, float costToEnterThisNode, int g_total, float heuristicCost, AstarNode parent)
+    {
+        ChosenHex = value;
+        m_gTotalValue = g_total;
+        GValue = costToEnterThisNode;
+        FValue = GValue + heuristicCost + g_total;
+        HValue = heuristicCost;
+        Parent = parent;
+        Open = true;
+    }
 
-public AstarNode(Hex value, AstarNode parent)
-{
-    ChosenHex = value;
-    Parent = parent;
-    Open = true;
-}
+    public AstarNode(Hex value, AstarNode parent) : 
+        this(value, 0, 0, 0, parent)
+    {}
 
-//only first node uses this
-public AstarNode(Hex value, float h)
-{
-    ChosenHex = value;
-    m_gTotalValue = 0;
-    m_gValue = 0;
-    FValue = GValue + h;
-    HValue = h;
-    Parent = null;
-    Open = true;
-}
+    //only first node uses this
+    public AstarNode(Hex value, float h) : 
+        this(value, 0, 0, h, null)
+    {}
 
-#endregion
+    #endregion
 
-#region properties
+    #region properties
 
-public AstarNode Parent { get; set; }
+    public AstarNode Parent { get; set; }
 
-public Hex ChosenHex { get; private set; }
+    public Hex ChosenHex { get; private set; }
 
-public bool Open { get; set; }
+    public bool Open { get; set; }
 
-public float HValue { get; private set; }
+    public float HValue { get; private set; }
 
-public float GValue
-{
-    get { return m_gValue; }
-    set { m_gValue = value; FValue = GValue + HValue + m_gTotalValue; }
-}
+    public float GValue
+    {
+        get { return m_gValue; }
+        set { m_gValue = value; FValue = GValue + HValue + m_gTotalValue; }
+    }
 
-public float FValue { get; private set; }
+    public float FValue { get; private set; }
 
-#endregion
+    #endregion
 
-#region comparers
+    #region comparers
 
-int IComparable<AstarNode>.CompareTo(AstarNode other)
-{
-    if (FValue > other.FValue) return 1;
-    if (FValue < other.FValue) return -1;
-    if (HValue > other.HValue) return 1;
-    if (HValue < other.HValue) return -1;
-    return 0;
-}
+    int IComparable<AstarNode>.CompareTo(AstarNode other)
+    {
+        if (FValue > other.FValue) return 1;
+        if (FValue < other.FValue) return -1;
+        if (HValue > other.HValue) return 1;
+        if (HValue < other.HValue) return -1;
+        return 0;
+    }
 
-static int NodeComparer(AstarNode a, AstarNode b)
-{
-    if (a.FValue > b.FValue) return 1;
-    if (a.FValue < b.FValue) return -1;
-    if (a.HValue > b.HValue) return 1;
-    if (a.HValue < b.HValue) return -1;
-    return 0;
-}
+    static int NodeComparer(AstarNode a, AstarNode b)
+    {
+        if (a.FValue > b.FValue) return 1;
+        if (a.FValue < b.FValue) return -1;
+        if (a.HValue > b.HValue) return 1;
+        if (a.HValue < b.HValue) return -1;
+        return 0;
+    }
 
-#endregion
+    #endregion
 }
 
 #endregion

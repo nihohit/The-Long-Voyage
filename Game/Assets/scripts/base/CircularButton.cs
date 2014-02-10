@@ -9,19 +9,24 @@ public class CircularButton : MarkerScript
 
     void OnMouseOver()
     {
-        OnMouseOverProperty();
+        if(enabled)
+            OnMouseOverProperty();
     }
 
     void OnMouseExit()
     {
-        OnMouseExitProperty();
+        if (enabled)
+            OnMouseExitProperty();
     }
 
     void OnMouseDown()
     {
-        if (Input.GetMouseButton(0))
+        if (enabled)
         {
-            Action();
+            if (Input.GetMouseButton(0))
+            {
+                Action();
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public static class TacticalState
 {
@@ -77,9 +78,28 @@ public static class TacticalState
         IEnumerable<PotentialAction> actions = null;
         if (!AvailableActions.TryGetValue(activeEntity, out actions))
         {
-            AvailableActions.Add(activeEntity, activeEntity.ComputeActions());
+            actions = activeEntity.ComputeActions();
+            AvailableActions.Add(activeEntity, actions);
         }
         return actions;
+    }
+
+    public static void RecalculateActions(ActiveEntity activeEntity)
+    {
+        if (activeEntity == null ||
+           activeEntity.Loyalty != CurrentTurn)
+        {
+            throw new Exception("entity {0} shouldn't recalculating actions".FormatWith(activeEntity));
+        }
+        IEnumerable<PotentialAction> actions = null;
+        if (AvailableActions.TryGetValue(activeEntity, out actions))
+        {
+            foreach(var action in actions)
+            {
+                action.Destroy();
+            }
+        }
+        AvailableActions[activeEntity] = activeEntity.ComputeActions();
     }
 
     #endregion
