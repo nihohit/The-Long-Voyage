@@ -10,7 +10,10 @@ public class HexReactor : MonoBehaviour
 
 	public void RemoveIndividualMarker()
 	{
-		m_individualMarker.Unmark();
+        if (m_individualMarker != null)
+        {
+            m_individualMarker.Unmark();
+        }
 	}
 
 	public void DisplayIndividualMarker()

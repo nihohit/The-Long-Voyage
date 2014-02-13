@@ -326,10 +326,16 @@ public abstract class AmmoWeapon : WeaponBase
 public abstract class PotentialAction
 {
     protected CircularButton m_button;
+    private bool m_destroyed;
 
     public ActiveEntity Entity { get; set; }
 
     public ActionType Type { get; protected set; }
+
+    protected PotentialAction()
+    {
+        m_destroyed = false;
+    }
 
     public virtual void DisplayButton()
     {
@@ -343,8 +349,12 @@ public abstract class PotentialAction
 
     public virtual void Destroy()
     {
-        m_button.Unmark();
-        UnityEngine.Object.Destroy(m_button.gameObject);
+        if (!m_destroyed)
+        {
+            m_button.Unmark();
+            UnityEngine.Object.Destroy(m_button.gameObject);
+            m_destroyed = false;
+        }
     }
 
     public virtual void Commit()
@@ -401,7 +411,7 @@ public class MovementAction : PotentialAction
         var lastHex = Path.Last();
         lastHex.Content = Entity;
         TacticalState.RecalculateActions(Entity);
-        TacticalState.SelectedHex = lastHex.Reactor;
+        TacticalState.SelectedHex = null;
         base.Commit();
     }
 }
