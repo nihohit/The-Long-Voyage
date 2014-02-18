@@ -32,12 +32,23 @@ public class HexReactor : MonoBehaviour
         s_selected.Unmark();
 	}
 
-	void OnMouseDown () 
+	void OnMouseOver () 
 	{
 		if (Input.GetMouseButton(0)) 
 		{
             TacticalState.SelectedHex = this;
 		}
+        if (Input.GetMouseButton(1))
+        {
+            if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
+            {
+                //TODO - this is just a temporary measure, to create mechs
+                var mech = new Mech(null, ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+                mech.Marker.internalRenderer = mech.Marker.GetComponent<SpriteRenderer>();
+                TacticalState.SelectedHex.MarkedHex.Content = mech;
+            }
+            TacticalState.SelectedHex = null;
+        }
 	}
 
 	public void Select()

@@ -227,6 +227,12 @@ public class MovementAction : PotentialAction
         }
     }
 
+    public override void RemoveDisplay()
+    {
+        base.RemoveDisplay();
+        RemovePath();
+    }
+
     public override void Destroy()
     {
         RemovePath();

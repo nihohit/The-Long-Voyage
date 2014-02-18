@@ -16,18 +16,6 @@ public class GenerateLevel : MonoBehaviour {
 		{
 			Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
 		}
-		if (Input.GetMouseButton(1)) 
-		{
-            if(TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
-            {
-                //TODO - this is just a temporary measure, to create mechs
-                var mech = new Mech(null);
-                mech.Marker = ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<MarkerScript>();
-                mech.Marker.internalRenderer = mech.Marker.GetComponent<SpriteRenderer>();
-                TacticalState.SelectedHex.MarkedHex.Content = mech;
-            }
-			TacticalState.SelectedHex = null;
-		}
 	}
 
 	// Use this for initialization

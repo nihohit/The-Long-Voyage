@@ -6,12 +6,14 @@ using System.Linq;
 
 public abstract class Entity
 {
-    public Entity(EntityType type, double health, double shield, VisualProperties visuals)
+    public Entity(EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor)
     {
         Type = type;
         Health = health;
         Shield = shield;
         Visuals = visuals;
+        reactor.Entity = this;
+        this.Marker = reactor;
     }
 
     public MarkerScript Marker { get; set; }
@@ -25,6 +27,7 @@ public abstract class Entity
     public VisualProperties Visuals { get; private set; }
 
     public Hex Hex { get; set; }
+
 }
 
 #endregion
@@ -33,8 +36,8 @@ public abstract class Entity
 
 public abstract class ActiveEntity : Entity
 {
-    public ActiveEntity(Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals) :
-        base(type, health, shield, visuals)
+    public ActiveEntity(Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
+        base(type, health, shield, visuals, reactor)
     {
         RadarRange = radarRange;
         SightRange = sightRange;
@@ -64,8 +67,8 @@ public abstract class ActiveEntity : Entity
 
 public abstract class MovingEntity : ActiveEntity
 {
-    public MovingEntity(MovementType movement, double speed, Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals) :
-        base(loyalty, radarRange, sightRange, systems, type, health, shield, visuals)
+    public MovingEntity(MovementType movement, double speed, Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
+        base(loyalty, radarRange, sightRange, systems, type, health, shield, visuals, reactor)
     {
         Speed = speed;
         Movement = movement;
@@ -94,7 +97,7 @@ public abstract class MovingEntity : ActiveEntity
 
 public class Mech : MovingEntity
 {
-    public Mech(IEnumerable<Subsystem> systems,
+    public Mech(IEnumerable<Subsystem> systems, EntityReactor reactor,
                 double health = 5,
                 double shield = 3,
                 VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
@@ -102,7 +105,7 @@ public class Mech : MovingEntity
                 Loyalty loyalty = Loyalty.Player,
                 double radarRange = 20,
                 double sightRange = 10) :
-        base(MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, EntityType.Mech, health, shield, visuals)
+        base(MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, EntityType.Mech, health, shield, visuals, reactor)
     { }
 }
 
