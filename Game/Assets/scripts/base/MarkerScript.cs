@@ -12,12 +12,12 @@ public class MarkerScript : MonoBehaviour
 		internalRenderer.transform.position = position;
 	}
 
-    public void Mark()
+    public virtual void Mark()
     {
         Mark(this.transform.position);
     }
 	
-	public void Unmark()
+	public virtual void Unmark()
 	{
 		internalRenderer.enabled = false;
         this.enabled = false;

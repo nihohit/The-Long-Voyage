@@ -19,6 +19,18 @@ public class CircularButton : MarkerScript
             OnMouseExitProperty();
     }
 
+    public override void Mark()
+    {
+        base.Mark();
+        this.GetComponent<Collider2D>().enabled = true;
+    }
+
+    public override void Unmark()
+    {
+        base.Unmark();
+        this.GetComponent<Collider2D>().enabled = false;
+    }
+
     void OnMouseDown()
     {
         if (enabled)
