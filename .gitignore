@@ -30,3 +30,9 @@ ExportedObj/
 Icon?
 ehthumbs.db
 Thumbs.db
+Game/UpgradeLog*
+*.htm
+*.csproj
+Game/Assembly-CSharp.csproj
+*.dwlt
+Game/Library/CurrentLayout.dwlt

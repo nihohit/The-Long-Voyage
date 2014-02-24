@@ -55,9 +55,7 @@ public abstract class ActiveEntity : Entity
 
     public virtual IEnumerable<PotentialAction> ComputeActions()
     {
-        var result = new List<PotentialAction>();
-        //TODO - check for subsystems
-        return result;
+        return Systems.SelectMany(system => system.ActionsInRange(this.Hex));
     }
 }
 
@@ -84,7 +82,7 @@ public abstract class MovingEntity : ActiveEntity
         var possibleHexes = AStar.FindAllAvailableHexes(this.Hex, this.Speed, this.Movement);
         foreach (var movement in possibleHexes.Values)
         {
-            movement.Entity = this;
+            movement.ActingEntity = this;
         }
         return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
     }

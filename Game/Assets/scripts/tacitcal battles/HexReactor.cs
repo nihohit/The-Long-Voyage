@@ -36,24 +36,17 @@ public class HexReactor : MonoBehaviour
 	{
 		if (Input.GetMouseButton(0)) 
 		{
-            TacticalState.SelectedHex = this;
-		}
-        if (Input.GetMouseButton(1))
-        {
-            if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
+            lock (TacticalState.Lock)
             {
-                //TODO - this is just a temporary measure, to create mechs
-                var mech = new Mech(null, ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
-                mech.Marker.internalRenderer = mech.Marker.GetComponent<SpriteRenderer>();
-                TacticalState.SelectedHex.MarkedHex.Content = mech;
+                TacticalState.SelectedHex = this;
             }
-            TacticalState.SelectedHex = null;
-        }
+		}
+
 	}
 
 	public void Select()
 	{
-		Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex.Coordinates)); 
+		Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex)); 
 		s_selected.Mark(this.transform.position);
         var actions = TacticalState.ActionCheckOnSelectedHex();
         if (actions != null)
@@ -67,7 +60,7 @@ public class HexReactor : MonoBehaviour
 
 	public void Unselect()
 	{
-		Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex.Coordinates));
+		Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
 		s_selected.Unmark();
         var actions = TacticalState.ActionCheckOnSelectedHex();
         if (actions != null)

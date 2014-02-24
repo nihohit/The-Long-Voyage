@@ -7,15 +7,19 @@ public class CircularButton : MarkerScript
     public Action OnMouseOverProperty { get; set; }
     public Action OnMouseExitProperty { get; set; }
 
+    void OnStart()
+    {
+        //just in case those value aren't inserted afterwards
+        OnMouseOverProperty = () => {};
+        OnMouseExitProperty = () => {};
+        Action = () => {};
+    }
+
     void OnMouseOver()
     {
         if (enabled)
         {
             OnMouseOverProperty();
-            if (Input.GetMouseButton(1))
-            {
-                TacticalState.SelectedHex = null;
-            }
         }
     }
 

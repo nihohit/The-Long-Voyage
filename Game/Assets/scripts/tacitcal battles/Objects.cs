@@ -8,11 +8,14 @@ using UnityEngine;
 
 public class Hex
 {
+
     //holds all the hexes by their hex-coordinates
 	private static Dictionary<Vector2, Hex> s_repository = new Dictionary<Vector2, Hex>();
 
 	private Entity m_content = null;
 	
+    #region properties
+
 	public HexEffect Effects { get; private set; }
 	public Biome BiomeType { get; private set; }
 	public Vector2 Coordinates { get; private set; }
@@ -45,8 +48,13 @@ public class Hex
 				m_content.Hex = this;
                 m_content.Marker.Mark(Position);
             }
+            TacticalState.RecalculateAllActions();
 		}
 	}
+
+    #endregion
+
+    #region constructor
 
 	public Hex(Vector2 coordinates, HexReactor reactor)
 	{
@@ -54,6 +62,10 @@ public class Hex
 		s_repository.Add(coordinates, this);
         Reactor = reactor;
 	}
+
+    #endregion
+
+    #region public methods
 
 	public IEnumerable<Hex> GetNeighbours()
 	{
@@ -67,18 +79,20 @@ public class Hex
 		return result;
 	}
 
-	private void CheckAndAdd(List<Hex> result, Vector2 coordinates)
-	{
-		Hex temp;
-		if(s_repository.TryGetValue(coordinates, out temp))
-		{
-			result.Add(temp);
-		}
-	}
-
     public override string ToString()
     {
-        return "Hex {0},{1} : {2}".FormatWith(Coordinates.x, Coordinates.y, Content);
+        return "Hex {0},{1} : {2} : {3},{4}".FormatWith(Coordinates.x, Coordinates.y, Content, Reactor.transform.position.x, Reactor.transform.position.y);
+    }
+
+    #endregion
+    
+    private void CheckAndAdd(List<Hex> result, Vector2 coordinates)
+    {
+        Hex temp;
+        if(s_repository.TryGetValue(coordinates, out temp))
+        {
+            result.Add(temp);
+        }
     }
 }
 
@@ -127,9 +141,10 @@ public enum WeaponType { }
 public enum Loyalty { Player, EnemyArmy, Monsters, Bandits }
 
 // there needs to be an order of importance - the more severe damage has a higher value
-public enum Condition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, Destroyed = 3 }
+public enum SystemCondition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, Destroyed = 3 }
 
-public enum ActionType { Movement, Subsystem }
+// the way a system reaches its targets
+public enum DeliveryMethod { Direct, Unobstructed }
 
 #endregion
 
@@ -152,17 +167,32 @@ public delegate bool HexCheck(Hex hex);
  */
 public abstract class PotentialAction
 {
-    protected CircularButton m_button;
+    #region fields
+
+    protected readonly CircularButton m_button;
     private bool m_destroyed;
 
-    public ActiveEntity Entity { get; set; }
+    #endregion
 
-    public ActionType Type { get; protected set; }
+    #region properties
 
-    protected PotentialAction()
+    public ActiveEntity ActingEntity { get; set; }
+
+    #endregion
+
+    #region constructor
+
+    protected PotentialAction(string buttonName, Vector3 position)
     {
         m_destroyed = false;
-    }
+        m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(buttonName), position, Quaternion.identity)).GetComponent<CircularButton>();
+        m_button.Action = Commit;
+        m_button.Unmark();
+    } 
+
+    #endregion
+
+    #region public methods
 
     public virtual void DisplayButton()
     {
@@ -186,46 +216,59 @@ public abstract class PotentialAction
 
     public virtual void Commit()
     {
-        //TODO - affects on entity? Energy / heat cost, etc.?
+        if (m_destroyed)
+        {
+            throw new Exception("Action {0} was operated after being destroyed".FormatWith(this));
+        }
+        //TODO - affects on commiting entity? Energy / heat cost, etc.?
         Destroy();
     }
+
+    #endregion
 }
 
 public class MovementAction : PotentialAction
 {
-    public MovementAction(IEnumerable<Hex> path)
+    #region constructors
+
+    public MovementAction(IEnumerable<Hex> path) : 
+        base("movementMarker", path.Last().Position)
     {
-        Path = path;
-        Type = ActionType.Movement;
-        m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("movementMarker"), Path.Last().Position, Quaternion.identity)).GetComponent<CircularButton>();
-        m_button.Action = Commit;
+        m_path = path;
         m_button.OnMouseOverProperty = DisplayPath;
         m_button.OnMouseExitProperty = RemovePath;
-        m_button.Unmark();
     }
 
     public MovementAction(MovementAction action, Hex hex) : 
-        this(action.Path.Union(new[]{hex}))
+        this(action.m_path.Union(new[]{hex}))
     {
     }
 
-    public IEnumerable<Hex> Path { get; private set; }
+    #endregion
 
-    public void DisplayPath()
+    private readonly IEnumerable<Hex> m_path;
+
+    #region private methods
+
+    private void DisplayPath()
     {
-        foreach (var hex in Path)
+        foreach (var hex in m_path)
         {
             hex.Reactor.DisplayIndividualMarker();
         }
     }
 
-    public void RemovePath()
+    private void RemovePath()
     {
-        foreach (var hex in Path)
+        foreach (var hex in m_path)
         {
             hex.Reactor.RemoveIndividualMarker();
         }
     }
+
+    #endregion
+
+    #region overloaded methods
 
     public override void RemoveDisplay()
     {
@@ -241,10 +284,31 @@ public class MovementAction : PotentialAction
 
     public override void Commit()
     {
-        var lastHex = Path.Last();
-        lastHex.Content = Entity;
-        TacticalState.RecalculateActions(Entity);
-        TacticalState.SelectedHex = null;
+        lock (TacticalState.Lock)
+        {
+            var lastHex = m_path.Last();
+            lastHex.Content = ActingEntity;
+            TacticalState.SelectedHex = null;
+            base.Commit();
+        }
+    }
+
+    #endregion
+}
+
+public class OperateSystemAction : PotentialAction
+{
+    private readonly Action m_action;
+
+    public OperateSystemAction(HexOperation effect, string buttonName, Hex hex) : 
+        base(buttonName, hex.Position)
+    {
+        m_action = ()=> effect(hex);
+    }
+
+    public override void Commit()
+    {
+        m_action();
         base.Commit();
     }
 }

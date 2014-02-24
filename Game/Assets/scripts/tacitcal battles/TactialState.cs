@@ -12,10 +12,23 @@ public static class TacticalState
     private static LinkedList<Loyalty> m_turnOrder;
 
     private static LinkedListNode<Loyalty> m_currentTurn;
+
+    private static object m_lock;
 	
     #endregion
 
     #region properties
+
+    public static object Lock { 
+        get 
+        { 
+            if(m_lock == null)
+            {
+                m_lock = new object();
+            }
+            return m_lock; 
+        } 
+    }
 
     public static HexReactor SelectedHex
 	{ 
@@ -25,7 +38,7 @@ public static class TacticalState
 		}
 		set
 		{
-			if(value == null && m_selectedHex != null)
+			if(m_selectedHex != null && m_selectedHex != value)
 			{
 				m_selectedHex.Unselect();
 			}
@@ -39,7 +52,7 @@ public static class TacticalState
     public static Loyalty CurrentTurn { get { return m_currentTurn.Value; } }
 
     //for each entity and each hex, the available actions
-    public static Dictionary<ActiveEntity, IEnumerable<PotentialAction>> AvailableActions { get; private set; }
+    private static Dictionary<ActiveEntity, IEnumerable<PotentialAction>> m_availableActions;
 
     #endregion
 
@@ -47,7 +60,7 @@ public static class TacticalState
 
     public static void Init(IEnumerable<Loyalty> players) 
     { 
-        AvailableActions = new Dictionary<ActiveEntity, IEnumerable<PotentialAction>>();
+        m_availableActions = new Dictionary<ActiveEntity, IEnumerable<PotentialAction>>();
         SetTurnOrder(players);
     }
 
@@ -76,10 +89,10 @@ public static class TacticalState
         }
 
         IEnumerable<PotentialAction> actions = null;
-        if (!AvailableActions.TryGetValue(activeEntity, out actions))
+        if (!m_availableActions.TryGetValue(activeEntity, out actions))
         {
             actions = activeEntity.ComputeActions();
-            AvailableActions.Add(activeEntity, actions);
+            m_availableActions.Add(activeEntity, actions);
         }
         return actions;
     }
@@ -92,14 +105,19 @@ public static class TacticalState
             throw new Exception("entity {0} shouldn't recalculating actions".FormatWith(activeEntity));
         }
         IEnumerable<PotentialAction> actions = null;
-        if (AvailableActions.TryGetValue(activeEntity, out actions))
+        if (m_availableActions.TryGetValue(activeEntity, out actions))
         {
             foreach(var action in actions)
             {
                 action.Destroy();
             }
         }
-        AvailableActions[activeEntity] = activeEntity.ComputeActions();
+        m_availableActions[activeEntity] = activeEntity.ComputeActions();
+    }
+
+    public static void RecalculateAllActions()
+    {
+        m_availableActions.Clear();
     }
 
     #endregion

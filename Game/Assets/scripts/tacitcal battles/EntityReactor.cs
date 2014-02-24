@@ -24,25 +24,7 @@ public class EntityReactor : CircularButton
         {
             if (Input.GetMouseButton(1))
             {
-                var rayHit = Physics2D.Raycast(this.transform.position, Input.mousePosition - this.transform.position, LayerMask.NameToLayer("Entities"));
-                if (rayHit.collider == null)
-                {
-                    Debug.Log("Ray from {0} missed".FormatWith(transform.position));
-                    //TacticalState.SelectedHex = null;
-                }
-                else
-                {
-                    Debug.Log("Ray from {0} hit {1}".FormatWith(transform.position, rayHit.collider.transform.position));
-                    //TacticalState.SelectedHex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex.Reactor;
-                }
-            }
-        }
-        else
-        {
 
-            if (Input.GetMouseButton(1))
-            {
-                TacticalState.SelectedHex = null;
             }
         }
     }

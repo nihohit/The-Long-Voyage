@@ -8,14 +8,62 @@ public class GenerateLevel : MonoBehaviour {
 
 	void Update()
 	{
-		float xAxisValue = Input.GetAxis("Horizontal");
-		float yAxisValue = Input.GetAxis("Vertical");
-		float zAxisValue =  Input.GetAxisRaw("Zoom");
+        lock (TacticalState.Lock)
+        {
+            float xAxisValue = Input.GetAxis("Horizontal");
+            float yAxisValue = Input.GetAxis("Vertical");
+            float zAxisValue = Input.GetAxisRaw("Zoom");
 
-		if(Camera.current != null)
-		{
-			Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
-		}
+            if (Camera.current != null)
+            {
+                Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
+            }
+            if (Input.GetMouseButton(1))
+            {
+                if (Input.GetKey(KeyCode.LeftShift))
+                {
+                    if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content != null)
+                    {
+                        TacticalState.SelectedHex.MarkedHex.Content.Marker.collider2D.enabled = false;
+                        var mouse = Input.mousePosition;
+                        var mouseRay = Camera.main.ScreenPointToRay(mouse);
+                        RaycastHit mouseHit;
+                        Physics.Raycast(mouseRay, out mouseHit);
+                        var mousePosition = mouseHit.transform.position;
+                        mousePosition.z = 0;
+                        var startingPoint = TacticalState.SelectedHex.transform.position;
+                        Debug.Log("Shooting ray from {0} to {1}".FormatWith(startingPoint, mousePosition));
+                        var layer = LayerMask.NameToLayer("Entities");
+                        var layerMask = 1 << layer;
+                        var rayHit = Physics2D.Raycast(startingPoint, mousePosition - startingPoint, 1000, layerMask);
+                        if (rayHit.collider == null)
+                        {
+                            Debug.Log("Ray from {0} missed".FormatWith(startingPoint));
+                            //TacticalState.SelectedHex = null;
+                        }
+                        else
+                        {
+                            Debug.Log("Ray from {0} hit {1}".FormatWith(startingPoint, rayHit.collider.transform.position));
+                            Debug.Log("collider was active: {0}".FormatWith(rayHit.collider.enabled));
+                            Debug.Log("object is: {0}".FormatWith(rayHit.collider.gameObject.ToString()));
+                            //TacticalState.SelectedHex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex.Reactor;
+                        }
+                        TacticalState.SelectedHex.MarkedHex.Content.Marker.collider2D.enabled = true;
+                    }
+                }
+                else
+                {
+                    if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
+                    {
+                        //TODO - this is just a temporary measure, to create mechs
+                        var mech = new Mech(null, ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+                        mech.Marker.internalRenderer = mech.Marker.GetComponent<SpriteRenderer>();
+                        TacticalState.SelectedHex.MarkedHex.Content = mech;
+                    }
+                    TacticalState.SelectedHex = null;
+                }
+            }
+        }
 	}
 
 	// Use this for initialization
@@ -92,3 +140,4 @@ public class GenerateLevel : MonoBehaviour {
 
 	#endregion
 }
+
