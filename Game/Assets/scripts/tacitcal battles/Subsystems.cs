@@ -122,43 +122,54 @@ public abstract class Subsystem
         }
     }
 
-    private IEnumerable<Hex> CheckForDirectTargets(Hex hex)
+    private IEnumerable<Hex> CheckForDirectTargets(Hex sourceHex)
     {
-        if(hex.Content == null)
+        if(sourceHex.Content == null)
         {
-            throw new Exception("System {0} operating out of empty hex {1}".FormatWith(this, hex));
+            throw new Exception("System {0} operating out of empty hex {1}".FormatWith(this, sourceHex));
         }
 
-        hex.Content.Marker.collider2D.enabled = false;
+        sourceHex.Content.Marker.collider2D.enabled = false;
         var results = new HashSet<Hex>();
         var layerMask = 1 << LayerMask.NameToLayer("Entities");
-        var amountOfHexesToCheck = 6*m_maxRange - 6;
+        var amountOfHexesToCheck = 6*m_maxRange;
+        var angleSlice = 360f / amountOfHexesToCheck;
+        var rayDistance =  sourceHex.Reactor.renderer.bounds.size.x * m_maxRange;
 
-        for(int i = 0; i < amountOfHexesToCheck ; i++)
+        for(float currentAngle = 0f ; currentAngle < 360f ; currentAngle+= angleSlice)
         {
-            for(int j = 0 ; j < 6 ; j++)
+            var rayHit = Physics2D.Raycast(sourceHex.Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
+            if(rayHit.collider != null)
             {
-                var rayHit = Physics2D.Linecast(hex.Position, mousePosition - startingPoint, 1000, layerMask);
+                var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
+                if(sourceHex.Distance(hex) < m_maxRange && 
+                   sourceHex.Distance(hex) >= m_minRange && 
+                   m_conditionForTargeting(hex))
+                {
+                    results.Add(hex);
+                }
             }
         }
 
-        hex.Content.Marker.collider2D.enabled = true;
+        sourceHex.Content.Marker.collider2D.enabled = true;
         return results;
     }
 
-    private IEnumerable<Hex> CheckForIndirectTargets(Hex startingHex)
+    private IEnumerable<Hex> CheckForIndirectTargets(Hex sourceHex)
     {
         int minRange = m_minRange;
         int maxRange = m_maxRange;
-        var currentCheckedHexes = new HashSet<Hex>{startingHex};
+        var currentCheckedHexes = new HashSet<Hex>{sourceHex};
         var checkedHexes = new HashSet<Hex>();
         var result = new HashSet<Hex>();
+
         while(maxRange > 0)
         {
             if(minRange <= 0)
             {
                 result.UnionWith(currentCheckedHexes.Where(currentHex => m_conditionForTargeting(currentHex)));
             }
+
             checkedHexes.UnionWith(currentCheckedHexes);
             //the next hexes we'll check are all the neighbours which we still didn't check
             currentCheckedHexes = new HashSet<Hex>(
@@ -167,6 +178,7 @@ public abstract class Subsystem
             minRange--;
             maxRange--;
         }
+
         return result;
     }
 

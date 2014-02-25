@@ -46,7 +46,7 @@ public class HexReactor : MonoBehaviour
 
 	public void Select()
 	{
-		Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex)); 
+		//Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex)); 
 		s_selected.Mark(this.transform.position);
         var actions = TacticalState.ActionCheckOnSelectedHex();
         if (actions != null)
@@ -60,7 +60,7 @@ public class HexReactor : MonoBehaviour
 
 	public void Unselect()
 	{
-		Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
+		//Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
 		s_selected.Unmark();
         var actions = TacticalState.ActionCheckOnSelectedHex();
         if (actions != null)

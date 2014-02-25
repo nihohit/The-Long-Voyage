@@ -56,7 +56,8 @@ public class GenerateLevel : MonoBehaviour {
                     if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
                     {
                         //TODO - this is just a temporary measure, to create mechs
-                        var mech = new Mech(null, ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+                        var mech = new Mech(new Subsystem[] {},
+                                            ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
                         mech.Marker.internalRenderer = mech.Marker.GetComponent<SpriteRenderer>();
                         TacticalState.SelectedHex.MarkedHex.Content = mech;
                     }

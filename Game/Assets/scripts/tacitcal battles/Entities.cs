@@ -6,19 +6,32 @@ using System.Linq;
 
 public abstract class Entity
 {
+    #region private fields
+
+    private static int s_idCounter = 0;
+
+    private readonly int m_id;
+
+    #endregion
+
     public Entity(EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor)
     {
-        Type = type;
+        UnitType = type;
         Health = health;
         Shield = shield;
         Visuals = visuals;
         reactor.Entity = this;
         this.Marker = reactor;
+        m_id = s_idCounter++;
     }
+
+    #region properties
+
+    public int ID { get {return m_id;}}
 
     public MarkerScript Marker { get; set; }
 
-    public EntityType Type { get; private set; }
+    public EntityType UnitType { get; private set; }
 
     public double Health { get; private set; }
 
@@ -28,6 +41,29 @@ public abstract class Entity
 
     public Hex Hex { get; set; }
 
+    #endregion
+
+    #region object overrides
+
+    public override bool Equals(object obj)
+    {
+        var ent = obj as Entity;
+        return ent != null &&
+            UnitType == ent.UnitType &&
+            ID == ent.ID;
+    }
+
+    public override int GetHashCode()
+    {
+        return Hasher.GetHashCode(UnitType, Marker, m_id);
+    }
+
+    public override string ToString()
+    {
+        return "{0}, Id={1}, health={2}, shield={3}, Visuals={4}".FormatWith(UnitType, m_id, Health, Shield, Visuals);
+    }
+
+    #endregion
 }
 
 #endregion
@@ -55,7 +91,7 @@ public abstract class ActiveEntity : Entity
 
     public virtual IEnumerable<PotentialAction> ComputeActions()
     {
-        return Systems.SelectMany(system => system.ActionsInRange(this.Hex));
+        return Systems.Where(system => system.Operational()).SelectMany(system => system.ActionsInRange(this.Hex));
     }
 }
 

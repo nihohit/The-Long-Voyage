@@ -12,18 +12,8 @@ public static void StartTiming(string name, string operation)
 #if DEBUG
     lock(s_timers)
     {
-        IDictionary<String, Stopwatch> dict = null;
-        Stopwatch timer = null;
-        if(!s_timers.TryGetValue(name, out dict))
-        {
-            dict = new Dictionary<string, Stopwatch>();
-            s_timers.Add(name, dict);
-        }
-        if (!dict.TryGetValue(operation, out timer))
-        {
-            timer = new Stopwatch();
-            dict.Add(operation, timer);
-        }
+        var dict = s_timers.TryGetOrAdd(name, () => new Dictionary<string, Stopwatch>());
+        var timer = dict.TryGetOrAdd(operation, () => new Stopwatch());
         timer.Start();
     }
 #endif

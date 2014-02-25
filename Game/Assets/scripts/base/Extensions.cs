@@ -49,4 +49,40 @@ public static class MyExtensions
     {
         return Randomiser.ChooseValue(group);
     }
+
+    public static T TryGetOrAdd<T,S>(this IDictionary<S, T> dict, S key, Func<T> defaultConstructor)
+    {
+        T result;
+        if(!dict.TryGetValue(key, out result))
+        {
+            result = defaultConstructor();
+            dict.Add(key, result);
+        }
+        return result;
+    }
+}
+
+public static class Hasher
+{
+    private static int InitialHash = 53; // Prime number
+    private static int Multiplier = 29; // Different prime number
+
+    public static int GetHashCode(params object[] values)
+    {
+        unchecked // Overflow is fine, just wrap
+        {
+            int hash = InitialHash;
+
+            if (values != null)
+            {
+                foreach (var currentObject in values)
+                {
+                hash = hash * Multiplier
+                        + (currentObject != null ? currentObject.GetHashCode() : 0);
+                }
+            }
+
+            return hash;
+        }
+    }
 }

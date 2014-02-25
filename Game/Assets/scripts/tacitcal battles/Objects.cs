@@ -79,14 +79,39 @@ public class Hex
 		return result;
 	}
 
+    public int Distance(Hex other)
+    {
+        var yDist = Math.Abs(this.Coordinates.y - other.Coordinates.y);
+        var xDist = Math.Abs(this.Coordinates.x - other.Coordinates.x);
+        var correctedXDist = Math.Max(xDist - yDist/2, 0);
+        return (Int32)(correctedXDist + yDist);
+    }
+
+    #region object overrides
+
     public override string ToString()
     {
         return "Hex {0},{1} : {2} : {3},{4}".FormatWith(Coordinates.x, Coordinates.y, Content, Reactor.transform.position.x, Reactor.transform.position.y);
     }
 
+    public override int GetHashCode()
+    {
+        return Hasher.GetHashCode(Coordinates, Position);
+    }
+
+    public override bool Equals(object obj)
+    {
+        var hex = obj as Hex;
+        return hex != null && 
+            hex.Coordinates == Coordinates &&
+                hex.Position == Position;
+    }
+
+    #endregion
+
     #endregion
     
-    private void CheckAndAdd(List<Hex> result, Vector2 coordinates)
+    private void CheckAndAdd(IList<Hex> result, Vector2 coordinates)
     {
         Hex temp;
         if(s_repository.TryGetValue(coordinates, out temp))

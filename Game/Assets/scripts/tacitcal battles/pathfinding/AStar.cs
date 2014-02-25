@@ -299,7 +299,7 @@ internal static class AStar
 
 		public override int GetHashCode()
 		{
-			 return Current.GetHashCode() + Goal.GetHashCode() + TraversalMethod.GetHashCode();
+			 return Hasher.GetHashCode(Current , Goal , TraversalMethod);
 		}
 
 		public override string ToString()
