@@ -325,8 +325,8 @@ public class OperateSystemAction : PotentialAction
 {
     private readonly Action m_action;
 
-    public OperateSystemAction(HexOperation effect, string buttonName, Hex hex) : 
-        base(buttonName, hex.Position)
+    public OperateSystemAction(HexOperation effect, string buttonName, Hex hex, Vector2 offset) : 
+        base(buttonName, (Vector2)hex.Position + (Vector2)offset)
     {
         m_action = ()=> effect(hex);
     }

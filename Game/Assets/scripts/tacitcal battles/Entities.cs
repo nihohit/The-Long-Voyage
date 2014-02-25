@@ -14,9 +14,12 @@ public abstract class Entity
 
     #endregion
 
-    public Entity(EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor)
+    #region constructor
+
+    public Entity(EntityType type, Loyalty loyalty, double health, double shield, VisualProperties visuals, EntityReactor reactor)
     {
         UnitType = type;
+        Loyalty = loyalty;
         Health = health;
         Shield = shield;
         Visuals = visuals;
@@ -24,6 +27,8 @@ public abstract class Entity
         this.Marker = reactor;
         m_id = s_idCounter++;
     }
+
+    #endregion
 
     #region properties
 
@@ -41,7 +46,17 @@ public abstract class Entity
 
     public Hex Hex { get; set; }
 
+    public Loyalty Loyalty { get; private set; }
+
     #endregion
+
+    #region public methods
+
+    public virtual void Hit(double damage, DamageType damageType)
+    {
+        //TODO - handle damage types
+        Health -= damage;
+    }
 
     #region object overrides
 
@@ -60,9 +75,10 @@ public abstract class Entity
 
     public override string ToString()
     {
-        return "{0}, Id={1}, health={2}, shield={3}, Visuals={4}".FormatWith(UnitType, m_id, Health, Shield, Visuals);
+        return "{0}, Id={1}, loyalty ={5}, health={2}, shield={3}, Visuals={4}".FormatWith(UnitType, m_id, Health, Shield, Visuals, Loyalty);
     }
 
+    #endregion
     #endregion
 }
 
@@ -73,15 +89,12 @@ public abstract class Entity
 public abstract class ActiveEntity : Entity
 {
     public ActiveEntity(Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
-        base(type, health, shield, visuals, reactor)
+        base(type, loyalty, health, shield, visuals, reactor)
     {
         RadarRange = radarRange;
         SightRange = sightRange;
         Systems = systems;
-        Loyalty = Loyalty;
     }
-
-    public Loyalty Loyalty { get; private set; }
 
     public double RadarRange { get; private set; }
 
@@ -91,7 +104,8 @@ public abstract class ActiveEntity : Entity
 
     public virtual IEnumerable<PotentialAction> ComputeActions()
     {
-        return Systems.Where(system => system.Operational()).SelectMany(system => system.ActionsInRange(this.Hex));
+        var dict = new Dictionary<Hex, List<PotentialAction>>();
+        return Systems.Where(system => system.Operational()).SelectMany(system => system.ActionsInRange(this.Hex, dict));
     }
 }
 

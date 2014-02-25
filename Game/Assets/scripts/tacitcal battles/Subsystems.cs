@@ -88,18 +88,47 @@ public abstract class Subsystem
         return m_condition == SystemCondition.Operational;
     }
 
-    public IEnumerable<PotentialAction> ActionsInRange(Hex sourceHex)
+    public IEnumerable<PotentialAction> ActionsInRange(Hex sourceHex, Dictionary<Hex, List<PotentialAction>> dict)
     {
-        return TargetsInRange(sourceHex).Select(targetedHex => CreateAction(targetedHex));
+        return TargetsInRange(sourceHex).Select(targetedHex => CreateAction(targetedHex, dict));
     }
 
     #endregion
 
     #region private methods
 
-    private PotentialAction CreateAction(Hex hex)
+    private PotentialAction CreateAction(Hex hex, Dictionary<Hex, List<PotentialAction>> dict)
     {
-        return new OperateSystemAction(m_effect, m_buttonName, hex);
+        Vector2 offset;
+        var list = dict.TryGetOrAdd(hex, () => new List<PotentialAction>());
+        var size = hex.Reactor.collider.bounds.size.x;
+
+        switch(list.Count)
+        {
+            case(0):
+                offset = new Vector2(-(size/2), 0);
+                break;
+            case(1):
+                offset = new Vector2(-(size/4), -(size/2));
+                break;
+            case(2):
+                offset = new Vector2((size/4), -(size/2));
+                break;
+            case(3):
+                offset = new Vector2(size/2, 0);
+                break;
+            case(4):
+                offset = new Vector2(size/4, size/2);
+                break;
+            case(5):
+                offset = new Vector2(-(size/4), size/2);
+                break;
+            default:
+                throw new Exception("Too many subsystems");
+        }
+
+        var operation = new OperateSystemAction(m_effect, m_buttonName, hex, offset);
+        return operation;
     }
 
     private IEnumerable<Hex> TargetsInRange(Hex hex)
@@ -191,13 +220,30 @@ public abstract class Subsystem
 
 public abstract class WeaponBase : Subsystem
 {
-    public DamageType DamageType { get; private set; }
-
-    public bool ShieldPiercing { get; private set; }
-
-    protected WeaponBase(int minRange, int maxRange, HexOperation effect, DeliveryMethod deliveryMethod, string buttonName, HexCheck conditionForTargeting) : 
-        base(minRange, maxRange, effect, deliveryMethod, buttonName, conditionForTargeting)
+    protected WeaponBase(int minRange, int maxRange, DeliveryMethod deliveryMethod, string buttonName, double damage, DamageType damageType, Loyalty loyalty) : 
+        base(minRange, maxRange, CreateWeaponHit(damage, damageType), deliveryMethod, buttonName, CreateTargetingCheck(loyalty))
     {
+    }
+
+    private static HexOperation CreateWeaponHit(double damage, DamageType damageType)
+    {
+        return (hex) => 
+        {
+            if(hex.Content == null)
+            {
+                throw new Exception("Shooting at an empty hex");
+            }
+            hex.Content.Hit(damage, damageType);
+        };
+    }
+
+    private static HexCheck CreateTargetingCheck(Loyalty loyalty)
+    {
+        return (hex) => 
+        {
+            return hex.Content != null &&
+                hex.Content.Loyalty != loyalty;
+        };
     }
 }
 
@@ -205,8 +251,8 @@ public abstract class AmmoWeapon : WeaponBase
 {
     private int m_ammo;
 
-    protected AmmoWeapon(int minRange, int maxRange, HexOperation effect, DeliveryMethod deliveryMethod, string buttonName, HexCheck conditionForTargeting) : 
-        base(minRange, maxRange, effect, deliveryMethod, buttonName, conditionForTargeting)
+    protected AmmoWeapon(int minRange, int maxRange, DeliveryMethod deliveryMethod, string buttonName, double damage, DamageType damageType, Loyalty loyalty) : 
+        base(minRange, maxRange, deliveryMethod, buttonName, damage, damageType, loyalty)
     {
     }
 }
@@ -216,6 +262,19 @@ public abstract class AmmoWeapon : WeaponBase
 #region weapons
 //TODO - should be replaced with XML configuration files
 
+public class Laser : WeaponBase
+{
+    public Laser(Loyalty loyalty) : 
+        base(0,3,DeliveryMethod.Direct, "LaserCommand", 1f, DamageType.Energy, loyalty)
+    {}
+}
+
+public class MissileLauncher : WeaponBase
+{
+    public MissileLauncher(Loyalty loyalty) : 
+        base(2,6,DeliveryMethod.Unobstructed, "MissileCommand", 1f, DamageType.Physical, loyalty)
+    {}
+}
 
 #endregion
 
