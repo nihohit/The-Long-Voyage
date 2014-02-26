@@ -60,6 +60,17 @@ public static class MyExtensions
         }
         return result;
     }
+
+    //is used to create concreate enumerables, and prevent lazy calculations
+    public static List<T> ToList<T>(this IEnumerable<T> enumerable)
+    {
+        var list = enumerable as List<T>;
+        if(list == null)
+        {
+            list = new List<T>(enumerable);
+        }
+        return list;
+    }
 }
 
 public static class Hasher

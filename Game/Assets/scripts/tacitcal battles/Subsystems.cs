@@ -101,27 +101,27 @@ public abstract class Subsystem
     {
         Vector2 offset;
         var list = dict.TryGetOrAdd(hex, () => new List<PotentialAction>());
-        var size = hex.Reactor.collider.bounds.size.x;
+        var size = ((CircleCollider2D)hex.Reactor.collider2D).radius;
 
         switch(list.Count)
         {
             case(0):
-                offset = new Vector2(-(size/2), 0);
+                offset = new Vector2(-(size), 0);
                 break;
             case(1):
-                offset = new Vector2(-(size/4), -(size/2));
+                offset = new Vector2(-(size/2), -(size));
                 break;
             case(2):
-                offset = new Vector2((size/4), -(size/2));
+                offset = new Vector2((size/2), -(size));
                 break;
             case(3):
-                offset = new Vector2(size/2, 0);
+                offset = new Vector2(size, 0);
                 break;
             case(4):
-                offset = new Vector2(size/4, size/2);
+                offset = new Vector2(size/2, size);
                 break;
             case(5):
-                offset = new Vector2(-(size/4), size/2);
+                offset = new Vector2(-(size/2), size);
                 break;
             default:
                 throw new Exception("Too many subsystems");

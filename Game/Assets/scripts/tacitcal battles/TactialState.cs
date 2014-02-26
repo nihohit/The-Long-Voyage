@@ -91,7 +91,7 @@ public static class TacticalState
             return null;
         }
 
-        return s_availableActions.TryGetOrAdd(activeEntity, activeEntity.ComputeActions);
+        return s_availableActions.TryGetOrAdd(activeEntity, activeEntity.ComputeActions().ToList);
     }
 
     public static void RecalculateActions(ActiveEntity activeEntity)
@@ -109,7 +109,7 @@ public static class TacticalState
                 action.Destroy();
             }
         }
-        s_availableActions[activeEntity] = activeEntity.ComputeActions();
+        s_availableActions[activeEntity] = activeEntity.ComputeActions().ToList();
     }
 
     public static void RecalculateAllActions()
