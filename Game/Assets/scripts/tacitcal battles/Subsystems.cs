@@ -265,7 +265,7 @@ public abstract class AmmoWeapon : WeaponBase
 public class Laser : WeaponBase
 {
     public Laser(Loyalty loyalty) : 
-        base(0,3,DeliveryMethod.Direct, "LaserCommand", 1f, DamageType.Energy, loyalty)
+        base(0,4,DeliveryMethod.Direct, "LaserCommand", 1f, DamageType.Energy, loyalty)
     {}
 }
 

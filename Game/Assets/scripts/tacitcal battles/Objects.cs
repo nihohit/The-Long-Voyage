@@ -245,8 +245,6 @@ public abstract class PotentialAction
         {
             throw new Exception("Action {0} was operated after being destroyed".FormatWith(this));
         }
-        //TODO - affects on commiting entity? Energy / heat cost, etc.?
-        Destroy();
     }
 
     #endregion
@@ -315,6 +313,8 @@ public class MovementAction : PotentialAction
             lastHex.Content = ActingEntity;
             TacticalState.SelectedHex = null;
             base.Commit();
+            //TODO - affects on commiting entity? Energy / heat cost, etc.?
+            Destroy();
         }
     }
 

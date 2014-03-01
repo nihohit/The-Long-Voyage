@@ -7,7 +7,7 @@ public class CircularButton : MarkerScript
     public Action OnMouseOverProperty { get; set; }
     public Action OnMouseExitProperty { get; set; }
 
-    void OnStart()
+    public CircularButton()
     {
         //just in case those value aren't inserted afterwards
         OnMouseOverProperty = () => {};

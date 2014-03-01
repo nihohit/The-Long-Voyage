@@ -54,8 +54,14 @@ public abstract class Entity
 
     public virtual void Hit(double damage, DamageType damageType)
     {
+        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(this, damage, damageType));
         //TODO - handle damage types
         Health -= damage;
+        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(this, Health, Shield));
+        if(Health <= 0)
+        {
+            Destroy();
+        }
     }
 
     #region object overrides
@@ -79,6 +85,17 @@ public abstract class Entity
     }
 
     #endregion
+    #endregion
+
+    #region private methods
+
+    private void Destroy()
+    {
+        Debug.Log("Destroy {0}".FormatWith(this));
+        this.Hex.Content = null;
+        UnityEngine.Object.Destroy(this.Marker.gameObject);
+    }
+
     #endregion
 }
 
