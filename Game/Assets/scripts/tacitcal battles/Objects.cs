@@ -196,6 +196,8 @@ public abstract class PotentialAction
 
     protected readonly CircularButton m_button;
     private bool m_destroyed;
+    //TODO - remove after testing
+    private readonly string m_name;
 
     #endregion
 
@@ -213,6 +215,7 @@ public abstract class PotentialAction
         m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(buttonName), position, Quaternion.identity)).GetComponent<CircularButton>();
         m_button.Action = Commit;
         m_button.Unmark();
+        m_name = buttonName;
     } 
 
     #endregion
@@ -245,6 +248,7 @@ public abstract class PotentialAction
         {
             throw new Exception("Action {0} was operated after being destroyed".FormatWith(this));
         }
+        Debug.Log("{0} commited {1}".FormatWith(ActingEntity, m_name));
     }
 
     #endregion

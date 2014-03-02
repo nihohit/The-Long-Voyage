@@ -109,25 +109,26 @@ public abstract class Subsystem
                 offset = new Vector2(-(size), 0);
                 break;
             case(1):
-                offset = new Vector2(-(size/2), -(size));
+                offset = new Vector2(-(size/2), (size));
                 break;
             case(2):
-                offset = new Vector2((size/2), -(size));
+                offset = new Vector2((size/2), (size));
                 break;
             case(3):
                 offset = new Vector2(size, 0);
                 break;
             case(4):
-                offset = new Vector2(size/2, size);
+                offset = new Vector2(size/2, -size);
                 break;
             case(5):
-                offset = new Vector2(-(size/2), size);
+                offset = new Vector2(-(size/2), -size);
                 break;
             default:
                 throw new Exception("Too many subsystems");
         }
 
         var operation = new OperateSystemAction(m_effect, m_buttonName, hex, offset);
+        list.Add(operation);
         return operation;
     }
 
