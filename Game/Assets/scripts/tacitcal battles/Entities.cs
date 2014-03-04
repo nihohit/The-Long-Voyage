@@ -44,7 +44,7 @@ public abstract class Entity
 
     public VisualProperties Visuals { get; private set; }
 
-    public Hex Hex { get; set; }
+    public virtual Hex Hex { get; set; }
 
     public Loyalty Loyalty { get; private set; }
 
@@ -97,6 +97,50 @@ public abstract class Entity
     }
 
     #endregion
+}
+
+#endregion
+
+#region inanimate entities
+
+public abstract class TerrainEntity : Entity
+{
+    private Hex m_hex;
+
+    public TerrainEntity(double health, bool visibleOnRadar, EntityReactor reactor)
+        : base(EntityType.TerrainFeature, Loyalty.Neutral, health, 0, 
+               VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None), reactor)
+    {}
+
+    public override Hex Hex { 
+        get
+        {
+            return m_hex;
+        }
+        set
+        {
+            Assert.AreEqual(Hex.Conditions, TraversalConditions.Broken, "terrain entities are always placed over broken land to ensure that when they're destroyed there's rubble below");
+            m_hex = value;
+        }
+    }
+}
+
+public class HeavyTrees : TerrainEntity
+{
+    public HeavyTrees(EntityReactor reactor) : base(5, false, reactor)
+    { }
+}
+
+public class LightTrees : TerrainEntity
+{
+    public LightTrees(EntityReactor reactor) : base(3, false, reactor)
+    { }
+}
+
+public class Building : TerrainEntity
+{
+    public Building(EntityReactor reactor) : base(6, false, reactor)
+    { }
 }
 
 #endregion
