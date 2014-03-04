@@ -122,6 +122,7 @@ public static class TacticalState
             }
         }
         s_availableActions.Clear();
+        SelectedHex = SelectedHex;
     }
 
     #endregion

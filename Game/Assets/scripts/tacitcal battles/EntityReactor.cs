@@ -13,19 +13,6 @@ public class EntityReactor : CircularButton
             m_ent = value;
             this.Action = () => 
                 TacticalState.SelectedHex = m_ent.Hex.Reactor;
-            this.OnMouseExitProperty = () => { };
-            this.OnMouseOverProperty = OnOver;
-        }
-    }
-
-    private void OnOver()
-    {
-        if (Input.GetKey(KeyCode.LeftShift))
-        {
-            if (Input.GetMouseButton(1))
-            {
-
-            }
         }
     }
 }

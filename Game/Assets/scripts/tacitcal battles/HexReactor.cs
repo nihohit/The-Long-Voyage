@@ -2,11 +2,16 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-public class HexReactor : MonoBehaviour 
+public class HexReactor : CircularButton 
 {
 	public Hex MarkedHex { get; set; }
 	private MarkerScript m_individualMarker;
 	private static MarkerScript s_selected;
+
+    public HexReactor()
+    {
+        base.Action = () => TacticalState.SelectedHex = this;
+    }
 
 	public void RemoveIndividualMarker()
 	{
@@ -30,18 +35,6 @@ public class HexReactor : MonoBehaviour
 	{
 		s_selected = GameObject.Find("Marker").GetComponent<MarkerScript>();
         s_selected.Unmark();
-	}
-
-	void OnMouseOver () 
-	{
-		if (Input.GetMouseButton(0)) 
-		{
-            lock (TacticalState.Lock)
-            {
-                TacticalState.SelectedHex = this;
-            }
-		}
-
 	}
 
 	public void Select()
