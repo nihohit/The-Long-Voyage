@@ -99,9 +99,10 @@ public abstract class Subsystem
 
     private PotentialAction CreateAction(Hex hex, Dictionary<Hex, List<PotentialAction>> dict)
     {
-        Vector2 offset;
+        Vector2 offset = Vector2.zero;
         var list = dict.TryGetOrAdd(hex, () => new List<PotentialAction>());
         var size = ((CircleCollider2D)hex.Reactor.collider2D).radius;
+        Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
 
         switch(list.Count)
         {
@@ -123,8 +124,6 @@ public abstract class Subsystem
             case(5):
                 offset = new Vector2(-(size/2), -size);
                 break;
-            default:
-                throw new Exception("Too many subsystems");
         }
 
         var operation = new OperateSystemAction(m_effect, m_buttonName, hex, offset);
@@ -154,10 +153,7 @@ public abstract class Subsystem
 
     private IEnumerable<Hex> CheckForDirectTargets(Hex sourceHex)
     {
-        if(sourceHex.Content == null)
-        {
-            throw new Exception("System {0} operating out of empty hex {1}".FormatWith(this, sourceHex));
-        }
+        Assert.NotNull(sourceHex.Content, "System {0} operating out of empty hex {1}".FormatWith(this, sourceHex));
 
         sourceHex.Content.Marker.collider2D.enabled = false;
         var results = new HashSet<Hex>();
@@ -230,10 +226,7 @@ public abstract class WeaponBase : Subsystem
     {
         return (hex) => 
         {
-            if(hex.Content == null)
-            {
-                throw new Exception("Shooting at an empty hex");
-            }
+            Assert.NotNull(hex.Content, "empty hex");
             hex.Content.Hit(damage, damageType);
         };
     }

@@ -36,10 +36,7 @@ public class Hex
             }
             else
             {
-                if(m_content != null)
-                {
-                    throw new Exception("Hex {0} already has entity {1} and can't accept entity {2}".FormatWith(Coordinates, m_content, value));
-                }
+                Assert.IsNull(m_content, "m_content", "Hex {0} already has entity {1} and can't accept entity {2}".FormatWith(Coordinates, m_content, value));
                 m_content = value;
                 if(m_content.Hex != null)
                 {
@@ -156,14 +153,14 @@ public enum VisualProperties
 	AppearsOnSight = 2,
 }
 
-public enum EntityType { Crawler, Mech, Monster, Infantry, Tank, Artilerry}
+public enum EntityType { Crawler, Mech, Monster, Infantry, Tank, Artilerry, TerrainFeature }
 
 public enum DamageType { EMP, Heat, Physical, Energy, }
 
 public enum WeaponType { }
 
 //to be filled with all different sides
-public enum Loyalty { Player, EnemyArmy, Monsters, Bandits }
+public enum Loyalty { Player, EnemyArmy, Monsters, Bandits, Neutral }
 
 // there needs to be an order of importance - the more severe damage has a higher value
 public enum SystemCondition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, Destroyed = 3 }
@@ -244,10 +241,7 @@ public abstract class PotentialAction
 
     public virtual void Commit()
     {
-        if (m_destroyed)
-        {
-            throw new Exception("Action {0} was operated after being destroyed".FormatWith(this));
-        }
+        Assert.AssertConditionMet(!m_destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
         Debug.Log("{0} commited {1}".FormatWith(ActingEntity, m_name));
     }
 

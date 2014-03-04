@@ -96,11 +96,9 @@ public static class TacticalState
 
     public static void RecalculateActions(ActiveEntity activeEntity)
     {
-        if (activeEntity == null ||
-           activeEntity.Loyalty != CurrentTurn)
-        {
-            throw new Exception("entity {0} shouldn't recalculating actions".FormatWith(activeEntity));
-        }
+        Assert.AssertConditionMet(activeEntity == null ||
+                                  activeEntity.Loyalty != CurrentTurn, 
+                                  "entity {0} shouldn't recalculating actions".FormatWith(activeEntity));
         IEnumerable<PotentialAction> actions = null;
         if (s_availableActions.TryGetValue(activeEntity, out actions))
         {

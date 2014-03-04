@@ -90,7 +90,8 @@ internal static class AStar
 			CheckAllNeighbours(current, internalState);
 		}
 
-		throw new Exception("open set empty, route impossible");
+        Assert.UnreachableCode("open set empty, route impossible");
+        return null;
 	}
 
 	public static void FeedResults(AstarNode rudamentaryList, Hex goal, AStarConfiguration configuration)
@@ -188,10 +189,7 @@ internal static class AStar
 
 	private static List<Hex> ReconstructPath(AstarNode current, Hex goal, AStarConfiguration configuration)
 	{
-		if (current == null)
-		{
-			throw new ArgumentNullException("current");
-		}
+        Assert.NotNull(current, "current");
 		var ans = new List<Hex>();
 
 #if DEBUG
