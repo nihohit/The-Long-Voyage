@@ -166,7 +166,7 @@ public abstract class ActiveEntity : Entity
     public virtual IEnumerable<PotentialAction> ComputeActions()
     {
         var dict = new Dictionary<Hex, List<PotentialAction>>();
-        return Systems.Where(system => system.Operational()).SelectMany(system => system.ActionsInRange(this.Hex, dict));
+        return Systems.Where(system => system.Operational()).SelectMany(system => system.ActionsInRange(this.Hex, dict)).ToList();
     }
 }
 

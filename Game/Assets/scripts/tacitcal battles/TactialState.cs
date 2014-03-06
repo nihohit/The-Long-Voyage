@@ -91,7 +91,7 @@ public static class TacticalState
             return null;
         }
 
-        return s_availableActions.TryGetOrAdd(activeEntity, activeEntity.ComputeActions().ToList);
+        return s_availableActions.TryGetOrAdd(activeEntity, () => activeEntity.ComputeActions());
     }
 
     public static void RecalculateActions(ActiveEntity activeEntity)
