@@ -9,7 +9,7 @@ public abstract class Subsystem
 {
     #region fields
 
-    private SystemCondition m_condition;
+    private SystemCondition m_workingCondition;
 
     private readonly int m_maxRange;
     
@@ -31,15 +31,15 @@ public abstract class Subsystem
     {
         get
         {
-            return m_condition;
+            return m_workingCondition;
         }
 
         private set
         {
             //condition most be ordered by order of severity
-            if (value > m_condition)
+            if (value > m_workingCondition)
             {
-                m_condition = value;
+                m_workingCondition = value;
             }
         }
     }
@@ -50,7 +50,7 @@ public abstract class Subsystem
 
     protected Subsystem(int minRange, int maxRange, HexOperation effect, DeliveryMethod deliveryMethod, string buttonName, HexCheck conditionForTargeting)
     {
-        m_condition = SystemCondition.Operational;
+        m_workingCondition = SystemCondition.Operational;
         m_minRange = minRange;
         m_maxRange = maxRange;
         m_effect = effect;
@@ -84,7 +84,7 @@ public abstract class Subsystem
 
     public bool Operational()
     {
-        return m_condition == SystemCondition.Operational;
+        return m_workingCondition == SystemCondition.Operational;
     }
 
     public IEnumerable<PotentialAction> ActionsInRange(Hex sourceHex, Dictionary<Hex, List<PotentialAction>> dict)
@@ -140,44 +140,14 @@ public abstract class Subsystem
         switch (m_deliveryMethod)
         {
             case(DeliveryMethod.Direct):
-                return CheckForDirectTargets(hex);
+                return hex.RaycastAndResolve(m_minRange, m_maxRange, m_conditionForTargeting, false);
 
             case(DeliveryMethod.Unobstructed):
-                return CheckForIndirectTargets(hex);
+                return hex.RaycastAndResolve(m_minRange, m_maxRange, m_conditionForTargeting, true);
 
             default:
                 throw new UnknownTypeException(m_deliveryMethod);
         }
-    }
-
-    private IEnumerable<Hex> CheckForDirectTargets(Hex sourceHex)
-    {
-        Assert.NotNull(sourceHex.Content, "System {0} operating out of empty hex {1}".FormatWith(this, sourceHex));
-
-        sourceHex.Content.Marker.collider2D.enabled = false;
-        var results = new HashSet<Hex>();
-        var layerMask = 1 << LayerMask.NameToLayer("Entities");
-        var amountOfHexesToCheck = 6*m_maxRange;
-        var angleSlice = 360f / amountOfHexesToCheck;
-        var rayDistance =  sourceHex.Reactor.renderer.bounds.size.x * m_maxRange;
-
-        for(float currentAngle = 0f ; currentAngle < 360f ; currentAngle+= angleSlice)
-        {
-            var rayHit = Physics2D.RaycastAll(sourceHex.Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
-            if(rayHit.collider != null)
-            {
-                var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
-                if(sourceHex.Distance(hex) < m_maxRange && 
-                   sourceHex.Distance(hex) >= m_minRange && 
-                   m_conditionForTargeting(hex))
-                {
-                    results.Add(hex);
-                }
-            }
-        }
-
-        sourceHex.Content.Marker.collider2D.enabled = true;
-        return results;
     }
 
     private IEnumerable<Hex> CheckForIndirectTargets(Hex sourceHex)

@@ -8,7 +8,6 @@ using UnityEngine;
 
 public class Hex
 {
-
     //holds all the hexes by their hex-coordinates
 	private static Dictionary<Vector2, Hex> s_repository = new Dictionary<Vector2, Hex>();
 
@@ -82,6 +81,62 @@ public class Hex
         var xDist = Math.Abs(this.Coordinates.x - other.Coordinates.x);
         var correctedXDist = Math.Max(xDist - yDist/2, 0);
         return (Int32)(correctedXDist + yDist);
+    }
+
+    public IEnumerable<Hex> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll)
+    {
+        return RaycastAndResolve(minRange, maxRange, addToListCheck, rayCastAll, (hex) => true);
+    }
+
+    public IEnumerable<Hex> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, HexCheck breakCheck)
+    {
+        Assert.NotNull(Content, "Operating out of empty hex {0}".FormatWith(this));
+        
+        Content.Marker.collider2D.enabled = false;
+        var results = new HashSet<Hex>();
+        var layerMask = 1 << LayerMask.NameToLayer("Entities");
+        var amountOfHexesToCheck = 6*maxRange;
+        var angleSlice = 360f / amountOfHexesToCheck;
+        var rayDistance =  Reactor.renderer.bounds.size.x * maxRange;
+        
+        for(float currentAngle = 0f ; currentAngle < 360f ; currentAngle+= angleSlice)
+        {
+            if(rayCastAll)
+            {
+                var rayHits = Physics2D.RaycastAll(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
+                foreach(var rayHit in rayHits)
+                {
+                    var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
+                    if(Distance(hex) < maxRange && 
+                       Distance(hex) >= minRange && 
+                       addToListCheck(hex))
+                    {
+                        results.Add(hex);
+                    }
+                    if(breakCheck(hex))
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                var rayHit = Physics2D.Raycast(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
+                if(rayHit.collider != null)
+                {
+                    var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
+                    if(Distance(hex) < maxRange && 
+                       Distance(hex) >= minRange && 
+                       addToListCheck(hex))
+                    {
+                        results.Add(hex);
+                    }
+                }
+            }
+        }
+        
+        Content.Marker.collider2D.enabled = true;
+        return results;
     }
 
     #region object overrides
@@ -337,6 +392,3 @@ public class OperateSystemAction : PotentialAction
 }
 
 #endregion
-
-
-
