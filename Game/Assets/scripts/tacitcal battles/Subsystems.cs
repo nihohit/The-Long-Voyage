@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-
 #region Subsystem
 
 public abstract class Subsystem
@@ -164,7 +163,7 @@ public abstract class Subsystem
 
         for(float currentAngle = 0f ; currentAngle < 360f ; currentAngle+= angleSlice)
         {
-            var rayHit = Physics2D.Raycast(sourceHex.Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
+            var rayHit = Physics2D.RaycastAll(sourceHex.Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
             if(rayHit.collider != null)
             {
                 var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
@@ -271,5 +270,3 @@ public class MissileLauncher : WeaponBase
 }
 
 #endregion
-
-

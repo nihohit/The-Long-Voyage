@@ -38,7 +38,7 @@ public static class TacticalState
 		}
 		set
 		{
-            lock(s_lock)
+            lock(Lock)
             {
     			if(s_selectedHex != null && s_selectedHex != value)
     			{

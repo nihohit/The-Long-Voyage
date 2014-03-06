@@ -4,18 +4,18 @@ using System.Collections;
 public class GenerateLevel : MonoBehaviour {
 
     public GameObject greenHex;
+    public GameObject woodHex;
 	public Camera mainCamera;
 
 	void Update()
 	{
         lock (TacticalState.Lock)
         {
-            float xAxisValue = Input.GetAxis("Horizontal");
-            float yAxisValue = Input.GetAxis("Vertical");
-            float zAxisValue = Input.GetAxisRaw("Zoom");
-
             if (Camera.current != null)
             {
+                float xAxisValue = Input.GetAxis("Horizontal");
+                float yAxisValue = Input.GetAxis("Vertical");
+                float zAxisValue = Input.GetAxisRaw("Zoom");
                 Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
             }
             if (Input.GetMouseButton(1))
@@ -95,7 +95,7 @@ public class GenerateLevel : MonoBehaviour {
 			var entryCoordinate = (float)-i  / 2 - GlobalState.AmountOfHexes + 1;
 			for(float j = 0 ; j < amountOfHexesInRow  ; j++)
 			{
-				CreateHex(
+                CreateRandomHex(
 					new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z), 
 					new Vector2(entryCoordinate + j, i));
 			}
@@ -111,7 +111,7 @@ public class GenerateLevel : MonoBehaviour {
 			var entryCoordinate = (float)i  / 2 - GlobalState.AmountOfHexes + 1;
 			for(float j = 0; j < amountOfHexesInRow ; j++)
 			{
-				CreateHex(
+                CreateRandomHex(
 					new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z), 
 					new Vector2(entryCoordinate + j, i));
 			}
@@ -120,21 +120,61 @@ public class GenerateLevel : MonoBehaviour {
 
 	#region private methods
 
-	void CreateHex(Vector3 nextPosition, Vector2 hexCoordinates)
+	private void CreateGrassHex(Vector3 nextPosition, Vector2 hexCoordinates)
 	{
 		var hex = (GameObject)Instantiate(greenHex, nextPosition, Quaternion.identity);
 		//hex.transform.Rotate(new Vector3(270,0,0));
 		var reactor = hex.GetComponent<HexReactor>();
 		reactor.MarkedHex = new Hex(hexCoordinates, reactor);
 	}
-	
-	void CreateHex(Vector2 hexCoordinates)
-	{
-		CreateHex(Vector3.zero, hexCoordinates);
-	}
+
+    private void CreateLightTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    {
+        CreateWoodHex(nextPosition, hexCoordinates).MarkedHex.Content = new SparseTrees(((GameObject)Instantiate(Resources.Load("SparseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+    }
+
+    private void CreateDenseTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    {
+
+        CreateWoodHex(nextPosition, hexCoordinates).MarkedHex.Content = new DenseTrees(((GameObject)Instantiate(Resources.Load("DenseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+    }
+
+    private HexReactor CreateWoodHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    {
+        var hex = (GameObject)Instantiate(woodHex, nextPosition, Quaternion.identity);
+        //hex.transform.Rotate(new Vector3(270,0,0));
+        var reactor = hex.GetComponent<HexReactor>();
+        reactor.MarkedHex = new Hex(hexCoordinates, reactor);
+        reactor.MarkedHex.Conditions = TraversalConditions.Broken;
+        return reactor;
+    }
 
 	
-	float GetDistance(Vector3 origin, Vector3 target)
+    private void CreateRandomHex(Vector3 nextPosition, Vector2 hexCoordinates)
+	{
+        var random = Randomiser.Next(1,5);
+        switch(random)
+        {
+            case(1):
+                CreateLightTreesHex(nextPosition, hexCoordinates);
+                break;
+            case(2):
+                CreateDenseTreesHex(nextPosition, hexCoordinates);
+                break;
+            default:
+                CreateGrassHex(nextPosition, hexCoordinates);
+                break;
+
+        }
+	}
+
+    private void CreateRandomHex(Vector2 hexCoordinates)
+    {
+        CreateRandomHex(Vector3.zero, hexCoordinates);
+    }
+
+	
+	private float GetDistance(Vector3 origin, Vector3 target)
 	{
 		return Mathf.Sqrt(Mathf.Pow(origin.x - target.x, 2f)	+ Mathf.Pow(origin.y - target.y, 2f) + Mathf.Pow(origin.z - target.z, 2f));
 	}

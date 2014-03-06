@@ -119,27 +119,27 @@ public abstract class TerrainEntity : Entity
         }
         set
         {
-            Assert.AreEqual(Hex.Conditions, TraversalConditions.Broken, "terrain entities are always placed over broken land to ensure that when they're destroyed there's rubble below");
             m_hex = value;
+            Assert.AreEqual(m_hex.Conditions, TraversalConditions.Broken, "terrain entities are always placed over broken land to ensure that when they're destroyed there's rubble below");
         }
     }
 }
 
-public class HeavyTrees : TerrainEntity
+public class DenseTrees : TerrainEntity
 {
-    public HeavyTrees(EntityReactor reactor) : base(5, false, reactor)
+    public DenseTrees(EntityReactor reactor) : base(FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), false, reactor)
     { }
 }
 
-public class LightTrees : TerrainEntity
+public class SparseTrees : TerrainEntity
 {
-    public LightTrees(EntityReactor reactor) : base(3, false, reactor)
+    public SparseTrees(EntityReactor reactor) : base(FileHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), false, reactor)
     { }
 }
 
 public class Building : TerrainEntity
 {
-    public Building(EntityReactor reactor) : base(6, false, reactor)
+    public Building(EntityReactor reactor) : base(FileHandler.GetIntProperty("Building health", FileAccessor.Units), false, reactor)
     { }
 }
 

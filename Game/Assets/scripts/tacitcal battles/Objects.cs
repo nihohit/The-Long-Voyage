@@ -21,7 +21,7 @@ public class Hex
 	public Vector2 Coordinates { get; private set; }
     public HexReactor Reactor { get; private set; }
     public Vector3 Position { get { return Reactor.transform.position; } }
-	public TraversalConditions Conditions { get; private set; }
+	public TraversalConditions Conditions { get; set; }
 	public Entity Content 
 	{ 
 		get
