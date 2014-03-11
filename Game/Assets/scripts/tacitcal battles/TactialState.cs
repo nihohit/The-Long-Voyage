@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 public static class TacticalState
 {
@@ -14,6 +15,12 @@ public static class TacticalState
     private static LinkedListNode<Loyalty> s_currentTurn;
 
     private static object s_lock;
+
+    private static IDictionary<Loyalty, ActiveEntity> s_controlledEntities;
+
+    private static IDictionary<Entity, IEnumerable<Hex>> s_whatEntitiesSee;
+
+    private static IDictionary<Entity, IEnumerable<Hex>> s_whatEntitiesSeeInRadar;
 	
     #endregion
 
@@ -121,6 +128,54 @@ public static class TacticalState
         }
         s_availableActions.Clear();
         SelectedHex = SelectedHex;
+    }
+
+    public void SetSeenHexes(ActiveEntity ent)
+    {
+        var whatTheEntitySeesNow = ent.FindSeenHexes();
+        var whatTheEntitySeesNowInRadar = ent.FindRadarHexes().Except(whatTheEntitySeesNow);
+		
+        ISet<Hex> pastSeenHexes;
+        if(s_whatEntitiesSee.TryGetValue(ent, out pastSeenHexes))
+        {
+			var whatTheEntitySeesNowSet = new HashSet(whatTheEntitySeesNow);
+			var whatTheEntitySeesNowInRadarSet = new HashSet(whatTheEntitySeesNowInRadar);
+		
+            var pastSeenInRadarHexes = s_whatEntitiesSeeInRadar[ent];
+            //this leaves in each list the hexes not in the other
+            whatTheEntitySeesNowSet.SymmetricExceptWith(pastSeenHexes);
+            whatTheEntitySeesNowInRadarSet.SymmetricExceptWith(pastSeenInRadarHexes);
+			
+			foreach(var hex in whatTheEntitySeesNowSet)
+			{
+				hex.Seen();
+			}
+			foreach(var hex in whatTheEntitySeesNowInRadarSet)
+			{
+				hex.Detected();
+			}
+			foreach(var hex in pastSeenHexes)
+			{
+				hex.Unseen();
+			}
+			foreach(var hex in pastSeenInRadarHexes)
+			{
+				hex.Undetected();
+			}
+        }
+		else
+		{
+			foreach(var hex in whatTheEntitySeesNow)
+			{
+				hex.Seen();
+			}
+			foreach(var hex in whatTheEntitySeesNowInRadar)
+			{
+				hex.Detected();
+			}
+		}
+		s_whatEntitiesSee[ent] = whatTheEntitySeesNow;
+		s_whatEntitiesSeeInRadar[ent] = whatTheEntitySeesNowInRadar;
     }
 
     #endregion

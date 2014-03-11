@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 #region Entity
 
@@ -107,9 +108,9 @@ public abstract class TerrainEntity : Entity
 {
     private Hex m_hex;
 
-    public TerrainEntity(double health, bool visibleOnRadar, EntityReactor reactor)
+    public TerrainEntity(double health, bool visibleOnRadar, bool blocksSight, EntityReactor reactor)
         : base(EntityType.TerrainFeature, Loyalty.Neutral, health, 0, 
-               VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None), reactor)
+               VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None) | (blocksSight ? VisualProperties.BlocksSight : VisualProperties.None), reactor)
     {}
 
     public override Hex Hex { 
@@ -127,19 +128,19 @@ public abstract class TerrainEntity : Entity
 
 public class DenseTrees : TerrainEntity
 {
-    public DenseTrees(EntityReactor reactor) : base(FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), false, reactor)
+    public DenseTrees(EntityReactor reactor) : base(FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), false, true, reactor)
     { }
 }
 
 public class SparseTrees : TerrainEntity
 {
-    public SparseTrees(EntityReactor reactor) : base(FileHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), false, reactor)
+    public SparseTrees(EntityReactor reactor) : base(FileHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), false, false, reactor)
     { }
 }
 
 public class Building : TerrainEntity
 {
-    public Building(EntityReactor reactor) : base(FileHandler.GetIntProperty("Building health", FileAccessor.Units), false, reactor)
+    public Building(EntityReactor reactor) : base(FileHandler.GetIntProperty("Building health", FileAccessor.Units), true, true, reactor)
     { }
 }
 
@@ -149,25 +150,49 @@ public class Building : TerrainEntity
 
 public abstract class ActiveEntity : Entity
 {
-    public ActiveEntity(Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
+    #region constructor
+
+    public ActiveEntity(Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
         base(type, loyalty, health, shield, visuals, reactor)
     {
-        RadarRange = radarRange;
-        SightRange = sightRange;
-        Systems = systems;
+        m_radarRange = radarRange;
+        m_sightRange = sightRange;
+        m_systems = systems;
     }
 
-    public double RadarRange { get; private set; }
+    #endregion
 
-    public double SightRange { get; private set; }
+    #region private fields
 
-    public IEnumerable<Subsystem> Systems { get; private set; }
+    private readonly int m_radarRange;
+
+    private readonly int m_sightRange;
+
+    private readonly IEnumerable<Subsystem> m_systems;
+
+    #endregion
+
+    #region public methods
 
     public virtual IEnumerable<PotentialAction> ComputeActions()
     {
         var dict = new Dictionary<Hex, List<PotentialAction>>();
-        return Systems.Where(system => system.Operational()).SelectMany(system => system.ActionsInRange(this.Hex, dict)).ToList();
+        return m_systems.Where(system => system.Operational()).SelectMany(system => system.ActionsInRange(this.Hex, dict)).ToList();
     }
+
+    public IEnumerable<Hex> FindSeenHexes()
+    {
+        //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
+        return Hex.RaycastAndResolve(0, m_sightRange, (hex) => hex.Content != null, true, (hex) => (hex.Content != null  && ((hex.Content.Visuals & VisualProperties.BlocksSight) != 0)) ,"Hexes");
+    }
+
+    public IEnumerable<Hex> FindRadarHexes()
+    {
+        //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
+        return Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
+    }
+
+    #endregion
 }
 
 #endregion
@@ -176,7 +201,7 @@ public abstract class ActiveEntity : Entity
 
 public abstract class MovingEntity : ActiveEntity
 {
-    public MovingEntity(MovementType movement, double speed, Loyalty loyalty, double radarRange, double sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
+    public MovingEntity(MovementType movement, double speed, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
         base(loyalty, radarRange, sightRange, systems, type, health, shield, visuals, reactor)
     {
         Speed = speed;
@@ -212,8 +237,8 @@ public class Mech : MovingEntity
                 VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
                 double speed = 4,
                 Loyalty loyalty = Loyalty.Player,
-                double radarRange = 20,
-                double sightRange = 10) :
+                int radarRange = 20,
+                int sightRange = 10) :
         base(MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, EntityType.Mech, health, shield, visuals, reactor)
     { }
 }

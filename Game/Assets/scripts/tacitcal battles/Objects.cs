@@ -8,10 +8,17 @@ using UnityEngine;
 
 public class Hex
 {
+    #region private fields
+
     //holds all the hexes by their hex-coordinates
 	private static Dictionary<Vector2, Hex> s_repository = new Dictionary<Vector2, Hex>();
 
 	private Entity m_content = null;
+
+    private int m_seen, m_detected;
+
+
+    #endregion
 	
     #region properties
 
@@ -83,18 +90,18 @@ public class Hex
         return (Int32)(correctedXDist + yDist);
     }
 
-    public IEnumerable<Hex> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll)
+    public IEnumerable<Hex> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, string layerName)
     {
-        return RaycastAndResolve(minRange, maxRange, addToListCheck, rayCastAll, (hex) => true);
+        return RaycastAndResolve(minRange, maxRange, addToListCheck, rayCastAll, (hex) => false, layerName);
     }
 
-    public IEnumerable<Hex> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, HexCheck breakCheck)
+    public IEnumerable<Hex> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, HexCheck breakCheck, string layerName)
     {
         Assert.NotNull(Content, "Operating out of empty hex {0}".FormatWith(this));
         
         Content.Marker.collider2D.enabled = false;
         var results = new HashSet<Hex>();
-        var layerMask = 1 << LayerMask.NameToLayer("Entities");
+        var layerMask = 1 << LayerMask.NameToLayer(layerName);
         var amountOfHexesToCheck = 6*maxRange;
         var angleSlice = 360f / amountOfHexesToCheck;
         var rayDistance =  Reactor.renderer.bounds.size.x * maxRange;
@@ -139,6 +146,52 @@ public class Hex
         return results;
     }
 
+    #region sight
+
+    public void Seen()
+    {
+        m_seen++;
+        if(m_seen == 1)
+        {
+            Reactor.RemoveFogOfWarMarker();
+        }
+    }
+
+    public void Unseen()
+    {
+        m_seen--;
+        if(m_seen == 0)
+        {
+            Reactor.DisplayFogOfWarMarker();
+        }
+    }
+
+    public void Detected()
+    {
+        m_detected++;
+        if(m_detected == 1 && m_seen == 0)
+        {
+            Reactor.DisplayRadarBlipMarker();
+        }
+    }
+
+    public void Undetected()
+    {
+        m_detected--;
+        if(m_detected == 0)
+        {
+            Reactor.RemoveRadarBlipMarker();
+        }
+    }
+
+    public void ResetSight()
+    {
+        m_seen = 0;
+        m_detected = 0;
+    }
+
+    #endregion
+
     #region object overrides
 
     public override string ToString()
@@ -162,7 +215,9 @@ public class Hex
     #endregion
 
     #endregion
-    
+
+    #region private methods
+
     private void CheckAndAdd(IList<Hex> result, Vector2 coordinates)
     {
         Hex temp;
@@ -171,6 +226,8 @@ public class Hex
             result.Add(temp);
         }
     }
+
+    #endregion
 }
 
 #endregion
@@ -206,6 +263,7 @@ public enum VisualProperties
 	None = 0,
 	AppearsOnRadar = 1,
 	AppearsOnSight = 2,
+    BlocksSight = 4, 
 }
 
 public enum EntityType { Crawler, Mech, Monster, Infantry, Tank, Artilerry, TerrainFeature }
@@ -330,7 +388,7 @@ public class MovementAction : PotentialAction
     {
         foreach (var hex in m_path)
         {
-            hex.Reactor.DisplayIndividualMarker();
+            hex.Reactor.DisplayMovementMarker();
         }
     }
 
@@ -338,7 +396,7 @@ public class MovementAction : PotentialAction
     {
         foreach (var hex in m_path)
         {
-            hex.Reactor.RemoveIndividualMarker();
+            hex.Reactor.RemoveMovementMarker();
         }
     }
 

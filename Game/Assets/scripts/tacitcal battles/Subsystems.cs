@@ -136,14 +136,16 @@ public abstract class Subsystem
         {
             return new[] { hex };
         }
+
+        var layerName = "Entities";
         
         switch (m_deliveryMethod)
         {
             case(DeliveryMethod.Direct):
-                return hex.RaycastAndResolve(m_minRange, m_maxRange, m_conditionForTargeting, false);
+                return hex.RaycastAndResolve(m_minRange, m_maxRange, m_conditionForTargeting, false, layerName);
 
             case(DeliveryMethod.Unobstructed):
-                return hex.RaycastAndResolve(m_minRange, m_maxRange, m_conditionForTargeting, true);
+                return hex.RaycastAndResolve(m_minRange, m_maxRange, m_conditionForTargeting, true, layerName);
 
             default:
                 throw new UnknownTypeException(m_deliveryMethod);
