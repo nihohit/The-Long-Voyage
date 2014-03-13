@@ -45,7 +45,7 @@ public class HexReactor : CircularButton
     
     public void DisplayFogOfWarMarker()
     {
-        m_fogOfWarMarker = AddAndDisplayMarker(m_fogOfWarMarker, "FogMarker");
+        m_fogOfWarMarker = AddAndDisplayMarker(m_fogOfWarMarker, "FogOfWar");
         if(MarkedHex.Content != null)
         {
             MarkedHex.Content.Marker.Unmark();
@@ -59,7 +59,7 @@ public class HexReactor : CircularButton
     
     public void DisplayRadarBlipMarker()
     {
-        m_fogOfWarMarker = AddAndDisplayMarker(m_radarBlipMarker, "RadarBlip");
+        m_radarBlipMarker = AddAndDisplayMarker(m_radarBlipMarker, "RadarBlip");
     }
 
     #endregion
@@ -69,6 +69,11 @@ public class HexReactor : CircularButton
 		s_selected = GameObject.Find("Marker").GetComponent<MarkerScript>();
         s_selected.Unmark();
 	}
+
+    void Start()
+    {
+        DisplayFogOfWarMarker();
+    }
 
 	public void Select()
 	{

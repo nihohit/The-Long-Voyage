@@ -71,6 +71,14 @@ public static class MyExtensions
         }
         return list;
     }
+
+    //removes from both sets the common elements.
+    public static void ExceptOnBoth<T>(this HashSet<T> thisSet, HashSet<T> otherSet)
+    {
+        thisSet.SymmetricExceptWith(otherSet);
+        otherSet.IntersectWith(thisSet);
+        thisSet.ExceptWith(otherSet);
+    }
 }
 
 public static class Hasher

@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 using System.Linq;
 using UnityEngine;
 
@@ -51,6 +51,12 @@ public class Hex
 				m_content.Hex = this;
                 m_content.Marker.Mark(Position);
             }
+            var active = value as ActiveEntity;
+            if(active != null)
+            {
+                active.SetSeenHexes();
+            }
+
             TacticalState.RecalculateAllActions();
 		}
 	}
@@ -92,10 +98,10 @@ public class Hex
 
     public IEnumerable<Hex> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, string layerName)
     {
-        return RaycastAndResolve(minRange, maxRange, addToListCheck, rayCastAll, (hex) => false, layerName);
+        return RaycastAndResolve<EntityReactor>(minRange, maxRange, addToListCheck, rayCastAll, (hex) => false, layerName, (ent) => ent.Entity.Hex);
     }
 
-    public IEnumerable<Hex> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, HexCheck breakCheck, string layerName)
+    public IEnumerable<Hex> RaycastAndResolve<T>(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, HexCheck breakCheck, string layerName, Func<T, Hex> hexExtractor) where T : MonoBehaviour
     {
         Assert.NotNull(Content, "Operating out of empty hex {0}".FormatWith(this));
         
@@ -113,7 +119,7 @@ public class Hex
                 var rayHits = Physics2D.RaycastAll(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
                 foreach(var rayHit in rayHits)
                 {
-                    var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
+                    var hex = hexExtractor(rayHit.collider.gameObject.GetComponent<T>());
                     if(Distance(hex) < maxRange && 
                        Distance(hex) >= minRange && 
                        addToListCheck(hex))

@@ -1,7 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using UnityEngine;
 
 #region Entity
 
@@ -164,6 +164,10 @@ public abstract class ActiveEntity : Entity
 
     #region private fields
 
+    public HashSet<Hex> m_seenHexes;
+    
+    public HashSet<Hex> m_detectedHexes;
+
     private readonly int m_radarRange;
 
     private readonly int m_sightRange;
@@ -177,16 +181,68 @@ public abstract class ActiveEntity : Entity
     public virtual IEnumerable<PotentialAction> ComputeActions()
     {
         var dict = new Dictionary<Hex, List<PotentialAction>>();
-        return m_systems.Where(system => system.Operational()).SelectMany(system => system.ActionsInRange(this.Hex, dict)).ToList();
+        return m_systems.Where(system => system.Operational())
+            .SelectMany(system => system.ActionsInRange(this.Hex, dict)).ToList();
     }
 
-    public IEnumerable<Hex> FindSeenHexes()
+    public void SetSeenHexes()
+    {
+        var whatTheEntitySeesNow = FindSeenHexes();
+        var whatTheEntitySeesNowInRadar = FindRadarHexes().Except(whatTheEntitySeesNow);
+        Debug.Log("{0} is setting seen hexes".FormatWith(this));
+
+        if(m_seenHexes != null)
+        {
+            var whatTheEntitySeesNowSet = new HashSet<Hex>(whatTheEntitySeesNow);
+            var whatTheEntitySeesNowInRadarSet = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
+
+            //this leaves in each list the hexes not in the other
+            whatTheEntitySeesNowSet.ExceptOnBoth(m_seenHexes);
+            whatTheEntitySeesNowInRadarSet.ExceptOnBoth(m_detectedHexes);
+            
+            foreach(var hex in whatTheEntitySeesNowSet)
+            {
+                hex.Seen();
+            }
+            foreach(var hex in whatTheEntitySeesNowInRadarSet)
+            {
+                hex.Detected();
+            }
+            foreach(var hex in m_seenHexes)
+            {
+                hex.Unseen();
+            }
+            foreach(var hex in m_detectedHexes)
+            {
+                hex.Undetected();
+            }
+        }
+        else
+        {
+            foreach(var hex in whatTheEntitySeesNow)
+            {
+                hex.Seen();
+            }
+            foreach(var hex in whatTheEntitySeesNowInRadar)
+            {
+                hex.Detected();
+            }
+        }
+        m_seenHexes = new HashSet<Hex>(whatTheEntitySeesNow);
+        m_detectedHexes = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
+    }
+
+    #endregion
+
+    #region private methods
+
+    private IEnumerable<Hex> FindSeenHexes()
     {
         //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
-        return Hex.RaycastAndResolve(0, m_sightRange, (hex) => hex.Content != null, true, (hex) => (hex.Content != null  && ((hex.Content.Visuals & VisualProperties.BlocksSight) != 0)) ,"Hexes");
+        return Hex.RaycastAndResolve<HexReactor>(0, m_sightRange, (hex) => true, true, (hex) => (hex.Content != null  && ((hex.Content.Visuals & VisualProperties.BlocksSight) != 0)) ,"Hexes", (reactor)=> reactor.MarkedHex);
     }
-
-    public IEnumerable<Hex> FindRadarHexes()
+    
+    private IEnumerable<Hex> FindRadarHexes()
     {
         //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
         return Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
