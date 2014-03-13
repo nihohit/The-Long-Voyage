@@ -1,11 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GenerateLevel : MonoBehaviour {
+public class GenerateLevel : MonoBehaviour 
+{
+    #region public members
 
     public GameObject greenHex;
     public GameObject woodHex;
 	public Camera mainCamera;
+
+    #endregion
+
+    #region MonoBehaviour overrides
 
 	void Update()
 	{
@@ -70,17 +76,11 @@ public class GenerateLevel : MonoBehaviour {
 	// Use this for initialization
 	void Start () 
     {
-		//TODO - remove when there's no direct access to level generation
-		FileHandler.Init();
-		HexReactor.Init();
-
         TacticalState.Init(new[]{Loyalty.Player});
 
 		if(GlobalState.AmountOfHexes < 1)
 		{
-			GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
-				"default map size", 
-				FileAccessor.TerrainGeneration);
+            InitiateGlobalState();
 		}
 		var entryPoint = Vector3.zero;
 		var hexSize = greenHex.renderer.bounds.size;
@@ -117,6 +117,8 @@ public class GenerateLevel : MonoBehaviour {
 			}
         }
 	}
+
+    #endregion
 
 	#region private methods
 
@@ -178,6 +180,16 @@ public class GenerateLevel : MonoBehaviour {
 	{
 		return Mathf.Sqrt(Mathf.Pow(origin.x - target.x, 2f)	+ Mathf.Pow(origin.y - target.y, 2f) + Mathf.Pow(origin.z - target.z, 2f));
 	}
+
+    private void InitiateGlobalState()
+    {
+        //TODO - replace with exception throwing when we remove the direct access to level generation
+        FileHandler.Init();
+        HexReactor.Init();
+        GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
+            "default map size", 
+            FileAccessor.TerrainGeneration);
+    }
 
 	#endregion
 }

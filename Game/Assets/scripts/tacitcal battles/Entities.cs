@@ -164,9 +164,9 @@ public abstract class ActiveEntity : Entity
 
     #region private fields
 
-    public HashSet<Hex> m_seenHexes;
+    private HashSet<Hex> m_seenHexes;
     
-    public HashSet<Hex> m_detectedHexes;
+    private HashSet<Hex> m_detectedHexes;
 
     private readonly int m_radarRange;
 
