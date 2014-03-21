@@ -137,8 +137,12 @@ public class GenerateLevel : MonoBehaviour
 
     private void CreateDenseTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
-
         CreateWoodHex(nextPosition, hexCoordinates).MarkedHex.Content = new DenseTrees(((GameObject)Instantiate(Resources.Load("DenseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+    }
+
+    private void CreateBuildingHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    {
+        CreateWoodHex(nextPosition, hexCoordinates).MarkedHex.Content = new Building(((GameObject)Instantiate(Resources.Load("Building"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
     }
 
     private HexReactor CreateWoodHex(Vector3 nextPosition, Vector2 hexCoordinates)
@@ -154,7 +158,7 @@ public class GenerateLevel : MonoBehaviour
 	
     private void CreateRandomHex(Vector3 nextPosition, Vector2 hexCoordinates)
 	{
-        var random = Randomiser.Next(1,5);
+        var random = Randomiser.Next(1,8);
         switch(random)
         {
             case(1):
@@ -162,6 +166,9 @@ public class GenerateLevel : MonoBehaviour
                 break;
             case(2):
                 CreateDenseTreesHex(nextPosition, hexCoordinates);
+                break;
+            case(3):
+                CreateBuildingHex(nextPosition, hexCoordinates);
                 break;
             default:
                 CreateGrassHex(nextPosition, hexCoordinates);
