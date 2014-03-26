@@ -12,7 +12,6 @@ public class HexReactor : CircularButton
     private MarkerScript m_radarBlipMarker;
 	private static MarkerScript s_selected;
 
-
     #endregion
 
     #region public methods
@@ -79,33 +78,31 @@ public class HexReactor : CircularButton
 	{
 		//Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex)); 
 		s_selected.Mark(this.transform.position);
-        var actions = TacticalState.ActionCheckOnSelectedHex();
-        if (actions != null)
-        {
-            foreach(var action in actions)
-            {
-                action.DisplayButton();
-            }
-        }
+        ActionCheck().ForEach(action => action.DisplayButton());
 	}
 
 	public void Unselect()
 	{
 		//Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
 		s_selected.Unmark();
-        var actions = TacticalState.ActionCheckOnSelectedHex();
-        if (actions != null)
-        {
-            foreach (var action in actions)
-            {
-                action.RemoveDisplay();
-            }
-        }
+        ActionCheck().ForEach(action => action.RemoveDisplay());
 	}
 
     #endregion
 
     #region private methods
+
+    //returns null if can't return actions, otherwise returns all available actions
+    private IEnumerable<PotentialAction> ActionCheck()
+    {
+        var activeEntity = MarkedHex.Content as ActiveEntity;
+        if(activeEntity == null)
+        {
+            return null;
+        }
+        
+        return activeEntity.Actions.Materialize();
+    }
 
     private void RemoveMarker(MarkerScript marker)
     {

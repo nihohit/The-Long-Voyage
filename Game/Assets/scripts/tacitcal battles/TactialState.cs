@@ -17,7 +17,7 @@ public static class TacticalState
     private static object s_lock;
 
     //for each entity and each hex, the available actions
-    private static Dictionary<ActiveEntity, IEnumerable<PotentialAction>> s_availableActions;
+    private static HashSet<ActiveEntity> s_activeEntities;
 	
     #endregion
 
@@ -50,7 +50,7 @@ public static class TacticalState
     			}
 
     			s_selectedHex = value;
-    			if(s_selectedHex !=null)
+    			if(s_selectedHex != null)
     				s_selectedHex.Select();
             }
 		}
@@ -64,7 +64,7 @@ public static class TacticalState
 
     public static void Init(IEnumerable<Loyalty> players) 
     { 
-        s_availableActions = new Dictionary<ActiveEntity, IEnumerable<PotentialAction>>();
+        s_activeEntities = new HashSet<ActiveEntity>();
         SetTurnOrder(players);
     }
 
@@ -77,50 +77,19 @@ public static class TacticalState
         s_currentTurn = s_currentTurn.Next;
     }
 
-    //returns null if can't return actions, otherwise returns all available actions
-    public static IEnumerable<PotentialAction> ActionCheckOnSelectedHex()
+    public static void ResetAllActions()
     {
-        if(s_selectedHex.MarkedHex.Content == null)
-        {
-            return null;
-        }
-
-        var activeEntity = s_selectedHex.MarkedHex.Content as ActiveEntity;
-        if(activeEntity == null || 
-           activeEntity.Loyalty != CurrentTurn)
-        {
-            return null;
-        }
-
-        return s_availableActions.TryGetOrAdd(activeEntity, () => activeEntity.ComputeActions());
+        s_activeEntities.ForEach(ent => ent.ResetActions());
     }
 
-    public static void RecalculateActions(ActiveEntity activeEntity)
+    public static void AddEntity(Entity ent)
     {
-        Assert.AssertConditionMet(activeEntity == null ||
-                                  activeEntity.Loyalty != CurrentTurn, 
-                                  "entity {0} shouldn't recalculating actions".FormatWith(activeEntity));
-        IEnumerable<PotentialAction> actions = null;
-        if (s_availableActions.TryGetValue(activeEntity, out actions))
+        var active = ent as ActiveEntity;
+        if(active != null)
         {
-            foreach(var action in actions)
-            {
-                action.Destroy();
-            }
+            s_activeEntities.Add(active);
         }
-        s_availableActions[activeEntity] = activeEntity.ComputeActions().ToList();
-    }
-
-    public static void RecalculateAllActions()
-    {
-        foreach(var actions in s_availableActions.Values)
-        {
-            foreach(var action in actions)
-            {
-                action.Destroy();
-            }
-        }
-        s_availableActions.Clear();
+        //To refresh the potential actions appearing on screen.
         SelectedHex = SelectedHex;
     }
 

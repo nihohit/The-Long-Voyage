@@ -28,44 +28,22 @@ public class GenerateLevel : MonoBehaviour
             {
                 if (Input.GetKey(KeyCode.LeftShift))
                 {
-                    if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content != null)
-                    {
-                        TacticalState.SelectedHex.MarkedHex.Content.Marker.collider2D.enabled = false;
-                        var mouse = Input.mousePosition;
-                        var mouseRay = Camera.main.ScreenPointToRay(mouse);
-                        RaycastHit mouseHit;
-                        Physics.Raycast(mouseRay, out mouseHit);
-                        var mousePosition = mouseHit.transform.position;
-                        mousePosition.z = 0;
-                        var startingPoint = TacticalState.SelectedHex.transform.position;
-                        Debug.Log("Shooting ray from {0} to {1}".FormatWith(startingPoint, mousePosition));
-                        var layer = LayerMask.NameToLayer("Entities");
-                        var layerMask = 1 << layer;
-                        var rayHit = Physics2D.Raycast(startingPoint, mousePosition - startingPoint, 1000, layerMask);
-                        if (rayHit.collider == null)
-                        {
-                            Debug.Log("Ray from {0} missed".FormatWith(startingPoint));
-                            //TacticalState.SelectedHex = null;
-                        }
-                        else
-                        {
-                            Debug.Log("Ray from {0} hit {1}".FormatWith(startingPoint, rayHit.collider.transform.position));
-                            Debug.Log("collider was active: {0}".FormatWith(rayHit.collider.enabled));
-                            Debug.Log("object is: {0}".FormatWith(rayHit.collider.gameObject.ToString()));
-                            //TacticalState.SelectedHex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex.Reactor;
-                        }
-                        TacticalState.SelectedHex.MarkedHex.Content.Marker.collider2D.enabled = true;
-                    }
-                }
-                else
-                {
                     if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
                     {
                         //TODO - this is just a temporary measure, to create mechs
                         var mech = new Mech(new Subsystem[] {new Laser(Loyalty.EnemyArmy), new MissileLauncher(Loyalty.EnemyArmy)},
-                                            ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
-                        mech.Marker.internalRenderer = mech.Marker.GetComponent<SpriteRenderer>();
+                        ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
                         TacticalState.SelectedHex.MarkedHex.Content = mech;
+                        TacticalState.AddEntity(mech);
+                        Debug.Log("created {0} at {1}".FormatWith(mech, TacticalState.SelectedHex));
+                    }
+                    TacticalState.SelectedHex = null;
+                }
+                else
+                {
+                    if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content != null)
+                    {
+                        Debug.Log(TacticalState.SelectedHex.MarkedHex.Content);
                     }
                     TacticalState.SelectedHex = null;
                 }

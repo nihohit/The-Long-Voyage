@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 
 public interface IIdentifiable
@@ -22,6 +23,24 @@ public static class MyExtensions
     public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
     {
         return new HashSet<T>(source);
+    }
+
+    //this function ensures that a given enumeration materializes
+    public static IEnumerable<T> Materialize<T> (this IEnumerable<T> enumerable)
+    {
+        if (enumerable is ICollection<T>) return enumerable;
+        return enumerable.ToList();
+    }
+
+    public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)
+    {
+        if(enumerable != null)
+        {
+            foreach(var val in enumerable)
+            {
+                op(val);
+            }
+        }
     }
 
     public static void StartTiming(this IIdentifiable timer, string operation)
@@ -59,17 +78,6 @@ public static class MyExtensions
             dict.Add(key, result);
         }
         return result;
-    }
-
-    //is used to create concreate enumerables, and prevent lazy calculations
-    public static List<T> ToList<T>(this IEnumerable<T> enumerable)
-    {
-        var list = enumerable as List<T>;
-        if(list == null)
-        {
-            list = new List<T>(enumerable);
-        }
-        return list;
     }
 
     //removes from both sets the common elements.

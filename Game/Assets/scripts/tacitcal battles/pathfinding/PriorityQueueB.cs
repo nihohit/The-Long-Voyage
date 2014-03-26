@@ -13,6 +13,7 @@ internal interface IPriorityQueue<T>
 	T Pop();
 	T Peek();
 	void Update(int i);
+    void Clear();
 	#endregion
 }
 #endregion

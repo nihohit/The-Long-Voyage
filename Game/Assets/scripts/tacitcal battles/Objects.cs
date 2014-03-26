@@ -15,7 +15,7 @@ public class Hex
 
 	private Entity m_content = null;
 
-    private int m_seen, m_detected;
+    private int m_seen = 0, m_detected = 0;
 
 
     #endregion
@@ -36,28 +36,44 @@ public class Hex
 		}
 		set
 		{
-            if(value == null)
+            //using reference comparisons to account for null
+            if(value != m_content)
             {
-                m_content = value;
-            }
-            else
-            {
-                Assert.IsNull(m_content, "m_content", "Hex {0} already has entity {1} and can't accept entity {2}".FormatWith(Coordinates, m_content, value));
-                m_content = value;
-                if(m_content.Hex != null)
+                TacticalState.ResetAllActions();
+                if(value != null)
                 {
-				    m_content.Hex.Content = null;
-                }
-				m_content.Hex = this;
-                m_content.Marker.Mark(Position);
-            }
-            var active = value as ActiveEntity;
-            if(active != null)
-            {
-                active.SetSeenHexes();
-            }
+                    Assert.IsNull(m_content, 
+                                  "m_content", "Hex {0} already has entity {1} and can't accept entity {2}"
+                                    .FormatWith(Coordinates, m_content, value));
+                    m_content = value;
 
-            TacticalState.RecalculateAllActions();
+                    var otherHex = m_content.Hex;
+                    m_content.Hex = this;
+                    m_content.Marker.Mark(Position);
+
+                    if(otherHex != null)
+                    {
+                        otherHex.Content = null;
+                    }
+
+                    var active = value as ActiveEntity;
+                    if(active != null)
+                    {
+                        active.SetSeenHexes();
+                    }
+                }
+                else
+                {
+                    if(m_content != null)
+                    {
+                        Assert.AssertConditionMet((m_content.Health <= 0) || 
+                                                  (m_content.Hex != null &&
+                                                  !m_content.Hex.Equals(this)), 
+                                                  "When replaced with a null value, entity should either move to another hex or be destroyed");
+                    }
+                    m_content = value;
+                }
+            }
 		}
 	}
 
@@ -271,8 +287,6 @@ public enum VisualProperties
 	AppearsOnSight = 2,
     BlocksSight = 4, 
 }
-
-public enum EntityType { Crawler, Mech, Monster, Infantry, Tank, Artilerry, TerrainFeature }
 
 public enum DamageType { EMP, Heat, Physical, Energy, }
 

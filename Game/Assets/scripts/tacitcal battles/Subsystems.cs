@@ -197,7 +197,7 @@ public abstract class WeaponBase : Subsystem
     {
         return (hex) => 
         {
-            Assert.NotNull(hex.Content, "empty hex");
+            Assert.NotNull(hex.Content, "hex.Content");
             hex.Content.Hit(damage, damageType);
         };
     }
