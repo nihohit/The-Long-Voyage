@@ -177,6 +177,10 @@ public abstract class ActiveEntity : Entity
 
     private IEnumerable<PotentialAction> m_actions;
 
+    private double m_currentEnergy;
+
+    private readonly double m_maximumEnergy;
+
     #endregion
 
     #region Properties
@@ -257,6 +261,12 @@ public abstract class ActiveEntity : Entity
         m_detectedHexes = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
     }
 
+    public virtual void StartTurn()
+    {
+        ResetActions();
+        m_currentEnergy = m_maximumEnergy;
+    }
+
     #endregion
 
     #region private and protected methods
@@ -290,27 +300,48 @@ public abstract class ActiveEntity : Entity
 
 public abstract class MovingEntity : ActiveEntity
 {
+    #region private fields
+
+    private readonly double m_maximumSpeed;
+
+    private double m_availableSteps;
+
+    private readonly MovementType m_movementType;
+
+    #endregion
+
+    #region constructor
+
     public MovingEntity(MovementType movement, double speed, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
         base(loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
     {
-        Speed = speed;
-        Movement = movement;
+        m_maximumSpeed = speed;
+        m_availableSteps = speed;
+        m_movementType = movement;
     }
 
-    public double Speed { get; private set; }
+    #endregion
 
-    public MovementType Movement { get; private set; }
+    #region ActiveEntity overrides
 
     protected override IEnumerable<PotentialAction> ComputeActions()
     {
         var baseActions = base.ComputeActions();
-        var possibleHexes = AStar.FindAllAvailableHexes(this.Hex, this.Speed, this.Movement);
+        var possibleHexes = AStar.FindAllAvailableHexes(Hex, m_availableSteps, m_movementType);
         foreach (var movement in possibleHexes.Values)
         {
             movement.ActingEntity = this;
         }
         return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
     }
+
+    public override void StartTurn()
+    {
+        base.ResetActions();
+        m_availableSteps = m_maximumSpeed;
+    }
+
+    #endregion
 }
 
 #endregion

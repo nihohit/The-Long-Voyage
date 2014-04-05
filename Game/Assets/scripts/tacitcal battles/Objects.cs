@@ -39,7 +39,6 @@ public class Hex
             //using reference comparisons to account for null
             if(value != m_content)
             {
-                TacticalState.ResetAllActions();
                 if(value != null)
                 {
                     Assert.IsNull(m_content, 
@@ -62,6 +61,7 @@ public class Hex
                         active.SetSeenHexes();
                     }
                 }
+                //if hex recieves null value as content
                 else
                 {
                     if(m_content != null)
@@ -71,8 +71,9 @@ public class Hex
                                                   !m_content.Hex.Equals(this)), 
                                                   "When replaced with a null value, entity should either move to another hex or be destroyed");
                     }
-                    m_content = value;
+                    m_content = null;
                 }
+                TacticalState.ResetAllActions();
             }
 		}
 	}

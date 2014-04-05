@@ -44,7 +44,7 @@ public static class TacticalState
 		{
             lock(Lock)
             {
-    			if(s_selectedHex != null && s_selectedHex != value)
+    			if(s_selectedHex != null)
     			{
     				s_selectedHex.Unselect();
     			}
@@ -70,16 +70,20 @@ public static class TacticalState
 
     public static void Endturn()
     {
+        Debug.Log("ending turn");
+        s_currentTurn = s_currentTurn.Next;
         if(s_currentTurn == null)
         {
             s_currentTurn = s_turnOrder.First;
         }
-        s_currentTurn = s_currentTurn.Next;
+        s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn).ForEach(ent => ent.StartTurn());
+        SelectedHex = null;
     }
 
     public static void ResetAllActions()
     {
         s_activeEntities.ForEach(ent => ent.ResetActions());
+        SelectedHex = SelectedHex;
     }
 
     public static void AddEntity(Entity ent)
