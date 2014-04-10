@@ -23,6 +23,8 @@ public abstract class Subsystem
 
     private readonly HexCheck m_conditionForTargeting;
 
+    private readonly double m_energyCost;
+
     #endregion
 
     #region properties
@@ -48,7 +50,7 @@ public abstract class Subsystem
 
     #region constructors
 
-    protected Subsystem(int minRange, int maxRange, HexOperation effect, DeliveryMethod deliveryMethod, string buttonName, HexCheck conditionForTargeting)
+    protected Subsystem(double energyCost, int minRange, int maxRange, HexOperation effect, DeliveryMethod deliveryMethod, string buttonName, HexCheck conditionForTargeting)
     {
         m_workingCondition = SystemCondition.Operational;
         m_minRange = minRange;
@@ -57,10 +59,12 @@ public abstract class Subsystem
         m_deliveryMethod = deliveryMethod;
         m_buttonName = buttonName;
         m_conditionForTargeting = conditionForTargeting;
+        m_energyCost = energyCost;
     }
 
-    protected Subsystem(HexOperation effect, string buttonName) : 
-        this(0, 0, effect, DeliveryMethod.Direct, buttonName, (hex) => true)
+    //for self-targeting systems
+    protected Subsystem(double energyCost, HexOperation effect, string buttonName) : 
+        this(energyCost, 0, 0, effect, DeliveryMethod.Direct, buttonName, (hex) => true)
     { }
 
     #endregion
@@ -87,23 +91,23 @@ public abstract class Subsystem
         return m_workingCondition == SystemCondition.Operational;
     }
 
-    public IEnumerable<PotentialAction> ActionsInRange(Hex sourceHex, Dictionary<Hex, List<PotentialAction>> dict)
+    public IEnumerable<PotentialAction> ActionsInRange(ActiveEntity actingEntity, Dictionary<Hex, List<PotentialAction>> dict)
     {
-        return TargetsInRange(sourceHex).Select(targetedHex => CreateAction(targetedHex, dict));
+        return TargetsInRange(actingEntity.Hex).Select(targetedHex => CreateAction(actingEntity, targetedHex, dict));
     }
 
     #endregion
 
     #region private methods
 
-    private PotentialAction CreateAction(Hex hex, Dictionary<Hex, List<PotentialAction>> dict)
+    private PotentialAction CreateAction(ActiveEntity actingEntity, Hex hex, Dictionary<Hex, List<PotentialAction>> dict)
     {
         Vector2 offset = Vector2.zero;
         var list = dict.TryGetOrAdd(hex, () => new List<PotentialAction>());
         var size = ((CircleCollider2D)hex.Reactor.collider2D).radius;
         Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
 
-        switch(list.Count)
+        switch(list.Count(action => !action.Destroyed))
         {
             case(0):
                 offset = new Vector2(-(size), 0);
@@ -125,7 +129,7 @@ public abstract class Subsystem
                 break;
         }
 
-        var operation = new OperateSystemAction(m_effect, m_buttonName, hex, offset);
+        var operation = new OperateSystemAction(actingEntity, m_effect, m_buttonName, hex, offset, m_energyCost);
         list.Add(operation);
         return operation;
     }
@@ -188,8 +192,8 @@ public abstract class Subsystem
 
 public abstract class WeaponBase : Subsystem
 {
-    protected WeaponBase(int minRange, int maxRange, DeliveryMethod deliveryMethod, string buttonName, double damage, DamageType damageType, Loyalty loyalty) : 
-        base(minRange, maxRange, CreateWeaponHit(damage, damageType), deliveryMethod, buttonName, CreateTargetingCheck(loyalty))
+    protected WeaponBase(double energyCost, int minRange, int maxRange, DeliveryMethod deliveryMethod, string buttonName, double damage, DamageType damageType, Loyalty loyalty) : 
+        base(energyCost, minRange, maxRange, CreateWeaponHit(damage, damageType), deliveryMethod, buttonName, CreateTargetingCheck(loyalty))
     {
     }
 
@@ -216,8 +220,8 @@ public abstract class AmmoWeapon : WeaponBase
 {
     private int m_ammo;
 
-    protected AmmoWeapon(int minRange, int maxRange, DeliveryMethod deliveryMethod, string buttonName, double damage, DamageType damageType, Loyalty loyalty) : 
-        base(minRange, maxRange, deliveryMethod, buttonName, damage, damageType, loyalty)
+    protected AmmoWeapon(double energyCost, int minRange, int maxRange, DeliveryMethod deliveryMethod, string buttonName, double damage, DamageType damageType, Loyalty loyalty) : 
+        base(energyCost, minRange, maxRange, deliveryMethod, buttonName, damage, damageType, loyalty)
     {
     }
 }
@@ -230,14 +234,14 @@ public abstract class AmmoWeapon : WeaponBase
 public class Laser : WeaponBase
 {
     public Laser(Loyalty loyalty) : 
-        base(0,4,DeliveryMethod.Direct, "LaserCommand", 1f, DamageType.Energy, loyalty)
+        base(2, 0,4, DeliveryMethod.Direct, "LaserCommand", 1f, DamageType.Energy, loyalty)
     {}
 }
 
 public class MissileLauncher : WeaponBase
 {
     public MissileLauncher(Loyalty loyalty) : 
-        base(2,6,DeliveryMethod.Unobstructed, "MissileCommand", 1f, DamageType.Physical, loyalty)
+        base(1, 2,6, DeliveryMethod.Unobstructed, "MissileCommand", 1f, DamageType.Physical, loyalty)
     {}
 }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -219,7 +218,7 @@ public class Hex
 
     public override string ToString()
     {
-        return "Hex {0},{1} : {2} : {3},{4}".FormatWith(Coordinates.x, Coordinates.y, Content, Reactor.transform.position.x, Reactor.transform.position.y);
+        return "Hex {0},{1}".FormatWith(Coordinates.x, Coordinates.y, Content, Reactor.transform.position.x, Reactor.transform.position.y);
     }
 
     public override int GetHashCode()
@@ -326,9 +325,12 @@ public abstract class PotentialAction
     #region fields
 
     protected readonly CircularButton m_button;
-    private bool m_destroyed;
     //TODO - remove after testing
     private readonly string m_name;
+
+    protected readonly ActiveEntity m_entity;
+
+    public bool Destroyed { get ; private set;}
 
     #endregion
 
@@ -340,13 +342,14 @@ public abstract class PotentialAction
 
     #region constructor
 
-    protected PotentialAction(string buttonName, Vector3 position)
+    protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position)
     {
-        m_destroyed = false;
+        Destroyed = false;
         m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(buttonName), position, Quaternion.identity)).GetComponent<CircularButton>();
         m_button.Action = Commit;
         m_button.Unmark();
         m_name = buttonName;
+        m_entity = entity;
     } 
 
     #endregion
@@ -355,53 +358,85 @@ public abstract class PotentialAction
 
     public virtual void DisplayButton()
     {
-        m_button.Mark();
+        //if the condition for this command still stands, display it. otherwise destroy it
+        if(!Destroyed && NecessaryCondition())
+        {
+            m_button.Mark();
+        }
+        else
+        {
+            Destroy();
+        }
     }
 
     public virtual void RemoveDisplay()
     {
-        m_button.Unmark();
+        if (!Destroyed)
+        {
+            m_button.Unmark();
+        }
     }
 
     public virtual void Destroy()
     {
-        if (!m_destroyed)
+        if (!Destroyed)
         {
             m_button.Unmark();
             UnityEngine.Object.Destroy(m_button.gameObject);
-            m_destroyed = false;
+            Destroyed = true;
         }
     }
 
     public virtual void Commit()
     {
-        Assert.AssertConditionMet(!m_destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
+        Assert.AssertConditionMet(!Destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
+        Assert.EqualOrLesser(1, m_entity.Health, "{0} shouldn't be destroyed. Its condition is {1}".FormatWith(m_entity, m_entity.FullState()));
+        AffectEntity();
+        //makes it display all buttons;
+        TacticalState.SelectedHex = TacticalState.SelectedHex;
         Debug.Log("{0} commited {1}".FormatWith(ActingEntity, m_name));
     }
+
+    #endregion
+
+    #region private methods
+
+    //affects the acting entity with the action's costs
+    protected abstract void AffectEntity();
+
+    //represents the necessary conditions for the action to exist
+    protected abstract bool NecessaryCondition();
 
     #endregion
 }
 
 public class MovementAction : PotentialAction
 {
+    #region private members
+
+    private readonly IEnumerable<Hex> m_path;
+    //TODO - does walking consume only movement points, or also energy (and if we implement that, produce heat)?
+    private readonly double m_cost;
+
+    #endregion
+
     #region constructors
 
-    public MovementAction(IEnumerable<Hex> path) : 
-        base("movementMarker", path.Last().Position)
+    public MovementAction(MovingEntity entity, IEnumerable<Hex> path, double cost) : 
+        base(entity, "movementMarker", path.Last().Position)
     {
         m_path = path;
         m_button.OnMouseOverProperty = DisplayPath;
         m_button.OnMouseExitProperty = RemovePath;
+        m_cost = cost;
     }
 
-    public MovementAction(MovementAction action, Hex hex) : 
-        this(action.m_path.Union(new[]{hex}))
+    public MovementAction(MovingEntity entity, MovementAction action, Hex hex, double cost) : 
+        this(entity, action.m_path.Union(new[]{hex}), cost)
     {
     }
 
     #endregion
-
-    private readonly IEnumerable<Hex> m_path;
 
     #region private methods
 
@@ -441,13 +476,28 @@ public class MovementAction : PotentialAction
     {
         lock (TacticalState.Lock)
         {
+            base.Commit();
             var lastHex = m_path.Last();
             lastHex.Content = ActingEntity;
             TacticalState.SelectedHex = null;
-            base.Commit();
             //TODO - affects on commiting entity? Energy / heat cost, etc.?
             Destroy();
         }
+    }
+
+    protected override void AffectEntity()
+    {
+        var movingEntity = m_entity as MovingEntity;
+        Assert.NotNull(movingEntity, "{0} should be a Moving Entity".FormatWith(m_entity));
+        Assert.EqualOrLesser(m_cost, movingEntity.AvailableSteps, "{0} should have enough movement steps available. Its condition is {1}".FormatWith(m_entity, m_entity.FullState()));
+        movingEntity.AvailableSteps -= m_cost;
+    }
+
+    protected override bool NecessaryCondition()
+    {
+        var movingEntity = m_entity as MovingEntity;
+        Assert.NotNull(movingEntity, "{0} should be a Moving Entity".FormatWith(m_entity));
+        return m_cost <= movingEntity.AvailableSteps;
     }
 
     #endregion
@@ -456,17 +506,30 @@ public class MovementAction : PotentialAction
 public class OperateSystemAction : PotentialAction
 {
     private readonly Action m_action;
+    private readonly double m_cost;
 
-    public OperateSystemAction(HexOperation effect, string buttonName, Hex hex, Vector2 offset) : 
-        base(buttonName, (Vector2)hex.Position + (Vector2)offset)
+    public OperateSystemAction(ActiveEntity entity, HexOperation effect, string buttonName, Hex hex, Vector2 offset, double cost) : 
+        base(entity, buttonName, (Vector2)hex.Position + (Vector2)offset)
     {
         m_action = ()=> effect(hex);
+        m_cost = cost;
     }
 
     public override void Commit()
     {
         m_action();
         base.Commit();
+    }
+
+    protected override void AffectEntity()
+    {
+        Assert.EqualOrLesser(m_cost, m_entity.CurrentEnergy, "{0} should have enough energy available. Its condition is {1}".FormatWith(m_entity, m_entity.FullState()));
+        m_entity.CurrentEnergy -= m_cost;
+    }
+
+    protected override bool NecessaryCondition()
+    {
+        return m_cost <= m_entity.CurrentEnergy;
     }
 }
 

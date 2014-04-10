@@ -67,6 +67,12 @@ public abstract class Entity
         }
     }
 
+    // this function returns a string value that represents the mutable state of the entity
+    public virtual string FullState()
+    {
+        return "Health {0} shields {1} Hex {2}".FormatWith(Health, Shield, Hex);
+    }
+
     #region object overrides
 
     public override bool Equals(object obj)
@@ -83,10 +89,11 @@ public abstract class Entity
 
     public override string ToString()
     {
-        return "{0}, health={1}, shield={2}, Visuals={3}".FormatWith(m_name, Health, Shield, Visuals);
+        return m_name;
     }
 
     #endregion
+
     #endregion
 
     #region private methods
@@ -153,12 +160,14 @@ public abstract class ActiveEntity : Entity
 {
     #region constructor
 
-    public ActiveEntity(Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
+    public ActiveEntity(double maximumEnergy, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
         base(loyalty, health, shield, visuals, reactor)
     {
         m_radarRange = radarRange;
         m_sightRange = sightRange;
         m_systems = systems;
+        m_maximumEnergy = maximumEnergy;
+        CurrentEnergy = maximumEnergy;
     }
 
     #endregion
@@ -177,8 +186,6 @@ public abstract class ActiveEntity : Entity
 
     private IEnumerable<PotentialAction> m_actions;
 
-    private double m_currentEnergy;
-
     private readonly double m_maximumEnergy;
 
     #endregion
@@ -196,6 +203,8 @@ public abstract class ActiveEntity : Entity
             return m_actions;
         }
     }
+
+    public double CurrentEnergy { get; set; }
 
     #endregion
 
@@ -264,7 +273,12 @@ public abstract class ActiveEntity : Entity
     public virtual void StartTurn()
     {
         ResetActions();
-        m_currentEnergy = m_maximumEnergy;
+        CurrentEnergy = m_maximumEnergy;
+    }
+
+    public override string FullState()
+    {
+        return "{0} Energy {1}".FormatWith(base.FullState(), CurrentEnergy);
     }
 
     #endregion
@@ -285,10 +299,10 @@ public abstract class ActiveEntity : Entity
 
     protected virtual IEnumerable<PotentialAction> ComputeActions()
     {
-        Debug.Log("{0} is computing actions".FormatWith(this.Name));
+        Debug.Log("{0} is computing actions. Its condition is {1}".FormatWith(this, FullState()));
         var dict = new Dictionary<Hex, List<PotentialAction>>();
         return m_systems.Where(system => system.Operational())
-            .SelectMany(system => system.ActionsInRange(this.Hex, dict));
+            .SelectMany(system => system.ActionsInRange(this, dict));
     }
 
     #endregion
@@ -304,30 +318,34 @@ public abstract class MovingEntity : ActiveEntity
 
     private readonly double m_maximumSpeed;
 
-    private double m_availableSteps;
-
     private readonly MovementType m_movementType;
+
+    #endregion
+
+    #region properties
+
+    public double AvailableSteps { get ; set; }
 
     #endregion
 
     #region constructor
 
-    public MovingEntity(MovementType movement, double speed, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
-        base(loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
+    public MovingEntity(double maximumEnergy, MovementType movement, double speed, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
+        base(maximumEnergy, loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
     {
         m_maximumSpeed = speed;
-        m_availableSteps = speed;
+        AvailableSteps = speed;
         m_movementType = movement;
     }
 
     #endregion
 
-    #region ActiveEntity overrides
+    #region overrides
 
     protected override IEnumerable<PotentialAction> ComputeActions()
     {
         var baseActions = base.ComputeActions();
-        var possibleHexes = AStar.FindAllAvailableHexes(Hex, m_availableSteps, m_movementType);
+        var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, m_movementType);
         foreach (var movement in possibleHexes.Values)
         {
             movement.ActingEntity = this;
@@ -337,8 +355,13 @@ public abstract class MovingEntity : ActiveEntity
 
     public override void StartTurn()
     {
-        base.ResetActions();
-        m_availableSteps = m_maximumSpeed;
+        base.StartTurn();
+        AvailableSteps = m_maximumSpeed;
+    }
+
+    public override string FullState()
+    {
+        return "{0} movement {1}".FormatWith(base.FullState(), AvailableSteps);
     }
 
     #endregion
@@ -352,6 +375,7 @@ public abstract class MovingEntity : ActiveEntity
 public class Mech : MovingEntity
 {
     public Mech(IEnumerable<Subsystem> systems, EntityReactor reactor,
+                double maximumEnergy = 2,
                 double health = 5,
                 double shield = 3,
                 VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
@@ -359,7 +383,7 @@ public class Mech : MovingEntity
                 Loyalty loyalty = Loyalty.Player,
                 int radarRange = 20,
                 int sightRange = 10) :
-        base(MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
+        base(maximumEnergy, MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
     { }
 }
 
