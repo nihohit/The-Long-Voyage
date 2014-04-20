@@ -36,6 +36,7 @@ public class HexReactor : CircularButton
     public void RemoveFogOfWarMarker()
     {
         RemoveMarker(m_fogOfWarMarker);
+        RemoveRadarBlipMarker();
         if(MarkedHex.Content != null)
         {
             MarkedHex.Content.Marker.Mark();
@@ -96,7 +97,7 @@ public class HexReactor : CircularButton
     private IEnumerable<PotentialAction> ActionCheck()
     {
         var activeEntity = MarkedHex.Content as ActiveEntity;
-        if(activeEntity == null)
+        if(activeEntity == null || activeEntity.Loyalty != TacticalState.CurrentTurn)
         {
             return null;
         }

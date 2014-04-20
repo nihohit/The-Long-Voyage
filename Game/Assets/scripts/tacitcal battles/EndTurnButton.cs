@@ -1,8 +1,8 @@
-﻿public class EndTurnButton : CircularButton {
+public class EndTurnButton : CircularButton {
 
 	// Use this for initialization
 	void Start () 
     {
-        Action = TacticalState.Endturn;
+        Action = TacticalState.StartTurn;
 	}
 }

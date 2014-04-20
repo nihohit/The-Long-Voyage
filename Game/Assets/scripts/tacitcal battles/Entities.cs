@@ -61,7 +61,7 @@ public abstract class Entity
         //TODO - handle damage types
         Health -= damage;
         Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
-        if(Health <= 0)
+        if(Destroyed())
         {
             Destroy();
         }
@@ -71,6 +71,12 @@ public abstract class Entity
     public virtual string FullState()
     {
         return "Health {0} shields {1} Hex {2}".FormatWith(Health, Shield, Hex);
+    }
+
+    // just a simple function to make the code more readable
+    public bool Destroyed()
+    {
+        return Health > 0;
     }
 
     #region object overrides
@@ -173,8 +179,6 @@ public abstract class ActiveEntity : Entity
     #endregion
 
     #region private fields
-
-    private HashSet<Hex> m_seenHexes;
     
     private HashSet<Hex> m_detectedHexes;
 
@@ -206,6 +210,8 @@ public abstract class ActiveEntity : Entity
 
     public double CurrentEnergy { get; set; }
 
+    public HashSet<Hex> SeenHexes { get; private set; }
+
     #endregion
 
     #region public methods
@@ -229,16 +235,16 @@ public abstract class ActiveEntity : Entity
         var whatTheEntitySeesNowInRadar = FindRadarHexes().Except(whatTheEntitySeesNow);
         Debug.Log("{0} is setting seen hexes".FormatWith(Name));
 
-        if(m_seenHexes != null)
+        if(SeenHexes != null)
         {
             var whatTheEntitySeesNowSet = new HashSet<Hex>(whatTheEntitySeesNow);
             var whatTheEntitySeesNowInRadarSet = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
-
+            //TODO - we can remove this optimization and just call ResetSeenHexes before this, but it'll be more expensive. Until it'll cause problem I'm keeping this
             //this leaves in each list the hexes not in the other
-            whatTheEntitySeesNowSet.ExceptOnBoth(m_seenHexes);
+            whatTheEntitySeesNowSet.ExceptOnBoth(SeenHexes);
             whatTheEntitySeesNowInRadarSet.ExceptOnBoth(m_detectedHexes);
 
-            foreach(var hex in m_seenHexes)
+            foreach(var hex in SeenHexes)
             {
                 hex.Unseen();
             }
@@ -266,13 +272,21 @@ public abstract class ActiveEntity : Entity
                 hex.Detected();
             }
         }
-        m_seenHexes = new HashSet<Hex>(whatTheEntitySeesNow);
+        SeenHexes = new HashSet<Hex>(whatTheEntitySeesNow);
         m_detectedHexes = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
+    }
+
+    public void ResetSeenHexes()
+    {
+        SeenHexes = null;
+        m_detectedHexes = null;
+        SetSeenHexes();
     }
 
     public virtual void StartTurn()
     {
         ResetActions();
+        ResetSeenHexes();
         CurrentEnergy = m_maximumEnergy;
     }
 
@@ -318,13 +332,12 @@ public abstract class MovingEntity : ActiveEntity
 
     private readonly double m_maximumSpeed;
 
-    private readonly MovementType m_movementType;
-
     #endregion
 
     #region properties
 
     public double AvailableSteps { get ; set; }
+    public MovementType MovementMethod { get; private set; }
 
     #endregion
 
@@ -335,7 +348,7 @@ public abstract class MovingEntity : ActiveEntity
     {
         m_maximumSpeed = speed;
         AvailableSteps = speed;
-        m_movementType = movement;
+        MovementMethod = movement;
     }
 
     #endregion
@@ -345,11 +358,7 @@ public abstract class MovingEntity : ActiveEntity
     protected override IEnumerable<PotentialAction> ComputeActions()
     {
         var baseActions = base.ComputeActions();
-        var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, m_movementType);
-        foreach (var movement in possibleHexes.Values)
-        {
-            movement.ActingEntity = this;
-        }
+        var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, MovementMethod);
         return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
     }
 

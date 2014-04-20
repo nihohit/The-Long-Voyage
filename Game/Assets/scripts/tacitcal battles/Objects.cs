@@ -14,8 +14,8 @@ public class Hex
 
 	private Entity m_content = null;
 
+    //these shouldn't be touched directly. There's a property for that.
     private int m_seen = 0, m_detected = 0;
-
 
     #endregion
 	
@@ -35,47 +35,93 @@ public class Hex
 		}
 		set
 		{
-            //using reference comparisons to account for null
-            if(value != m_content)
+            if(TacticalState.BattleStarted)
             {
-                if(value != null)
+                //using reference comparisons to account for null
+                if(value != m_content)
                 {
-                    Assert.IsNull(m_content, 
-                                  "m_content", "Hex {0} already has entity {1} and can't accept entity {2}"
-                                    .FormatWith(Coordinates, m_content, value));
-                    m_content = value;
-
-                    var otherHex = m_content.Hex;
-                    m_content.Hex = this;
-                    m_content.Marker.Mark(Position);
-
-                    if(otherHex != null)
+                    if(value != null)
                     {
-                        otherHex.Content = null;
-                    }
+                        Assert.IsNull(m_content, 
+                                      "m_content", "Hex {0} already has entity {1} and can't accept entity {2}"
+                                        .FormatWith(Coordinates, m_content, value));
+                        m_content = value;
 
-                    var active = value as ActiveEntity;
-                    if(active != null)
-                    {
-                        active.SetSeenHexes();
+                        var otherHex = m_content.Hex;
+                        m_content.Hex = this;
+                        m_content.Marker.Mark(Position);
+
+                        if(otherHex != null)
+                        {
+                            otherHex.Content = null;
+                        }
+
+                        var active = value as ActiveEntity;
+                        if(active != null)
+                        {
+                            active.SetSeenHexes();
+                        }
                     }
+                    //if hex recieves null value as content
+                    else
+                    {
+                        if(m_content != null)
+                        {
+                            Assert.AssertConditionMet((m_content.Destroyed()) || 
+                                                      (m_content.Hex != null &&
+                                                      !m_content.Hex.Equals(this)), 
+                                                      "When replaced with a null value, entity should either move to another hex or be destroyed");
+                        }
+                        m_content = null;
+                    }
+                    TacticalState.ResetAllActions();
                 }
-                //if hex recieves null value as content
-                else
-                {
-                    if(m_content != null)
-                    {
-                        Assert.AssertConditionMet((m_content.Health <= 0) || 
-                                                  (m_content.Hex != null &&
-                                                  !m_content.Hex.Equals(this)), 
-                                                  "When replaced with a null value, entity should either move to another hex or be destroyed");
-                    }
-                    m_content = null;
-                }
-                TacticalState.ResetAllActions();
+            }
+            //if the game hasn't started yet
+            else
+            {
+                m_content = value;
+                m_content.Hex = this;
+                m_content.Marker.Mark(Position);
             }
 		}
 	}
+
+    private int SeenAmount { 
+        get { return m_seen; } 
+        set { m_seen = value;
+            if(m_seen == 0)
+            {
+                Reactor.DisplayFogOfWarMarker();
+                if(DetectedAmount > 0)
+                {
+                    Reactor.DisplayRadarBlipMarker();
+                }
+                else
+                {
+                    Reactor.RemoveRadarBlipMarker();
+                }
+            }
+            else
+            {
+                Reactor.RemoveFogOfWarMarker();
+            }
+        }
+    }
+
+    private int DetectedAmount { 
+        get { return m_detected; } 
+        set { m_detected = value;
+            if(m_detected == 0)
+            {
+                Reactor.RemoveRadarBlipMarker();
+            }
+            if(m_detected == 1 && m_seen == 0)
+            {
+                Reactor.DisplayRadarBlipMarker();
+            }
+        }
+    }
 
     #endregion
 
@@ -118,7 +164,7 @@ public class Hex
     }
 
     public IEnumerable<Hex> RaycastAndResolve<T>(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, HexCheck breakCheck, string layerName, Func<T, Hex> hexExtractor) where T : MonoBehaviour
-    {
+     {
         Assert.NotNull(Content, "Operating out of empty hex {0}".FormatWith(this));
         
         Content.Marker.collider2D.enabled = false;
@@ -172,44 +218,28 @@ public class Hex
 
     public void Seen()
     {
-        m_seen++;
-        if(m_seen == 1)
-        {
-            Reactor.RemoveFogOfWarMarker();
-        }
+        SeenAmount++;
     }
 
     public void Unseen()
     {
-        m_seen--;
-        if(m_seen == 0)
-        {
-            Reactor.DisplayFogOfWarMarker();
-        }
+        SeenAmount--;
     }
 
     public void Detected()
     {
-        m_detected++;
-        if(m_detected == 1 && m_seen == 0)
-        {
-            Reactor.DisplayRadarBlipMarker();
-        }
+        DetectedAmount++;
     }
 
     public void Undetected()
     {
-        m_detected--;
-        if(m_detected == 0)
-        {
-            Reactor.RemoveRadarBlipMarker();
-        }
+        DetectedAmount--;
     }
 
     public void ResetSight()
     {
-        m_seen = 0;
-        m_detected = 0;
+        SeenAmount = 0;
+        DetectedAmount = 0;
     }
 
     #endregion
@@ -328,28 +358,29 @@ public abstract class PotentialAction
     //TODO - remove after testing
     private readonly string m_name;
 
-    protected readonly ActiveEntity m_entity;
+    #endregion
+
+    #region properties
+
+    public ActiveEntity ActingEntity { get ; private set; }
+
+    public Hex TargetedHex { get; private set; }
 
     public bool Destroyed { get ; private set;}
 
     #endregion
 
-    #region properties
-
-    public ActiveEntity ActingEntity { get; set; }
-
-    #endregion
-
     #region constructor
 
-    protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position)
+    protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position, Hex targetedHex)
     {
         Destroyed = false;
         m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(buttonName), position, Quaternion.identity)).GetComponent<CircularButton>();
         m_button.Action = Commit;
         m_button.Unmark();
         m_name = buttonName;
-        m_entity = entity;
+        ActingEntity = entity;
+        TargetedHex = targetedHex;
     } 
 
     #endregion
@@ -390,7 +421,7 @@ public abstract class PotentialAction
     public virtual void Commit()
     {
         Assert.AssertConditionMet(!Destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
-        Assert.EqualOrLesser(1, m_entity.Health, "{0} shouldn't be destroyed. Its condition is {1}".FormatWith(m_entity, m_entity.FullState()));
+        Assert.EqualOrLesser(1, ActingEntity.Health, "{0} shouldn't be destroyed. Its condition is {1}".FormatWith(ActingEntity, ActingEntity.FullState()));
         AffectEntity();
         //makes it display all buttons;
         TacticalState.SelectedHex = TacticalState.SelectedHex;
@@ -423,7 +454,11 @@ public class MovementAction : PotentialAction
     #region constructors
 
     public MovementAction(MovingEntity entity, IEnumerable<Hex> path, double cost) : 
-        base(entity, "movementMarker", path.Last().Position)
+        this(entity, path, cost, path.Last())
+    { }
+
+    public MovementAction(MovingEntity entity, IEnumerable<Hex> path, double cost, Hex lastHex) : 
+        base(entity, "movementMarker", path.Last().Position, lastHex)
     {
         m_path = path;
         m_button.OnMouseOverProperty = DisplayPath;
@@ -431,8 +466,8 @@ public class MovementAction : PotentialAction
         m_cost = cost;
     }
 
-    public MovementAction(MovingEntity entity, MovementAction action, Hex hex, double cost) : 
-        this(entity, action.m_path.Union(new[]{hex}), cost)
+    public MovementAction(MovementAction action, Hex hex, double cost) : 
+        this((MovingEntity)action.ActingEntity, action.m_path.Union(new[]{hex}), cost, hex)
     {
     }
 
@@ -474,29 +509,30 @@ public class MovementAction : PotentialAction
 
     public override void Commit()
     {
-        lock (TacticalState.Lock)
-        {
-            base.Commit();
-            var lastHex = m_path.Last();
-            lastHex.Content = ActingEntity;
-            TacticalState.SelectedHex = null;
-            //TODO - affects on commiting entity? Energy / heat cost, etc.?
-            Destroy();
-        }
+        base.Commit();
+        var lastHex = m_path.Last();
+        lastHex.Content = ActingEntity;
+        TacticalState.SelectedHex = null;
+        //TODO - affects on commiting entity? Energy / heat cost, etc.?
+        Destroy();
     }
 
     protected override void AffectEntity()
     {
-        var movingEntity = m_entity as MovingEntity;
-        Assert.NotNull(movingEntity, "{0} should be a Moving Entity".FormatWith(m_entity));
-        Assert.EqualOrLesser(m_cost, movingEntity.AvailableSteps, "{0} should have enough movement steps available. Its condition is {1}".FormatWith(m_entity, m_entity.FullState()));
+        var movingEntity = ActingEntity as MovingEntity;
+        Assert.NotNull(movingEntity, "{0} should be a Moving Entity".FormatWith(ActingEntity));
+        Assert.EqualOrLesser(m_cost, movingEntity.AvailableSteps, 
+             "{0} should have enough movement steps available. Its condition is {1}".
+                FormatWith(ActingEntity, ActingEntity.FullState()));
         movingEntity.AvailableSteps -= m_cost;
     }
 
     protected override bool NecessaryCondition()
     {
-        var movingEntity = m_entity as MovingEntity;
-        Assert.NotNull(movingEntity, "{0} should be a Moving Entity".FormatWith(m_entity));
+        var movingEntity = ActingEntity as MovingEntity;
+        Assert.NotNull(movingEntity, 
+           "{0} should be a Moving Entity".
+               FormatWith(ActingEntity));
         return m_cost <= movingEntity.AvailableSteps;
     }
 
@@ -508,10 +544,10 @@ public class OperateSystemAction : PotentialAction
     private readonly Action m_action;
     private readonly double m_cost;
 
-    public OperateSystemAction(ActiveEntity entity, HexOperation effect, string buttonName, Hex hex, Vector2 offset, double cost) : 
-        base(entity, buttonName, (Vector2)hex.Position + (Vector2)offset)
+    public OperateSystemAction(ActiveEntity entity, HexOperation effect, string buttonName, Hex targetedHex, Vector2 offset, double cost) : 
+        base(entity, buttonName, (Vector2)targetedHex.Position + (Vector2)offset, targetedHex)
     {
-        m_action = ()=> effect(hex);
+        m_action = ()=> effect(targetedHex);
         m_cost = cost;
     }
 
@@ -523,13 +559,15 @@ public class OperateSystemAction : PotentialAction
 
     protected override void AffectEntity()
     {
-        Assert.EqualOrLesser(m_cost, m_entity.CurrentEnergy, "{0} should have enough energy available. Its condition is {1}".FormatWith(m_entity, m_entity.FullState()));
-        m_entity.CurrentEnergy -= m_cost;
+         Assert.EqualOrLesser(m_cost, ActingEntity.CurrentEnergy, 
+            "{0} should have enough energy available. Its condition is {1}".
+                             FormatWith(ActingEntity, ActingEntity.FullState()));
+         ActingEntity.CurrentEnergy -= m_cost;
     }
 
     protected override bool NecessaryCondition()
     {
-        return m_cost <= m_entity.CurrentEnergy;
+        return m_cost <= ActingEntity.CurrentEnergy;
     }
 }
 

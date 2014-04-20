@@ -16,23 +16,16 @@ public static class TacticalState
 
     private static object s_lock;
 
-    //for each entity and each hex, the available actions
+    //for each entity and each hex, the available actions 
     private static HashSet<ActiveEntity> s_activeEntities;
+
+    private static IEnumerable<Hex> s_hexes;
 	
     #endregion
 
     #region properties
 
-    public static object Lock { 
-        get 
-        { 
-            if(s_lock == null)
-            {
-                s_lock = new object();
-            }
-            return s_lock; 
-        } 
-    }
+    public static bool BattleStarted { get; set; }
 
     public static HexReactor SelectedHex
 	{ 
@@ -42,17 +35,14 @@ public static class TacticalState
 		}
 		set
 		{
-            lock(Lock)
-            {
-    			if(s_selectedHex != null)
-    			{
-    				s_selectedHex.Unselect();
-    			}
+			if(s_selectedHex != null)
+			{
+				s_selectedHex.Unselect();
+			}
 
-    			s_selectedHex = value;
-    			if(s_selectedHex != null)
-    				s_selectedHex.Select();
-            }
+			s_selectedHex = value;
+			if(s_selectedHex != null)
+				s_selectedHex.Select();
 		}
 	}
 
@@ -62,20 +52,23 @@ public static class TacticalState
 
     #region public methods
 
-    public static void Init(IEnumerable<Loyalty> players) 
+    public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes) 
     { 
-        s_activeEntities = new HashSet<ActiveEntity>();
-        SetTurnOrder(players);
+        BattleStarted = false;
+        s_activeEntities = new HashSet<ActiveEntity>(entities);
+        SetTurnOrder(entities.Select(ent => ent.Loyalty).Distinct());
+        s_hexes = hexes;
     }
 
-    public static void Endturn()
+    public static void StartTurn()
     {
-        Debug.Log("ending turn");
         s_currentTurn = s_currentTurn.Next;
         if(s_currentTurn == null)
         {
             s_currentTurn = s_turnOrder.First;
         }
+        s_hexes.ForEach(hex => hex.ResetSight());
+        Debug.Log("Starting {0}'s turn.".FormatWith(CurrentTurn));
         s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn).ForEach(ent => ent.StartTurn());
         SelectedHex = null;
     }
@@ -86,6 +79,7 @@ public static class TacticalState
         SelectedHex = SelectedHex;
     }
 
+    //TODO - remove once we don't have active creation of entities
     public static void AddEntity(Entity ent)
     {
         var active = ent as ActiveEntity;
