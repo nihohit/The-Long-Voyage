@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -109,11 +110,8 @@ public class GenerateLevel : MonoBehaviour
 
         //HACK - to be removed. in charge of positioning the first entities
         var chosenHexes = m_emptyHexes.ChooseRandomValues(GlobalState.EntitiesInBattle.Count()).OrderBy(x => Randomiser.Next());
-        for(int i = 0; i < GlobalState.EntitiesInBattle.Count(); i++)
-        {
-            chosenHexes.Skip(i).First().Content = GlobalState.EntitiesInBattle.Skip(i).First();
-        }
-	}
+        chosenHexes.ForEach(hex => hex.Content = GlobalState.EntitiesInBattle.First(ent => ent.Hex == null));
+    }
 
     #endregion
 
