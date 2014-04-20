@@ -12,6 +12,6 @@ public class UnknownTypeException : Exception
 public class AssertedException : Exception
 {
     public AssertedException(string message) : 
-        base("Condition {0} wasn't met".FormatWith(message))
+        base("Condition wasn't met : {0}".FormatWith(message))
      {}
 }

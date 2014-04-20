@@ -15,34 +15,6 @@ public static class MyExtensions
         return String.Format(str, formattingInfo);
     }
 
-    public static IEnumerable<T> GetValues<T>() 
-    {
-        return (T[])Enum.GetValues(typeof(T));
-    }
-
-    public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
-    {
-        return new HashSet<T>(source);
-    }
-
-    //this function ensures that a given enumeration materializes
-    public static IEnumerable<T> Materialize<T> (this IEnumerable<T> enumerable)
-    {
-        if (enumerable is ICollection<T>) return enumerable;
-        return enumerable.ToList();
-    }
-
-    public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)
-    {
-        if(enumerable != null)
-        {
-            foreach(var val in enumerable)
-            {
-                op(val);
-            }
-        }
-    }
-
     public static void StartTiming(this IIdentifiable timer, string operation)
     {
         Timer.StartTiming(timer.Name, operation);
@@ -64,11 +36,6 @@ public static class MyExtensions
 #endif
     }
 
-    public static T ChooseRandomValue<T>(this IEnumerable<T> group)
-    {
-        return Randomiser.ChooseValue(group);
-    }
-
     public static T TryGetOrAdd<T,S>(this IDictionary<S, T> dict, S key, Func<T> defaultConstructor)
     {
         T result;
@@ -87,6 +54,58 @@ public static class MyExtensions
         otherSet.IntersectWith(thisSet);
         thisSet.ExceptWith(otherSet);
     }
+
+    #region IEnumerable
+
+    public static IEnumerable<T> GetValues<T>() 
+    {
+        return (T[])Enum.GetValues(typeof(T));
+    }
+    
+    public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
+    {
+        return new HashSet<T>(source);
+    }
+    
+    //this function ensures that a given enumeration materializes
+    public static IEnumerable<T> Materialize<T> (this IEnumerable<T> enumerable)
+    {
+        if (enumerable is ICollection<T>) return enumerable;
+        return enumerable.ToList();
+    }
+    
+    public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)
+    {
+        if(enumerable != null)
+        {
+            foreach(var val in enumerable)
+            {
+                op(val);
+            }
+        }
+    }
+
+    public static bool None<T>(this IEnumerable<T> enumerable, Func<T, bool> op)
+    {
+        return !enumerable.Any(op);
+    }
+
+    public static bool None<T>(this IEnumerable<T> enumerable)
+    {
+        return !enumerable.Any();
+    }
+    
+    public static T ChooseRandomValue<T>(this IEnumerable<T> group)
+    {
+        return Randomiser.ChooseValue(group);
+    }
+    
+    public static IEnumerable<T> ChooseRandomValues<T>(this IEnumerable<T> group, int amount)
+    {
+        return Randomiser.ChooseValues(group, amount);
+    }
+
+    #endregion
 }
 
 public static class Hasher
