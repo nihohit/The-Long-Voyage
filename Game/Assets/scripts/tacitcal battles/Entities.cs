@@ -76,7 +76,7 @@ public abstract class Entity
     // just a simple function to make the code more readable
     public bool Destroyed()
     {
-        return Health > 0;
+        return Health <= 0;
     }
 
     #region object overrides

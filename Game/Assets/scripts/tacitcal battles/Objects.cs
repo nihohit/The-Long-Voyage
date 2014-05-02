@@ -357,6 +357,7 @@ public abstract class PotentialAction
     protected readonly CircularButton m_button;
     //TODO - remove after testing
     private readonly string m_name;
+    private bool m_active;
 
     #endregion
 
@@ -374,9 +375,14 @@ public abstract class PotentialAction
 
     protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position, Hex targetedHex)
     {
+        m_active = false;
         Destroyed = false;
         m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(buttonName), position, Quaternion.identity)).GetComponent<CircularButton>();
-        m_button.Action = Commit;
+        m_button.Action = () => 
+        {
+            m_active = true;
+            Commit();
+        };
         m_button.Unmark();
         m_name = buttonName;
         ActingEntity = entity;
@@ -420,7 +426,7 @@ public abstract class PotentialAction
 
     public virtual void Commit()
     {
-        Assert.AssertConditionMet(!Destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
+        Assert.AssertConditionMet((!Destroyed) || m_active, "Action {0} was operated after being destroyed".FormatWith(this));
         Assert.EqualOrLesser(1, ActingEntity.Health, "{0} shouldn't be destroyed. Its condition is {1}".FormatWith(ActingEntity, ActingEntity.FullState()));
         AffectEntity();
         //makes it display all buttons;
