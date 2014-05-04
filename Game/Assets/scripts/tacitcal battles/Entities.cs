@@ -13,13 +13,14 @@ public abstract class Entity
 
     private readonly int m_id;
 
+    private readonly String m_name;
+
     #endregion
 
     #region constructor
 
-    public Entity(EntityType type, Loyalty loyalty, double health, double shield, VisualProperties visuals, EntityReactor reactor)
+    public Entity(Loyalty loyalty, double health, double shield, VisualProperties visuals, EntityReactor reactor)
     {
-        UnitType = type;
         Loyalty = loyalty;
         Health = health;
         Shield = shield;
@@ -27,6 +28,7 @@ public abstract class Entity
         reactor.Entity = this;
         this.Marker = reactor;
         m_id = s_idCounter++;
+        m_name = "{0} {1} {2}".FormatWith(this.GetType().ToString(), Loyalty, m_id);
     }
 
     #endregion
@@ -36,8 +38,6 @@ public abstract class Entity
     public int ID { get {return m_id;}}
 
     public MarkerScript Marker { get; set; }
-
-    public EntityType UnitType { get; private set; }
 
     public double Health { get; private set; }
 
@@ -49,20 +49,28 @@ public abstract class Entity
 
     public Loyalty Loyalty { get; private set; }
 
+    public String Name { get { return m_name; } }
+
     #endregion
 
     #region public methods
 
     public virtual void Hit(double damage, DamageType damageType)
     {
-        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(this, damage, damageType));
+        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, damage, damageType));
         //TODO - handle damage types
         Health -= damage;
-        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(this, Health, Shield));
+        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
         if(Health <= 0)
         {
             Destroy();
         }
+    }
+
+    // this function returns a string value that represents the mutable state of the entity
+    public virtual string FullState()
+    {
+        return "Health {0} shields {1} Hex {2}".FormatWith(Health, Shield, Hex);
     }
 
     #region object overrides
@@ -71,28 +79,28 @@ public abstract class Entity
     {
         var ent = obj as Entity;
         return ent != null &&
-            UnitType == ent.UnitType &&
             ID == ent.ID;
     }
 
     public override int GetHashCode()
     {
-        return Hasher.GetHashCode(UnitType, Marker, m_id);
+        return Hasher.GetHashCode(m_name, Marker, m_id);
     }
 
     public override string ToString()
     {
-        return "{0}, Id={1}, loyalty ={5}, health={2}, shield={3}, Visuals={4}".FormatWith(UnitType, m_id, Health, Shield, Visuals, Loyalty);
+        return m_name;
     }
 
     #endregion
+
     #endregion
 
     #region private methods
 
     private void Destroy()
     {
-        Debug.Log("Destroy {0}".FormatWith(this));
+        Debug.Log("Destroy {0}".FormatWith(m_name));
         this.Hex.Content = null;
         UnityEngine.Object.Destroy(this.Marker.gameObject);
     }
@@ -109,7 +117,7 @@ public abstract class TerrainEntity : Entity
     private Hex m_hex;
 
     public TerrainEntity(double health, bool visibleOnRadar, bool blocksSight, EntityReactor reactor)
-        : base(EntityType.TerrainFeature, Loyalty.Neutral, health, 0, 
+        : base(Loyalty.Neutral, health, 0, 
                VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None) | (blocksSight ? VisualProperties.BlocksSight : VisualProperties.None), reactor)
     {}
 
@@ -152,21 +160,23 @@ public abstract class ActiveEntity : Entity
 {
     #region constructor
 
-    public ActiveEntity(Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
-        base(type, loyalty, health, shield, visuals, reactor)
+    public ActiveEntity(double maximumEnergy, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
+        base(loyalty, health, shield, visuals, reactor)
     {
         m_radarRange = radarRange;
         m_sightRange = sightRange;
         m_systems = systems;
+        m_maximumEnergy = maximumEnergy;
+        CurrentEnergy = maximumEnergy;
     }
 
     #endregion
 
     #region private fields
 
-    public HashSet<Hex> m_seenHexes;
+    private HashSet<Hex> m_seenHexes;
     
-    public HashSet<Hex> m_detectedHexes;
+    private HashSet<Hex> m_detectedHexes;
 
     private readonly int m_radarRange;
 
@@ -174,22 +184,50 @@ public abstract class ActiveEntity : Entity
 
     private readonly IEnumerable<Subsystem> m_systems;
 
+    private IEnumerable<PotentialAction> m_actions;
+
+    private readonly double m_maximumEnergy;
+
+    #endregion
+
+    #region Properties
+
+    public IEnumerable<PotentialAction> Actions
+    { 
+        get
+        {
+            if (m_actions == null)
+            {
+                m_actions = ComputeActions().Materialize();
+            }
+            return m_actions;
+        }
+    }
+
+    public double CurrentEnergy { get; set; }
+
     #endregion
 
     #region public methods
 
-    public virtual IEnumerable<PotentialAction> ComputeActions()
+    public void ResetActions()
     {
-        var dict = new Dictionary<Hex, List<PotentialAction>>();
-        return m_systems.Where(system => system.Operational())
-            .SelectMany(system => system.ActionsInRange(this.Hex, dict)).ToList();
+        Debug.Log("{0} is resetting actions".FormatWith(Name));
+        if (m_actions != null)
+        {
+            foreach (var action in m_actions)
+            {
+                action.Destroy();
+            }
+        }
+        m_actions = null;
     }
 
     public void SetSeenHexes()
     {
         var whatTheEntitySeesNow = FindSeenHexes();
         var whatTheEntitySeesNowInRadar = FindRadarHexes().Except(whatTheEntitySeesNow);
-        Debug.Log("{0} is setting seen hexes".FormatWith(this));
+        Debug.Log("{0} is setting seen hexes".FormatWith(Name));
 
         if(m_seenHexes != null)
         {
@@ -199,15 +237,7 @@ public abstract class ActiveEntity : Entity
             //this leaves in each list the hexes not in the other
             whatTheEntitySeesNowSet.ExceptOnBoth(m_seenHexes);
             whatTheEntitySeesNowInRadarSet.ExceptOnBoth(m_detectedHexes);
-            
-            foreach(var hex in whatTheEntitySeesNowSet)
-            {
-                hex.Seen();
-            }
-            foreach(var hex in whatTheEntitySeesNowInRadarSet)
-            {
-                hex.Detected();
-            }
+
             foreach(var hex in m_seenHexes)
             {
                 hex.Unseen();
@@ -215,6 +245,14 @@ public abstract class ActiveEntity : Entity
             foreach(var hex in m_detectedHexes)
             {
                 hex.Undetected();
+            }
+            foreach(var hex in whatTheEntitySeesNowSet)
+            {
+                hex.Seen();
+            }
+            foreach(var hex in whatTheEntitySeesNowInRadarSet)
+            {
+                hex.Detected();
             }
         }
         else
@@ -232,9 +270,20 @@ public abstract class ActiveEntity : Entity
         m_detectedHexes = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
     }
 
+    public virtual void StartTurn()
+    {
+        ResetActions();
+        CurrentEnergy = m_maximumEnergy;
+    }
+
+    public override string FullState()
+    {
+        return "{0} Energy {1}".FormatWith(base.FullState(), CurrentEnergy);
+    }
+
     #endregion
 
-    #region private methods
+    #region private and protected methods
 
     private IEnumerable<Hex> FindSeenHexes()
     {
@@ -248,6 +297,14 @@ public abstract class ActiveEntity : Entity
         return Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
     }
 
+    protected virtual IEnumerable<PotentialAction> ComputeActions()
+    {
+        Debug.Log("{0} is computing actions. Its condition is {1}".FormatWith(this, FullState()));
+        var dict = new Dictionary<Hex, List<PotentialAction>>();
+        return m_systems.Where(system => system.Operational())
+            .SelectMany(system => system.ActionsInRange(this, dict));
+    }
+
     #endregion
 }
 
@@ -257,27 +314,57 @@ public abstract class ActiveEntity : Entity
 
 public abstract class MovingEntity : ActiveEntity
 {
-    public MovingEntity(MovementType movement, double speed, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, EntityType type, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
-        base(loyalty, radarRange, sightRange, systems, type, health, shield, visuals, reactor)
+    #region private fields
+
+    private readonly double m_maximumSpeed;
+
+    private readonly MovementType m_movementType;
+
+    #endregion
+
+    #region properties
+
+    public double AvailableSteps { get ; set; }
+
+    #endregion
+
+    #region constructor
+
+    public MovingEntity(double maximumEnergy, MovementType movement, double speed, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
+        base(maximumEnergy, loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
     {
-        Speed = speed;
-        Movement = movement;
+        m_maximumSpeed = speed;
+        AvailableSteps = speed;
+        m_movementType = movement;
     }
 
-    public double Speed { get; private set; }
+    #endregion
 
-    public MovementType Movement { get; private set; }
+    #region overrides
 
-    public override IEnumerable<PotentialAction> ComputeActions()
+    protected override IEnumerable<PotentialAction> ComputeActions()
     {
         var baseActions = base.ComputeActions();
-        var possibleHexes = AStar.FindAllAvailableHexes(this.Hex, this.Speed, this.Movement);
+        var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, m_movementType);
         foreach (var movement in possibleHexes.Values)
         {
             movement.ActingEntity = this;
         }
         return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
     }
+
+    public override void StartTurn()
+    {
+        base.StartTurn();
+        AvailableSteps = m_maximumSpeed;
+    }
+
+    public override string FullState()
+    {
+        return "{0} movement {1}".FormatWith(base.FullState(), AvailableSteps);
+    }
+
+    #endregion
 }
 
 #endregion
@@ -288,6 +375,7 @@ public abstract class MovingEntity : ActiveEntity
 public class Mech : MovingEntity
 {
     public Mech(IEnumerable<Subsystem> systems, EntityReactor reactor,
+                double maximumEnergy = 2,
                 double health = 5,
                 double shield = 3,
                 VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
@@ -295,7 +383,7 @@ public class Mech : MovingEntity
                 Loyalty loyalty = Loyalty.Player,
                 int radarRange = 20,
                 int sightRange = 10) :
-        base(MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, EntityType.Mech, health, shield, visuals, reactor)
+        base(maximumEnergy, MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
     { }
 }
 

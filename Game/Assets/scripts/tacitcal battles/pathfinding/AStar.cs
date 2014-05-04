@@ -18,6 +18,9 @@ internal static class AStar
 
     public static Dictionary<Hex, MovementAction> FindAllAvailableHexes(Hex entry, double availableDistance, MovementType movementType)
     {
+        Assert.NotNull(entry, "entry hex");
+        var movingEntity = entry.Content as MovingEntity;
+        Assert.NotNull(movingEntity, "moving entity in entry hex");
         var dict = new Dictionary<Hex, MovementAction>();
         //no heuristic here - we want accurate results
         var internalState = GenerateInternalState(entry, new AStarConfiguration(movementType, (check) => 0));
@@ -35,11 +38,11 @@ internal static class AStar
                 MovementAction action;
                 if(dict.TryGetValue(current.Parent.ChosenHex, out action))
                 {
-                    dict.Add(current.ChosenHex, new MovementAction(action, current.ChosenHex));
+                    dict.Add(current.ChosenHex, new MovementAction(movingEntity, action, current.ChosenHex, current.GValue));
                 }
                 else
                 {
-                    dict.Add(current.ChosenHex, new MovementAction(new[] { current.ChosenHex }));
+                    dict.Add(current.ChosenHex, new MovementAction(movingEntity, new[] { current.ChosenHex }, current.GValue));
                 }
             }
             foreach (var neighbour in current.ChosenHex.GetNeighbours())
