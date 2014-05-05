@@ -26,9 +26,8 @@ public class AnimalEvaluator : IActionEvaluator
      * If no potential targets are in sight, randomly roam. */
     public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity)
     {
-        var potentialTargets = actingEntity.SeenHexes.Select(hex => hex.Content).
-            OrderBy(ent => m_entityEvaluator.EvaluateValue(ent)).
-                Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
+        var potentialTargets = actingEntity.SeenHexes.Select(hex => hex.Content).Where(ent => ent != null && ent.Loyalty != Loyalty.Neutral)
+            .OrderBy(ent => m_entityEvaluator.EvaluateValue(ent)).Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
         var movingEntity = actingEntity as MovingEntity;
         foreach (var action in actingEntity.Actions)
         {
@@ -54,22 +53,13 @@ public class AnimalEvaluator : IActionEvaluator
                 foreach(var target in potentialTargets)
                 {
                     value +=  m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
-                        movementAction.TargetedHex, target.Hex, new AStarConfiguration(movingEntity.MovementMethod, (hex) => 0));
-
+                        movementAction.TargetedHex, target.Hex, new AStarConfiguration(movingEntity.MovementMethod, (Hex hex) => 0));
                 }
-                evaluatedAction.EvaluatedPriority = value;
-                evaluatedAction.NecessaryConditions = () =>
-                {
-                    return !actingEntity.Destroyed() && movementAction.TargetedHex.Content == null;
-                };
-                evaluatedAction.AchievedGoal = () => 
-                {
-                    return movementAction.TargetedHex.Content == actingEntity;
-                };
             }
 
             yield return evaluatedAction;
         }
     }
+
     #endregion
 }

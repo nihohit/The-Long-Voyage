@@ -9,7 +9,7 @@ public delegate bool ResultEvaluator();
 
 public interface IActionEvaluator
 {
-    IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity entity);
+    IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity);
 }
 
 public interface IEntityEvaluator
