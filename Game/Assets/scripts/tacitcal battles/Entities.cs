@@ -104,7 +104,7 @@ public abstract class Entity
 
     #region private methods
 
-    private void Destroy()
+    protected virtual void Destroy()
     {
         Debug.Log("Destroy {0}".FormatWith(m_name));
         this.Hex.Content = null;
@@ -317,6 +317,12 @@ public abstract class ActiveEntity : Entity
         var dict = new Dictionary<Hex, List<PotentialAction>>();
         return m_systems.Where(system => system.Operational())
             .SelectMany(system => system.ActionsInRange(this, dict));
+    }
+
+    protected override void Destroy()
+    {
+        base.Destroy();
+        TacticalState.DestroyActiveEntity(this);
     }
 
     #endregion

@@ -52,6 +52,11 @@ public static class TacticalState
 
     #region public methods
 
+    public static void DestroyActiveEntity(ActiveEntity ent)
+    {
+        s_activeEntities.Remove(ent);
+    }
+
     public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes) 
     { 
         BattleStarted = false;
