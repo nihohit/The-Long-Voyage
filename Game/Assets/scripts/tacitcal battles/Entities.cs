@@ -58,13 +58,25 @@ public abstract class Entity
     public virtual void Hit(double damage, DamageType damageType)
     {
         Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, damage, damageType));
-        //TODO - handle damage types
-        Health -= damage;
-        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
-        if(Destroyed())
+        switch(damageType)
         {
-            Destroy();
+            case DamageType.Physical:
+            case DamageType.EMP:
+                Shield -= damage;
+                break;
+            case DamageType.Heat:
+                //TODO - implement heat mechanics
+                throw new NotImplementedException();
+                break;
         }
+        
+        if(Shield < 0)
+        {
+            InternalDamage(-Shield, damageType);
+            Shield = 0;
+        }
+
+        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
     }
 
     // this function returns a string value that represents the mutable state of the entity
@@ -74,7 +86,7 @@ public abstract class Entity
     }
 
     // just a simple function to make the code more readable
-    public bool Destroyed()
+    public virtual bool Destroyed()
     {
         return Health <= 0;
     }
@@ -98,11 +110,27 @@ public abstract class Entity
         return m_name;
     }
 
-    #endregion
+    protected virtual void InternalDamage(double damage, DamageType damageType)
+    {
+        if(DamageType.Physical == damageType)
+        {
+            Health -= damage;
+        }
+
+        if(Destroyed())
+        {
+            Destroy();
+        }
+    }
 
     #endregion
 
-    #region private methods
+    #endregion
+
+    #region protected methods
+
+    protected virtual void InternalDamage(double damage)
+    { }
 
     protected virtual void Destroy()
     {
@@ -137,6 +165,16 @@ public abstract class TerrainEntity : Entity
             m_hex = value;
             Assert.AreEqual(m_hex.Conditions, TraversalConditions.Broken, "terrain entities are always placed over broken land to ensure that when they're destroyed there's rubble below");
         }
+    }
+
+    //inanimate objects take heat damage as physical damage
+    public override void Hit(double damage, DamageType damageType)
+    {
+        if(damageType == DamageType.Heat)
+        {
+            damageType = DamageType.Physical;
+        }
+        base.Hit(damage, damageType);
     }
 }
 
@@ -311,6 +349,16 @@ public abstract class ActiveEntity : Entity
         return Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
     }
 
+    protected override void InternalDamage(double damage, DamageType damageType)
+    { 
+        if(m_systems.Any(system => system.Operational()))
+        {
+            m_systems.Where(system => system.Operational()).ChooseRandomValue().Hit(damageType, damage);
+        }
+
+        base.InternalDamage(damage, damageType);
+    }
+
     protected virtual IEnumerable<PotentialAction> ComputeActions()
     {
         Debug.Log("{0} is computing actions. Its condition is {1}".FormatWith(this, FullState()));
@@ -323,6 +371,11 @@ public abstract class ActiveEntity : Entity
     {
         base.Destroy();
         TacticalState.DestroyActiveEntity(this);
+    }
+
+    public override bool Destroyed()
+    {
+        return base.Destroyed() || m_systems.None(system => system.Operational());
     }
 
     #endregion

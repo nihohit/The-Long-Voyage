@@ -71,19 +71,18 @@ public abstract class Subsystem
 
     #region public methods
 
-    public virtual void Hit(DamageType type)
+    public virtual void Hit(DamageType type, double damage)
     {
         switch (type)
         {
             case (DamageType.EMP):
-                {
-                    OperationalCondition = SystemCondition.Neutralized;
-                }
+                OperationalCondition = SystemCondition.Neutralized;
                 break;
-            default:
+            case (DamageType.Physical):
                 OperationalCondition = SystemCondition.Destroyed;
                 break;
         }
+        Debug.Log("{0} was hit for {1} {2} damage, it is now {3}".FormatWith(m_buttonName, damage, type, OperationalCondition));
     }
 
     public bool Operational()
@@ -234,7 +233,7 @@ public abstract class AmmoWeapon : WeaponBase
 public class Laser : WeaponBase
 {
     public Laser(Loyalty loyalty) : 
-        base(2, 0,4, DeliveryMethod.Direct, "LaserCommand", 1f, DamageType.Energy, loyalty)
+        base(2, 0,4, DeliveryMethod.Direct, "LaserCommand", 1f, DamageType.Physical, loyalty)
     {}
 }
 

@@ -318,7 +318,7 @@ public enum VisualProperties
     BlocksSight = 4, 
 }
 
-public enum DamageType { EMP, Heat, Physical, Energy, }
+public enum DamageType { EMP, Heat, Physical, }
 
 public enum WeaponType { }
 
