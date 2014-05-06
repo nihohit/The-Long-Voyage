@@ -26,7 +26,7 @@ public class AnimalEvaluator : IActionEvaluator
      * If no potential targets are in sight, randomly roam. */
     public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity)
     {
-        var potentialTargets = actingEntity.SeenHexes.Select(hex => hex.Content).Where(ent => ent != null && ent.Loyalty != Loyalty.Neutral)
+        var potentialTargets = actingEntity.SeenHexes.Select(hex => hex.Content).Where(ent => ent != null && ent.Loyalty != Loyalty.Inactive)
             .OrderBy(ent => m_entityEvaluator.EvaluateValue(ent)).Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
         var movingEntity = actingEntity as MovingEntity;
         foreach (var action in actingEntity.Actions)

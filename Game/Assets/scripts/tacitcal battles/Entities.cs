@@ -37,7 +37,7 @@ public abstract class Entity
 
     public int ID { get {return m_id;}}
 
-    public MarkerScript Marker { get; set; }
+    public MarkerScript Marker { get; private set; }
 
     public double Health { get; private set; }
 
@@ -151,7 +151,7 @@ public abstract class TerrainEntity : Entity
     private Hex m_hex;
 
     public TerrainEntity(double health, bool visibleOnRadar, bool blocksSight, EntityReactor reactor)
-        : base(Loyalty.Neutral, health, 0, 
+        : base(Loyalty.Inactive, health, 0, 
                VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None) | (blocksSight ? VisualProperties.BlocksSight : VisualProperties.None), reactor)
     {}
 

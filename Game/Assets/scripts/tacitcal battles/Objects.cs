@@ -323,7 +323,7 @@ public enum DamageType { EMP, Heat, Physical, }
 public enum WeaponType { }
 
 //to be filled with all different sides
-public enum Loyalty { Player, EnemyArmy, Monsters, Bandits, Neutral }
+public enum Loyalty { Player, EnemyArmy, Monsters, Bandits, Inactive, Friendly }
 
 // there needs to be an order of importance - the more severe damage has a higher value
 public enum SystemCondition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, Destroyed = 3 }

@@ -20,6 +20,8 @@ public static class TacticalState
     private static HashSet<ActiveEntity> s_activeEntities;
 
     private static IEnumerable<Hex> s_hexes;
+
+    private static EntityTextureHandler m_textureChanger;
 	
     #endregion
 
@@ -59,8 +61,10 @@ public static class TacticalState
 
     public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes) 
     { 
+        m_textureChanger = new EntityTextureHandler();
         BattleStarted = false;
         s_activeEntities = new HashSet<ActiveEntity>(entities);
+        entities.ForEach(ent => m_textureChanger.UpdateEntityTexture(ent));
         SetTurnOrder(entities.Select(ent => ent.Loyalty).Distinct());
         s_hexes = hexes;
     }
@@ -91,6 +95,7 @@ public static class TacticalState
         if(active != null)
         {
             s_activeEntities.Add(active);
+            m_textureChanger.UpdateEntityTexture(ent);
         }
         //To refresh the potential actions appearing on screen.
         SelectedHex = SelectedHex;

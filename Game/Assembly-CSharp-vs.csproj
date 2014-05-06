@@ -55,6 +55,7 @@
      <Compile Include="Assets\scripts\base\MarkerScript.cs" />
      <Compile Include="Assets\scripts\base\Randomiser.cs" />
      <Compile Include="Assets\scripts\base\Singleton.cs" />
+     <Compile Include="Assets\scripts\base\TextureHandler.cs" />
      <Compile Include="Assets\scripts\base\Timer.cs" />
      <Compile Include="Assets\scripts\main screen\MainScreen.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\AI\AIRunner.cs" />
@@ -62,6 +63,7 @@
      <Compile Include="Assets\scripts\tacitcal battles\EndTurnButton.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\Entities.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\EntityReactor.cs" />
+     <Compile Include="Assets\scripts\tacitcal battles\EntityTextureHandler.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\GenerateLevel.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\HexReactor.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\MapGenerationInstructions.cs" />
