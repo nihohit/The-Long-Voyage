@@ -203,7 +203,7 @@ public class GenerateLevel : MonoBehaviour
 
     private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
     {
-        return Enumerable.Range(0, number).Select(num => (ActiveEntity)new Mech(new Subsystem[] {new Laser(loyalty), new MissileLauncher(loyalty)},
+        return Enumerable.Range(0, number).Select(num => (ActiveEntity)new Mech(new Subsystem[] {new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty)},
             ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(), 
             loyalty: loyalty)).Materialize();
     }
