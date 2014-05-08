@@ -318,7 +318,16 @@ public enum VisualProperties
     BlocksSight = 4, 
 }
 
-public enum DamageType { EMP, Heat, Physical, }
+[Flags]
+public enum TargetingType 
+{ 
+    Enemy = 1,  
+    Friendly = 2, 
+    AllEntities = 3, 
+    AllHexes = 4
+}
+
+public enum EffectType { EmpDamage, HeatDamage, PhysicalDamage, }
 
 public enum WeaponType { }
 
@@ -330,6 +339,8 @@ public enum SystemCondition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, D
 
 // the way a system reaches its targets
 public enum DeliveryMethod { Direct, Unobstructed }
+
+public enum SystemType { Laser, Missile, EMP }
 
 #endregion
 

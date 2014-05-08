@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -55,16 +55,16 @@ public abstract class Entity
 
     #region public methods
 
-    public virtual void Hit(double damage, DamageType damageType)
+    public virtual void Affect(double strength, EffectType effectType)
     {
-        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, damage, damageType));
-        switch(damageType)
+        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, strength, effectType));
+        switch(effectType)
         {
-            case DamageType.Physical:
-            case DamageType.EMP:
-                Shield -= damage;
+            case EffectType.PhysicalDamage:
+            case EffectType.EmpDamage:
+                Shield -= strength;
                 break;
-            case DamageType.Heat:
+            case EffectType.HeatDamage:
                 //TODO - implement heat mechanics
                 throw new NotImplementedException();
                 break;
@@ -72,7 +72,7 @@ public abstract class Entity
         
         if(Shield < 0)
         {
-            InternalDamage(-Shield, damageType);
+            InternalDamage(-Shield, effectType);
             Shield = 0;
         }
 
@@ -110,9 +110,9 @@ public abstract class Entity
         return m_name;
     }
 
-    protected virtual void InternalDamage(double damage, DamageType damageType)
+    protected virtual void InternalDamage(double damage, EffectType damageType)
     {
-        if(DamageType.Physical == damageType)
+        if(EffectType.PhysicalDamage == damageType)
         {
             Health -= damage;
         }
@@ -168,13 +168,13 @@ public abstract class TerrainEntity : Entity
     }
 
     //inanimate objects take heat damage as physical damage
-    public override void Hit(double damage, DamageType damageType)
+    public override void Affect(double damage, EffectType damageType)
     {
-        if(damageType == DamageType.Heat)
+        if(damageType == EffectType.HeatDamage)
         {
-            damageType = DamageType.Physical;
+            damageType = EffectType.PhysicalDamage;
         }
-        base.Hit(damage, damageType);
+        base.Affect(damage, damageType);
     }
 }
 
@@ -349,7 +349,7 @@ public abstract class ActiveEntity : Entity
         return Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
     }
 
-    protected override void InternalDamage(double damage, DamageType damageType)
+    protected override void InternalDamage(double damage, EffectType damageType)
     { 
         if(m_systems.Any(system => system.Operational()))
         {

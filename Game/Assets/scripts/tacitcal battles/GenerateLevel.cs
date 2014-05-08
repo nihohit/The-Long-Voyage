@@ -64,6 +64,7 @@ public class GenerateLevel : MonoBehaviour
 	// Use this for initialization
 	void Start () 
     {
+        SubsystemTemplate.Init();
         TacticalState.BattleStarted = false;
 		if(GlobalState.AmountOfHexes < 1)
 		{
