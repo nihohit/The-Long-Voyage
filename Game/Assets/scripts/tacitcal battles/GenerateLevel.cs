@@ -65,11 +65,9 @@ public class GenerateLevel : MonoBehaviour
 	void Start () 
     {
         SubsystemTemplate.Init();
+        Hex.Init();
         TacticalState.BattleStarted = false;
-		if(GlobalState.AmountOfHexes < 1)
-		{
-            InitiateGlobalState();
-		}
+        InitiateGlobalState();
 
         var hexes = new List<Hex>();
 		var entryPoint = Vector3.zero;
@@ -195,9 +193,12 @@ public class GenerateLevel : MonoBehaviour
         //TODO - replace with exception throwing when we remove the direct access to level generation
         FileHandler.Init();
         HexReactor.Init();
-        GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
-            "default map size", 
-            FileAccessor.TerrainGeneration);
+        if(GlobalState.AmountOfHexes < 1)
+        {
+            GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
+                "default map size", 
+                FileAccessor.TerrainGeneration);
+        }
         GlobalState.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
     }
 

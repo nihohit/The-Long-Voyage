@@ -55,6 +55,25 @@ public static class TacticalState
     public static void DestroyActiveEntity(ActiveEntity ent)
     {
         s_activeEntities.Remove(ent);
+        //TODO - end battle logic
+        if(ent.Loyalty == Loyalty.Player)
+        {
+            //check if player lost
+            if(s_activeEntities.None(entity => entity.Loyalty == Loyalty.Player))
+            {
+                Debug.Log("Player lost");
+                Application.LoadLevel("MainScreen");
+            }
+        }
+        if(ent.Loyalty != Loyalty.Player)
+        {
+            //check if player won
+            if(s_activeEntities.None(entity => entity.Loyalty != Loyalty.Player))
+            {
+                Debug.Log("Player won");
+                Application.LoadLevel("MainScreen");
+            }
+        }
     }
 
     public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes) 

@@ -13,7 +13,7 @@ public class MainScreen : MonoBehaviour
 		FileHandler.Init();
 		minHexSlider = FileHandler.GetIntProperty("min number of hexes", FileAccessor.General);
 		maxHexSlider = FileHandler.GetIntProperty("max number of hexes", FileAccessor.General);
-		sliderValue = (minHexSlider + maxHexSlider) / 2;
+		sliderValue = (minHexSlider + maxHexSlider) / 3;
 		screenWidth = Screen.width;	
 		screenHeight = Screen.height;
 		sliderHeight = screenHeight * 0.3f;

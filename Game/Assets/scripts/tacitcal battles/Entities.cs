@@ -256,7 +256,7 @@ public abstract class ActiveEntity : Entity
 
     public void ResetActions()
     {
-        Debug.Log("{0} is resetting actions".FormatWith(Name));
+        //Debug.Log("{0} is resetting actions".FormatWith(Name));
         if (m_actions != null)
         {
             foreach (var action in m_actions)
@@ -271,7 +271,7 @@ public abstract class ActiveEntity : Entity
     {
         var whatTheEntitySeesNow = FindSeenHexes();
         var whatTheEntitySeesNowInRadar = FindRadarHexes().Except(whatTheEntitySeesNow);
-        Debug.Log("{0} is setting seen hexes".FormatWith(Name));
+        //Debug.Log("{0} is setting seen hexes".FormatWith(Name));
 
         if(SeenHexes != null)
         {

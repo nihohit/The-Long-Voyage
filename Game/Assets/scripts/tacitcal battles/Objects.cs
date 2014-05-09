@@ -134,6 +134,11 @@ public class Hex
         Reactor = reactor;
 	}
 
+    public static void Init()
+    {
+        s_repository.Clear();
+    }
+
     #endregion
 
     #region public methods

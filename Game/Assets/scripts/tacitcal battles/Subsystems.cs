@@ -96,12 +96,15 @@ public class SubsystemTemplate
     //TODO - this method should be removed after we have initialization from XML
     public static void Init()
     {
-        s_knownTemplates.Add(SystemType.EMP,
-                             new SubsystemTemplate(1, 0, 2, DeliveryMethod.Direct, "EmpCommand", EffectType.EmpDamage, 1.5f, TargetingType.Enemy));
-        s_knownTemplates.Add(SystemType.Laser,
-                             new SubsystemTemplate(2, 0,4, DeliveryMethod.Direct, "LaserCommand", EffectType.PhysicalDamage, 2f, TargetingType.Enemy));
-        s_knownTemplates.Add(SystemType.Missile,
-                             new SubsystemTemplate(4, 1, 2, 6, DeliveryMethod.Unobstructed, "MissileCommand", EffectType.PhysicalDamage, 1f, TargetingType.Enemy));
+        if(s_knownTemplates.Count == 0)
+        {
+            s_knownTemplates.Add(SystemType.EMP,
+                                 new SubsystemTemplate(1, 0, 2, DeliveryMethod.Direct, "EmpCommand", EffectType.EmpDamage, 1.5f, TargetingType.Enemy));
+            s_knownTemplates.Add(SystemType.Laser,
+                                 new SubsystemTemplate(2, 0,4, DeliveryMethod.Direct, "LaserCommand", EffectType.PhysicalDamage, 2f, TargetingType.Enemy));
+            s_knownTemplates.Add(SystemType.Missile,
+                                 new SubsystemTemplate(4, 1, 2, 6, DeliveryMethod.Unobstructed, "MissileCommand", EffectType.PhysicalDamage, 1f, TargetingType.Enemy));
+        }
     }
 
     #endregion
