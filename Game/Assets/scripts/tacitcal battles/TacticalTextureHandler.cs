@@ -1,9 +1,12 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class EntityTextureHandler : TextureHandler
+public class TacticalTextureHandler : TextureHandler
 {
-    private Dictionary<string, Texture2D> m_knownTextures = new Dictionary<string, Texture2D>();
+    private Dictionary<string, Texture2D> m_knownEntityTextures = new Dictionary<string, Texture2D>();
+    private Dictionary<string, Texture2D> m_knownEffectsTextures;
+
     private Dictionary<Loyalty, Color> m_affiliationColors = new Dictionary<Loyalty, Color>
     {
         {Loyalty.Bandits, Color.red},
@@ -12,20 +15,29 @@ public class EntityTextureHandler : TextureHandler
         {Loyalty.Player, Color.blue},
     }; //inactive or monster units should have unique visuals.
 
-    public EntityTextureHandler()
-    { }
+    public TacticalTextureHandler()
+    { 
+        var textures = Resources.LoadAll<Texture2D>("effects");
+        m_knownEffectsTextures = textures.ToDictionary(texture => texture.name,
+                                                       texture => texture);
+    }
 
     public void UpdateEntityTexture(Entity ent)
     {
         var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.GetType().ToString());
         var renderer = ent.Marker.GetComponent<SpriteRenderer>();
-        var newTexture = m_knownTextures.TryGetOrAdd(name, () => GetTexture(ent, name, renderer));
+        var newTexture = m_knownEntityTextures.TryGetOrAdd(name, () => GetEntityTexture(ent, name, renderer));
         renderer.sprite = Sprite.Create(newTexture, renderer.sprite.rect, new Vector2(0.5f,0.5f));
 
         renderer.sprite.name = name;
     }
 
-    private Texture2D GetTexture(Entity ent, string name, SpriteRenderer renderer)
+    public Texture2D GetEffectTexture(string effectName)
+    {
+        return m_knownEffectsTextures[effectName];
+    }
+
+    private Texture2D GetEntityTexture(Entity ent, string name, SpriteRenderer renderer)
     {
         var oldTexture = ent.Marker.GetComponent<SpriteRenderer>().sprite.texture;
         Color replacementColor;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System.IO;
 
 #region Hex
 
@@ -360,6 +361,8 @@ public delegate bool HexCheck(Hex hex);
 
 #region actions
 
+#region PotentialAction
+
 /*
  * Potential action represents a certain action, commited by a certain Entity. 
  * When ordered to it can create a button that when pressed activates it, 
@@ -379,11 +382,13 @@ public abstract class PotentialAction
 
     #region properties
 
-    public ActiveEntity ActingEntity { get ; private set; }
+    protected ActiveEntity ActingEntity { get ; private set; }
 
     public Hex TargetedHex { get; private set; }
 
     public bool Destroyed { get ; private set;}
+
+    protected string ButtonName { get ; private set;}
 
     #endregion
 
@@ -393,6 +398,7 @@ public abstract class PotentialAction
     {
         m_active = false;
         Destroyed = false;
+        ButtonName = buttonName;
         m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(buttonName), position, Quaternion.identity)).GetComponent<CircularButton>();
         m_button.Action = () => 
         {
@@ -462,6 +468,10 @@ public abstract class PotentialAction
 
     #endregion
 }
+
+#endregion
+
+#region MovementAction
 
 public class MovementAction : PotentialAction
 {
@@ -561,6 +571,10 @@ public class MovementAction : PotentialAction
     #endregion
 }
 
+#endregion
+
+#region OperateSystemAction
+
 public class OperateSystemAction : PotentialAction
 {
     private readonly Action m_action;
@@ -575,6 +589,10 @@ public class OperateSystemAction : PotentialAction
 
     public override void Commit()
     {
+        var from = ActingEntity.Marker.transform.position;
+        var to = TargetedHex.Reactor.transform.position;
+        var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>();;
+        shot.Init(to, from);
         m_action();
         base.Commit();
     }
@@ -592,5 +610,7 @@ public class OperateSystemAction : PotentialAction
         return m_cost <= ActingEntity.CurrentEnergy;
     }
 }
+
+#endregion
 
 #endregion
