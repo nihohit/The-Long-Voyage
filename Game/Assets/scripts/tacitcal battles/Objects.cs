@@ -592,7 +592,7 @@ public class OperateSystemAction : PotentialAction
         var from = ActingEntity.Marker.transform.position;
         var to = TargetedHex.Reactor.transform.position;
         var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>();;
-        shot.Init(to, from);
+        shot.Init(to, from, ButtonName);
         m_action();
         base.Commit();
     }

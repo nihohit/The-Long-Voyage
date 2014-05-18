@@ -7,14 +7,20 @@ public class Shot : MonoBehaviour
     private Vector2 m_movementFraction;
     private Vector2 m_endPoint;
 
-    public void Init(Vector2 to, Vector2 from)
+    public void Init(Vector2 to, Vector2 from, string name)
     {
         transform.position = from;
         m_endPoint = to;
         m_started = true;
         var differenceVector = to - from;
-        this.gameObject.transform.Rotate(new Vector3(0,0,360-Vector2.Angle(to, from)));
+        var angle = Vector2.Angle(new Vector2(0,1), differenceVector);
+        if(differenceVector.x > 0) 
+        {
+            angle = -angle;
+        }
+        this.gameObject.transform.Rotate(new Vector3(0,0,angle));
         m_movementFraction = differenceVector / 30;
+        TacticalState.TextureManager.UpdateEffectTexture(name, this.GetComponent<SpriteRenderer>());
     }
 
 	// Use this for initialization
