@@ -46,7 +46,7 @@ private static void ReadFromFile(string str)
     var dict = new Dictionary<string, string>();
     s_navigator.Add(str, dict);
     char[] delimiters = { '=' };
-    string[] text = System.IO.File.ReadAllLines("config/" + str + ".ini");
+    string[] text = System.IO.File.ReadAllLines("config/{0}.ini".FormatWith(str));
     foreach (string entry in text)
     {
         string[] temp = entry.Split(delimiters);

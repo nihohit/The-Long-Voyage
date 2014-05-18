@@ -38,7 +38,7 @@ internal static class AStar
                 MovementAction action;
                 if(dict.TryGetValue(current.Parent.ChosenHex, out action))
                 {
-                    dict.Add(current.ChosenHex, new MovementAction(movingEntity, action, current.ChosenHex, current.GValue));
+                    dict.Add(current.ChosenHex, new MovementAction(action, current.ChosenHex, current.GValue));
                 }
                 else
                 {
@@ -58,7 +58,12 @@ internal static class AStar
 		return ReconstructPath(FindPathNoReconstruction(entry, goal, configuration), goal, configuration);
 	}
 
-	public static AstarNode FindPathNoReconstruction(Hex entry, Hex goal, AStarConfiguration configuration)
+    public static double FindPathCost(Hex entry, Hex goal, AStarConfiguration configuration)
+    {
+        return FindPathNoReconstruction(entry, goal, configuration).GValue;
+    }
+
+	private static AstarNode FindPathNoReconstruction(Hex entry, Hex goal, AStarConfiguration configuration)
 	{
 		var internalState = GenerateInternalState(entry, configuration);
 

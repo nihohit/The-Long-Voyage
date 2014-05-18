@@ -1,4 +1,7 @@
 ﻿using UnityEngine;
+using System;
+using System.Linq;
+using System.Collections.Generic;
 
 public class GenerateLevel : MonoBehaviour 
 {
@@ -10,42 +13,50 @@ public class GenerateLevel : MonoBehaviour
 
     #endregion
 
+    //HACK - to be deleted.
+    private List<Hex> m_emptyHexes = new List<Hex>();
+
     #region MonoBehaviour overrides
 
 	void Update()
 	{
-        lock (TacticalState.Lock)
+        //the first time that update is called, start the battle.
+        // This has to be so, because otherwise the turn might start before all the hexes have started.
+        if(!TacticalState.BattleStarted)
         {
-            if (Camera.current != null)
+            TacticalState.BattleStarted = true;
+            TacticalState.StartTurn();
+        }
+
+        if (Camera.current != null)
+        {
+            float xAxisValue = Input.GetAxis("Horizontal");
+            float yAxisValue = Input.GetAxis("Vertical");
+            float zAxisValue = Input.GetAxisRaw("Zoom");
+            Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
+        }
+        if (Input.GetMouseButton(1))
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
             {
-                float xAxisValue = Input.GetAxis("Horizontal");
-                float yAxisValue = Input.GetAxis("Vertical");
-                float zAxisValue = Input.GetAxisRaw("Zoom");
-                Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
+                if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
+                {
+                    //TODO - this is just a temporary measure, to create mechs
+                    var mech = new Mech(new Subsystem[] {new Laser(Loyalty.EnemyArmy), new MissileLauncher(Loyalty.EnemyArmy)},
+                    ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+                    TacticalState.SelectedHex.MarkedHex.Content = mech;
+                    TacticalState.AddEntity(mech);
+                    Debug.Log("created {0} at {1}".FormatWith(mech, TacticalState.SelectedHex));
+                }
+                TacticalState.SelectedHex = null;
             }
-            if (Input.GetMouseButton(1))
+            else
             {
-                if (Input.GetKey(KeyCode.LeftShift))
+                if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content != null)
                 {
-                    if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
-                    {
-                        //TODO - this is just a temporary measure, to create mechs
-                        var mech = new Mech(new Subsystem[] {new Laser(Loyalty.EnemyArmy), new MissileLauncher(Loyalty.EnemyArmy)},
-                        ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
-                        TacticalState.SelectedHex.MarkedHex.Content = mech;
-                        TacticalState.AddEntity(mech);
-                        Debug.Log("created {0} at {1}".FormatWith(mech, TacticalState.SelectedHex));
-                    }
-                    TacticalState.SelectedHex = null;
+                    Debug.Log(TacticalState.SelectedHex.MarkedHex.Content);
                 }
-                else
-                {
-                    if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content != null)
-                    {
-                        Debug.Log(TacticalState.SelectedHex.MarkedHex.Content);
-                    }
-                    TacticalState.SelectedHex = null;
-                }
+                TacticalState.SelectedHex = null;
             }
         }
 	}
@@ -53,12 +64,12 @@ public class GenerateLevel : MonoBehaviour
 	// Use this for initialization
 	void Start () 
     {
-        TacticalState.Init(new[]{Loyalty.Player});
+        SubsystemTemplate.Init();
+        Hex.Init();
+        TacticalState.BattleStarted = false;
+        InitiateGlobalState();
 
-		if(GlobalState.AmountOfHexes < 1)
-		{
-            InitiateGlobalState();
-		}
+        var hexes = new List<Hex>();
 		var entryPoint = Vector3.zero;
 		var hexSize = greenHex.renderer.bounds.size;
 
@@ -72,9 +83,9 @@ public class GenerateLevel : MonoBehaviour
 			var entryCoordinate = (float)-i  / 2 - GlobalState.AmountOfHexes + 1;
 			for(float j = 0 ; j < amountOfHexesInRow  ; j++)
 			{
-                CreateRandomHex(
+                hexes.Add(CreateRandomHex(
 					new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z), 
-					new Vector2(entryCoordinate + j, i));
+					new Vector2(entryCoordinate + j, i)).MarkedHex);
 			}
         }
 		
@@ -88,68 +99,80 @@ public class GenerateLevel : MonoBehaviour
 			var entryCoordinate = (float)i  / 2 - GlobalState.AmountOfHexes + 1;
 			for(float j = 0; j < amountOfHexesInRow ; j++)
 			{
-                CreateRandomHex(
+                hexes.Add(CreateRandomHex(
 					new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z), 
-					new Vector2(entryCoordinate + j, i));
+					new Vector2(entryCoordinate + j, i)).MarkedHex);
 			}
         }
-	}
+
+        TacticalState.Init(GlobalState.EntitiesInBattle, hexes);
+
+        //HACK - to be removed. in charge of positioning the first entities
+        var chosenHexes = m_emptyHexes.ChooseRandomValues(GlobalState.EntitiesInBattle.Count()).OrderBy(x => Randomiser.Next());
+        chosenHexes.ForEach(hex => hex.Content = GlobalState.EntitiesInBattle.First(ent => ent.Hex == null));
+    }
 
     #endregion
 
 	#region private methods
 
-	private void CreateGrassHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    private HexReactor CreateGrassHex(Vector3 nextPosition, Vector2 hexCoordinates)
 	{
-		var hex = (GameObject)Instantiate(greenHex, nextPosition, Quaternion.identity);
-		//hex.transform.Rotate(new Vector3(270,0,0));
-		var reactor = hex.GetComponent<HexReactor>();
-		reactor.MarkedHex = new Hex(hexCoordinates, reactor);
+        var reactor = CreateHex(nextPosition, hexCoordinates, greenHex);
+        m_emptyHexes.Add(reactor.MarkedHex);
+        return reactor;
 	}
 
-    private void CreateLightTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    private HexReactor CreateLightTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
-        CreateWoodHex(nextPosition, hexCoordinates).MarkedHex.Content = new SparseTrees(((GameObject)Instantiate(Resources.Load("SparseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        var hex = CreateWoodHex(nextPosition, hexCoordinates);
+        hex.MarkedHex.Content = new SparseTrees(((GameObject)Instantiate(Resources.Load("SparseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        return hex;
     }
 
-    private void CreateDenseTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    private HexReactor CreateDenseTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
-        CreateWoodHex(nextPosition, hexCoordinates).MarkedHex.Content = new DenseTrees(((GameObject)Instantiate(Resources.Load("DenseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        var hex = CreateWoodHex(nextPosition, hexCoordinates);
+        hex.MarkedHex.Content = new DenseTrees(((GameObject)Instantiate(Resources.Load("DenseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        return hex;
     }
 
-    private void CreateBuildingHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    private HexReactor CreateBuildingHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
-        CreateWoodHex(nextPosition, hexCoordinates).MarkedHex.Content = new Building(((GameObject)Instantiate(Resources.Load("Building"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        var hex = CreateWoodHex(nextPosition, hexCoordinates);
+        hex.MarkedHex.Content = new Building(((GameObject)Instantiate(Resources.Load("Building"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        return hex;
     }
 
     private HexReactor CreateWoodHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
-        var hex = (GameObject)Instantiate(woodHex, nextPosition, Quaternion.identity);
-        //hex.transform.Rotate(new Vector3(270,0,0));
-        var reactor = hex.GetComponent<HexReactor>();
-        reactor.MarkedHex = new Hex(hexCoordinates, reactor);
+        var reactor = CreateHex(nextPosition, hexCoordinates, woodHex);
         reactor.MarkedHex.Conditions = TraversalConditions.Broken;
         return reactor;
     }
 
+    private HexReactor CreateHex(Vector3 nextPosition, Vector2 hexCoordinates, GameObject prefab)
+    {
+        var hex = (GameObject)Instantiate(prefab, nextPosition, Quaternion.identity);
+        var reactor = hex.GetComponent<HexReactor>();
+        reactor.MarkedHex = new Hex(hexCoordinates, reactor);
+        return reactor;
+    }
+
 	
-    private void CreateRandomHex(Vector3 nextPosition, Vector2 hexCoordinates)
+    private HexReactor CreateRandomHex(Vector3 nextPosition, Vector2 hexCoordinates)
 	{
         var random = Randomiser.Next(1,8);
         switch(random)
         {
             case(1):
-                CreateLightTreesHex(nextPosition, hexCoordinates);
-                break;
+                return CreateLightTreesHex(nextPosition, hexCoordinates);
             case(2):
-                CreateDenseTreesHex(nextPosition, hexCoordinates);
-                break;
+                return CreateDenseTreesHex(nextPosition, hexCoordinates);
             case(3):
-                CreateBuildingHex(nextPosition, hexCoordinates);
-                break;
+                return CreateBuildingHex(nextPosition, hexCoordinates);
             default:
-                CreateGrassHex(nextPosition, hexCoordinates);
-                break;
+                return CreateGrassHex(nextPosition, hexCoordinates);
 
         }
 	}
@@ -170,9 +193,20 @@ public class GenerateLevel : MonoBehaviour
         //TODO - replace with exception throwing when we remove the direct access to level generation
         FileHandler.Init();
         HexReactor.Init();
-        GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
-            "default map size", 
-            FileAccessor.TerrainGeneration);
+        if(GlobalState.AmountOfHexes < 1)
+        {
+            GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
+                "default map size", 
+                FileAccessor.TerrainGeneration);
+        }
+        GlobalState.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
+    }
+
+    private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
+    {
+        return Enumerable.Range(0, number).Select(num => (ActiveEntity)new Mech(new Subsystem[] {new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty)},
+            ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(), 
+            loyalty: loyalty)).Materialize();
     }
 
 	#endregion

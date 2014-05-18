@@ -2,12 +2,24 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 
+#region interfaces
+
+//this delegate is used 
 public delegate bool ResultEvaluator();
 
 public interface IActionEvaluator
 {
-    EvaluatedAction EvaluateAction(PotentialAction action);
+    IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity);
 }
+
+public interface IEntityEvaluator
+{
+    double EvaluateValue(Entity entity);
+}
+
+#endregion
+
+#region EvaluatedAction
 
 public class EvaluatedAction : IComparable<EvaluatedAction>
 {
@@ -26,11 +38,15 @@ public class EvaluatedAction : IComparable<EvaluatedAction>
     #endregion
 }
 
-public class AI
+#endregion
+
+#region AIRunner
+
+public class AIRunner
 {
     #region private fields
     //all of the entities that are controlled by this AI
-    private List<ActiveEntity> m_controlledEntities;
+    protected List<ActiveEntity> m_controlledEntities;
 
     //the evaluator which assigns a value to each potential action
     private IActionEvaluator m_actionEvaluator;
@@ -42,7 +58,7 @@ public class AI
 
     #region constructor
 
-    public AI(IEnumerable<ActiveEntity> controlledEntities, IActionEvaluator evaluator)
+    public AIRunner(IEnumerable<ActiveEntity> controlledEntities, IActionEvaluator evaluator)
     {
         m_controlledEntities = controlledEntities.ToList();
         m_actionEvaluator = evaluator;
@@ -75,10 +91,13 @@ public class AI
 
     private void EvaluateActions()
     {
-        m_controlledEntities.SelectMany(ent => ent.Actions)
-            .ForEach(action => m_prioritizedActions.Push(m_actionEvaluator.EvaluateAction(action)));
+        //remove all destroyed entities
+        m_controlledEntities = m_controlledEntities.Where(entity => !entity.Destroyed()).ToList();
+        m_controlledEntities.SelectMany(ent => m_actionEvaluator.EvaluateActions(ent))
+            .ForEach(action => m_prioritizedActions.Push(action));
     }
-
 }
+
+#endregion
 
 

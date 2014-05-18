@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -37,7 +37,7 @@ public abstract class Entity
 
     public int ID { get {return m_id;}}
 
-    public MarkerScript Marker { get; set; }
+    public MarkerScript Marker { get; private set; }
 
     public double Health { get; private set; }
 
@@ -55,22 +55,40 @@ public abstract class Entity
 
     #region public methods
 
-    public virtual void Hit(double damage, DamageType damageType)
+    public virtual void Affect(double strength, EffectType effectType)
     {
-        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, damage, damageType));
-        //TODO - handle damage types
-        Health -= damage;
-        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
-        if(Health <= 0)
+        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, strength, effectType));
+        switch(effectType)
         {
-            Destroy();
+            case EffectType.PhysicalDamage:
+            case EffectType.EmpDamage:
+                Shield -= strength;
+                break;
+            case EffectType.HeatDamage:
+                //TODO - implement heat mechanics
+                throw new NotImplementedException();
+                break;
         }
+        
+        if(Shield < 0)
+        {
+            InternalDamage(-Shield, effectType);
+            Shield = 0;
+        }
+
+        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
     }
 
     // this function returns a string value that represents the mutable state of the entity
     public virtual string FullState()
     {
         return "Health {0} shields {1} Hex {2}".FormatWith(Health, Shield, Hex);
+    }
+
+    // just a simple function to make the code more readable
+    public virtual bool Destroyed()
+    {
+        return Health <= 0;
     }
 
     #region object overrides
@@ -92,13 +110,29 @@ public abstract class Entity
         return m_name;
     }
 
-    #endregion
+    protected virtual void InternalDamage(double damage, EffectType damageType)
+    {
+        if(EffectType.PhysicalDamage == damageType)
+        {
+            Health -= damage;
+        }
+
+        if(Destroyed())
+        {
+            Destroy();
+        }
+    }
 
     #endregion
 
-    #region private methods
+    #endregion
 
-    private void Destroy()
+    #region protected methods
+
+    protected virtual void InternalDamage(double damage)
+    { }
+
+    protected virtual void Destroy()
     {
         Debug.Log("Destroy {0}".FormatWith(m_name));
         this.Hex.Content = null;
@@ -117,7 +151,7 @@ public abstract class TerrainEntity : Entity
     private Hex m_hex;
 
     public TerrainEntity(double health, bool visibleOnRadar, bool blocksSight, EntityReactor reactor)
-        : base(Loyalty.Neutral, health, 0, 
+        : base(Loyalty.Inactive, health, 0, 
                VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None) | (blocksSight ? VisualProperties.BlocksSight : VisualProperties.None), reactor)
     {}
 
@@ -131,6 +165,16 @@ public abstract class TerrainEntity : Entity
             m_hex = value;
             Assert.AreEqual(m_hex.Conditions, TraversalConditions.Broken, "terrain entities are always placed over broken land to ensure that when they're destroyed there's rubble below");
         }
+    }
+
+    //inanimate objects take heat damage as physical damage
+    public override void Affect(double damage, EffectType damageType)
+    {
+        if(damageType == EffectType.HeatDamage)
+        {
+            damageType = EffectType.PhysicalDamage;
+        }
+        base.Affect(damage, damageType);
     }
 }
 
@@ -173,8 +217,6 @@ public abstract class ActiveEntity : Entity
     #endregion
 
     #region private fields
-
-    private HashSet<Hex> m_seenHexes;
     
     private HashSet<Hex> m_detectedHexes;
 
@@ -206,13 +248,15 @@ public abstract class ActiveEntity : Entity
 
     public double CurrentEnergy { get; set; }
 
+    public HashSet<Hex> SeenHexes { get; private set; }
+
     #endregion
 
     #region public methods
 
     public void ResetActions()
     {
-        Debug.Log("{0} is resetting actions".FormatWith(Name));
+        //Debug.Log("{0} is resetting actions".FormatWith(Name));
         if (m_actions != null)
         {
             foreach (var action in m_actions)
@@ -227,18 +271,18 @@ public abstract class ActiveEntity : Entity
     {
         var whatTheEntitySeesNow = FindSeenHexes();
         var whatTheEntitySeesNowInRadar = FindRadarHexes().Except(whatTheEntitySeesNow);
-        Debug.Log("{0} is setting seen hexes".FormatWith(Name));
+        //Debug.Log("{0} is setting seen hexes".FormatWith(Name));
 
-        if(m_seenHexes != null)
+        if(SeenHexes != null)
         {
             var whatTheEntitySeesNowSet = new HashSet<Hex>(whatTheEntitySeesNow);
             var whatTheEntitySeesNowInRadarSet = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
-
+            //TODO - we can remove this optimization and just call ResetSeenHexes before this, but it'll be more expensive. Until it'll cause problem I'm keeping this
             //this leaves in each list the hexes not in the other
-            whatTheEntitySeesNowSet.ExceptOnBoth(m_seenHexes);
+            whatTheEntitySeesNowSet.ExceptOnBoth(SeenHexes);
             whatTheEntitySeesNowInRadarSet.ExceptOnBoth(m_detectedHexes);
 
-            foreach(var hex in m_seenHexes)
+            foreach(var hex in SeenHexes)
             {
                 hex.Unseen();
             }
@@ -266,13 +310,21 @@ public abstract class ActiveEntity : Entity
                 hex.Detected();
             }
         }
-        m_seenHexes = new HashSet<Hex>(whatTheEntitySeesNow);
+        SeenHexes = new HashSet<Hex>(whatTheEntitySeesNow);
         m_detectedHexes = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
+    }
+
+    public void ResetSeenHexes()
+    {
+        SeenHexes = null;
+        m_detectedHexes = null;
+        SetSeenHexes();
     }
 
     public virtual void StartTurn()
     {
         ResetActions();
+        ResetSeenHexes();
         CurrentEnergy = m_maximumEnergy;
     }
 
@@ -297,12 +349,33 @@ public abstract class ActiveEntity : Entity
         return Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
     }
 
+    protected override void InternalDamage(double damage, EffectType damageType)
+    { 
+        if(m_systems.Any(system => system.Operational()))
+        {
+            m_systems.Where(system => system.Operational()).ChooseRandomValue().Hit(damageType, damage);
+        }
+
+        base.InternalDamage(damage, damageType);
+    }
+
     protected virtual IEnumerable<PotentialAction> ComputeActions()
     {
         Debug.Log("{0} is computing actions. Its condition is {1}".FormatWith(this, FullState()));
         var dict = new Dictionary<Hex, List<PotentialAction>>();
         return m_systems.Where(system => system.Operational())
             .SelectMany(system => system.ActionsInRange(this, dict));
+    }
+
+    protected override void Destroy()
+    {
+        base.Destroy();
+        TacticalState.DestroyActiveEntity(this);
+    }
+
+    public override bool Destroyed()
+    {
+        return base.Destroyed() || m_systems.None(system => system.Operational());
     }
 
     #endregion
@@ -318,13 +391,12 @@ public abstract class MovingEntity : ActiveEntity
 
     private readonly double m_maximumSpeed;
 
-    private readonly MovementType m_movementType;
-
     #endregion
 
     #region properties
 
     public double AvailableSteps { get ; set; }
+    public MovementType MovementMethod { get; private set; }
 
     #endregion
 
@@ -335,7 +407,7 @@ public abstract class MovingEntity : ActiveEntity
     {
         m_maximumSpeed = speed;
         AvailableSteps = speed;
-        m_movementType = movement;
+        MovementMethod = movement;
     }
 
     #endregion
@@ -345,11 +417,7 @@ public abstract class MovingEntity : ActiveEntity
     protected override IEnumerable<PotentialAction> ComputeActions()
     {
         var baseActions = base.ComputeActions();
-        var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, m_movementType);
-        foreach (var movement in possibleHexes.Values)
-        {
-            movement.ActingEntity = this;
-        }
+        var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, MovementMethod);
         return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
     }
 

@@ -1,14 +1,26 @@
+using System.Collections.Generic;
+using System.Linq;
 
 public static class Assert
 {
     public static void EqualOrLesser(int num, int top, string additionalMessage)
     {
-        AssertConditionMet(num <= top, "{0} is larger than {1} {2}".FormatWith(num, top, additionalMessage));
+        AssertConditionMet(num <= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
+    }
+
+    public static void EqualOrLesser(int num, int top)
+    {
+        EqualOrLesser(num, top, string.Empty);
+    }
+    
+    public static void EqualOrLesser(double num, double top)
+    {
+        EqualOrLesser(num, top, string.Empty);
     }
 
     public static void EqualOrLesser(double num, double top, string additionalMessage)
     {
-        AssertConditionMet(num <= top, "{0} is larger than {1} {2}".FormatWith(num, top, additionalMessage));
+        AssertConditionMet(num <= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
     }
 
     public static void UnreachableCode(string message)
@@ -28,7 +40,7 @@ public static class Assert
 
     public static void IsNull(object a, string name, string additionalMessage)
     {
-        AssertConditionMet(a == null, "{0} isn't null {1}".FormatWith(name, additionalMessage));
+        AssertConditionMet(a == null, "{0} isn't null. {1}".FormatWith(name, additionalMessage));
     }
 
     public static void NotNull(object a, string name)
@@ -38,7 +50,27 @@ public static class Assert
     
     public static void NotNull(object a, string name, string additionalMessage)
     {
-        AssertConditionMet(a != null, "{0} is null {1}".FormatWith(name, additionalMessage));
+        AssertConditionMet(a != null, "{0} is null. {1}".FormatWith(name, additionalMessage));
+    }
+
+    public static void NotNullOrEmpty<T>(IEnumerable<T> a, string name)
+    {
+        NotNullOrEmpty(a, name, string.Empty);
+    }
+    
+    public static void NotNullOrEmpty<T>(IEnumerable<T> a, string name, string additionalMessage)
+    {
+        AssertConditionMet(a != null || !a.Any(), "{0} is null or empty. {1}".FormatWith(name, additionalMessage));
+    }
+
+    public static void StringNotNullOrEmpty(string a, string name)
+    {
+        StringNotNullOrEmpty(a, name, string.Empty);
+    }
+    
+    public static void StringNotNullOrEmpty(string a, string name, string additionalMessage)
+    {
+        AssertConditionMet(a != null || !a.Equals(string.Empty), "{0} is null or empty. {1}".FormatWith(name, additionalMessage));
     }
 
     public static void AreEqual<T>(T a, T b)
@@ -48,7 +80,7 @@ public static class Assert
 
     public static void AreEqual<T>(T a, T b, string additionalMessage)
     {
-        AssertConditionMet(a.Equals(b), "{0} isn't equal to {1} {2}".FormatWith(a,b,additionalMessage));
+        AssertConditionMet(a.Equals(b), "{0} isn't equal to {1}. {2}".FormatWith(a,b,additionalMessage));
     }
 
     public static void AssertConditionMet(bool condition, string message)
