@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
 
 #region AStar
 
@@ -60,7 +58,12 @@ internal static class AStar
 
     public static double FindPathCost(Hex entry, Hex goal, AStarConfiguration configuration)
     {
-        return FindPathNoReconstruction(entry, goal, configuration).GValue;
+        var node = FindPathNoReconstruction(entry, goal, configuration);
+        if(node == null)
+        {
+            return Double.PositiveInfinity;
+        }
+        return node.GValue;
     }
 
 	private static AstarNode FindPathNoReconstruction(Hex entry, Hex goal, AStarConfiguration configuration)
@@ -98,7 +101,6 @@ internal static class AStar
 			CheckAllNeighbours(current, internalState);
 		}
 
-        Assert.UnreachableCode("open set empty, route impossible");
         return null;
 	}
 

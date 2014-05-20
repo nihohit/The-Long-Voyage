@@ -394,7 +394,7 @@ public abstract class PotentialAction
 
     #region constructor
 
-    protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position, Hex targetedHex)
+    protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position, Hex targetedHex, String name)
     {
         m_active = false;
         Destroyed = false;
@@ -406,7 +406,7 @@ public abstract class PotentialAction
             Commit();
         };
         m_button.Unmark();
-        m_name = buttonName;
+        m_name = name;
         ActingEntity = entity;
         TargetedHex = targetedHex;
     } 
@@ -418,7 +418,7 @@ public abstract class PotentialAction
     public virtual void DisplayButton()
     {
         //if the condition for this command still stands, display it. otherwise destroy it
-        if(!Destroyed && NecessaryCondition())
+        if(!Destroyed && NecessaryConditions())
         {
             m_button.Mark();
         }
@@ -448,13 +448,17 @@ public abstract class PotentialAction
 
     public virtual void Commit()
     {
+        Debug.Log("{0} committing {1}".FormatWith(ActingEntity, m_name));
         Assert.AssertConditionMet((!Destroyed) || m_active, "Action {0} was operated after being destroyed".FormatWith(this));
         Assert.EqualOrLesser(1, ActingEntity.Health, "{0} shouldn't be destroyed. Its condition is {1}".FormatWith(ActingEntity, ActingEntity.FullState()));
+        m_active = false;
         AffectEntity();
         //makes it display all buttons;
         TacticalState.SelectedHex = TacticalState.SelectedHex;
-        Debug.Log("{0} commited {1}".FormatWith(ActingEntity, m_name));
     }
+
+    //represents the necessary conditions for the action to exist
+    public abstract bool NecessaryConditions();
 
     #endregion
 
@@ -462,9 +466,6 @@ public abstract class PotentialAction
 
     //affects the acting entity with the action's costs
     protected abstract void AffectEntity();
-
-    //represents the necessary conditions for the action to exist
-    protected abstract bool NecessaryCondition();
 
     #endregion
 }
@@ -490,7 +491,7 @@ public class MovementAction : PotentialAction
     { }
 
     public MovementAction(MovingEntity entity, IEnumerable<Hex> path, double cost, Hex lastHex) : 
-        base(entity, "movementMarker", path.Last().Position, lastHex)
+        base(entity, "movementMarker", path.Last().Position, lastHex, "movement to {0}".FormatWith(path.Last().Coordinates))
     {
         m_path = path;
         m_button.OnMouseOverProperty = DisplayPath;
@@ -559,7 +560,7 @@ public class MovementAction : PotentialAction
         movingEntity.AvailableSteps -= m_cost;
     }
 
-    protected override bool NecessaryCondition()
+    public override bool NecessaryConditions()
     {
         var movingEntity = ActingEntity as MovingEntity;
         Assert.NotNull(movingEntity, 
@@ -581,7 +582,7 @@ public class OperateSystemAction : PotentialAction
     private readonly double m_cost;
 
     public OperateSystemAction(ActiveEntity entity, HexOperation effect, string buttonName, Hex targetedHex, Vector2 offset, double cost) : 
-        base(entity, buttonName, (Vector2)targetedHex.Position + (Vector2)offset, targetedHex)
+        base(entity, buttonName, (Vector2)targetedHex.Position + (Vector2)offset, targetedHex, "Operate {0} on {1}".FormatWith(buttonName, targetedHex))
     {
         m_action = ()=> effect(targetedHex);
         m_cost = cost;
@@ -589,12 +590,12 @@ public class OperateSystemAction : PotentialAction
 
     public override void Commit()
     {
+        base.Commit();
         var from = ActingEntity.Marker.transform.position;
         var to = TargetedHex.Reactor.transform.position;
         var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>();;
         shot.Init(to, from, ButtonName);
         m_action();
-        base.Commit();
     }
 
     protected override void AffectEntity()
@@ -605,7 +606,7 @@ public class OperateSystemAction : PotentialAction
          ActingEntity.CurrentEnergy -= m_cost;
     }
 
-    protected override bool NecessaryCondition()
+    public override bool NecessaryConditions()
     {
         return m_cost <= ActingEntity.CurrentEnergy;
     }

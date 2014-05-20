@@ -18,6 +18,8 @@ public static class TacticalState
     private static HashSet<ActiveEntity> s_activeEntities;
 
     private static IEnumerable<Hex> s_hexes;
+
+    private static Dictionary<Loyalty, IAIRunner> s_nonPlayerTeams;
 	
     #endregion
 
@@ -82,12 +84,20 @@ public static class TacticalState
         BattleStarted = false;
         s_activeEntities = new HashSet<ActiveEntity>(entities);
         entities.ForEach(ent => TextureManager.UpdateEntityTexture(ent));
-        SetTurnOrder(entities.Select(ent => ent.Loyalty).Distinct());
+        var loaylties = entities.Select(ent => ent.Loyalty).Distinct();
+        SetTurnOrder(loaylties);
         s_hexes = hexes;
+        s_nonPlayerTeams = new Dictionary<Loyalty, IAIRunner>();
+        foreach(var loyalty in loaylties.Where(team => team != Loyalty.Player))
+        {
+            s_nonPlayerTeams.Add(loyalty, new AIRunner(new AnimalEvaluator(new SimpleEntityEvaluator())));
+        }
     }
 
     public static void StartTurn()
     {
+        var thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn);
+        thisTurnActiveEntities.ForEach(ent => ent.ResetActions());
         s_currentTurn = s_currentTurn.Next;
         if(s_currentTurn == null)
         {
@@ -95,8 +105,13 @@ public static class TacticalState
         }
         s_hexes.ForEach(hex => hex.ResetSight());
         Debug.Log("Starting {0}'s turn.".FormatWith(CurrentTurn));
-        s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn).ForEach(ent => ent.StartTurn());
+        thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn);
+        thisTurnActiveEntities.ForEach(ent => ent.StartTurn());
         SelectedHex = null;
+        if(CurrentTurn != Loyalty.Player)
+        {
+            s_nonPlayerTeams[CurrentTurn].Act(thisTurnActiveEntities);
+        }
     }
 
     public static void ResetAllActions()

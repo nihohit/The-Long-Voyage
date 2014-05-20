@@ -59,7 +59,6 @@
      <Compile Include="Assets\scripts\base\Timer.cs" />
      <Compile Include="Assets\scripts\main screen\MainScreen.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\AI\AIRunner.cs" />
-     <Compile Include="Assets\scripts\tacitcal battles\AI\AnimalEvaluator.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\EndTurnButton.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\Entities.cs" />
      <Compile Include="Assets\scripts\tacitcal battles\EntityReactor.cs" />

@@ -69,6 +69,7 @@ public abstract class Entity
                 throw new NotImplementedException();
                 break;
         }
+        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
         
         if(Shield < 0)
         {
@@ -76,7 +77,10 @@ public abstract class Entity
             Shield = 0;
         }
 
-        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
+        if(Destroyed())
+        {
+            Destroy();
+        }
     }
 
     // this function returns a string value that represents the mutable state of the entity
@@ -115,11 +119,6 @@ public abstract class Entity
         if(EffectType.PhysicalDamage == damageType)
         {
             Health -= damage;
-        }
-
-        if(Destroyed())
-        {
-            Destroy();
         }
     }
 

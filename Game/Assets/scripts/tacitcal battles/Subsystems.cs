@@ -203,6 +203,7 @@ public abstract class Subsystem
 
     public IEnumerable<PotentialAction> ActionsInRange(ActiveEntity actingEntity, Dictionary<Hex, List<PotentialAction>> dict)
     {
+        //TODO - noe longer targeting inactive objects. This should be removed.
         return TargetsInRange(actingEntity.Hex).Select(targetedHex => CreateAction(actingEntity, targetedHex, dict));
     }
 
