@@ -109,6 +109,7 @@ public static class TacticalState
         if (CurrentTurn != Loyalty.Player)
         {
             s_nonPlayerTeams[CurrentTurn].Act(thisTurnActiveEntities);
+            StartTurn();
         }
     }
 
