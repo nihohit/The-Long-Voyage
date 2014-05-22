@@ -1,11 +1,11 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 #region interfaces
 
-//this delegate is used 
+//this delegate is used
 public delegate bool ResultEvaluator();
 
 public interface IActionEvaluator
@@ -18,7 +18,7 @@ public interface IAIRunner
     void Act(IEnumerable<ActiveEntity> entities);
 }
 
-#endregion
+#endregion interfaces
 
 #region EvaluatedAction
 
@@ -27,9 +27,13 @@ public class EvaluatedAction : IComparable<EvaluatedAction>
     private ResultEvaluator m_necessaryConditions;
 
     public PotentialAction Action { get; set; }
+
     public double EvaluatedPriority { get; set; }
+
     public ResultEvaluator AchievedGoal { get; set; }
-    public ResultEvaluator NecessaryConditions { 
+
+    public ResultEvaluator NecessaryConditions
+    {
         get
         {
             return () => (m_necessaryConditions() && Action.NecessaryConditions());
@@ -37,7 +41,8 @@ public class EvaluatedAction : IComparable<EvaluatedAction>
         set
         {
             m_necessaryConditions = value;
-        }}
+        }
+    }
 
     #region IComparable implementation
 
@@ -46,10 +51,10 @@ public class EvaluatedAction : IComparable<EvaluatedAction>
         return other.EvaluatedPriority.CompareTo(EvaluatedPriority);
     }
 
-    #endregion
+    #endregion IComparable implementation
 }
 
-#endregion
+#endregion EvaluatedAction
 
 #region AIRunner
 
@@ -63,7 +68,7 @@ public class AIRunner : IAIRunner
     // where the evaluated actions are stored by order
     private IPriorityQueue<EvaluatedAction> m_prioritizedActions;
 
-    #endregion
+    #endregion private fields
 
     #region constructor
 
@@ -73,23 +78,22 @@ public class AIRunner : IAIRunner
         m_prioritizedActions = new PriorityQueueB<EvaluatedAction>();
     }
 
-    #endregion
+    #endregion constructor
 
     public void Act(IEnumerable<ActiveEntity> controlledEntities)
     {
-
         EvaluateActions(controlledEntities);
         while (m_prioritizedActions.Peek() != null)
         {
             var action = m_prioritizedActions.Pop();
-            if(action.EvaluatedPriority <= 0)
+            if (action.EvaluatedPriority <= 0)
             {
                 break;
             }
-            if(action.NecessaryConditions())
+            if (action.NecessaryConditions())
             {
                 action.Action.Commit();
-                if(action.AchievedGoal())
+                if (action.AchievedGoal())
                 {
                     m_prioritizedActions.Clear();
                     EvaluateActions(controlledEntities);
@@ -103,7 +107,7 @@ public class AIRunner : IAIRunner
         Debug.Log("Evaluating actions");
         controlledEntities.ForEach(ent => ent.ResetActions());
         var entitiesSeen = Enumerable.Empty<Entity>();
-        foreach(var ent in controlledEntities)
+        foreach (var ent in controlledEntities)
         {
             entitiesSeen = entitiesSeen.Union(ent.SeenHexes.Select(hex => hex.Content).Where(entity => entity != null));
         }
@@ -113,39 +117,46 @@ public class AIRunner : IAIRunner
     }
 }
 
-#endregion
+#endregion AIRunner
 
 #region AnimalEvaluator
 
 /**there's a hidden assumption here that no AI of this type will have
- * a system which affects empty hexes. Since this is supposed to be 
+ * a system which affects empty hexes. Since this is supposed to be
  * only for the simplest of AIs, this assumption should hold. */
-public class AnimalEvaluator : IActionEvaluator 
+
+public class AnimalEvaluator : IActionEvaluator
 {
     #region fields
-    
+
     private IEntityEvaluator m_entityEvaluator;
-    
-    #endregion
-    
+
+    #endregion fields
+
     #region constructor
 
     public AnimalEvaluator(IEntityEvaluator entityEvaluator)
     {
         m_entityEvaluator = entityEvaluator;
     }
-    
-    #endregion
-    
+
+    #endregion constructor
+
     #region IActionEvaluator implementation
-    
+
     /**evaluates a system action based on the importance of its target,
-     * and movement commands based on nearness to potential targets. 
+     * and movement commands based on nearness to potential targets.
      * If no potential targets are in sight, randomly roam. */
+
     public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<Entity> entitiesSeenByTeam)
     {
         var potentialTargets = entitiesSeenByTeam.Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
         var movingEntity = actingEntity as MovingEntity;
+        var currentHexValue = 0.0;
+        if (movingEntity != null)
+        {
+            currentHexValue = EvaluateHexValue(actingEntity.Hex, potentialTargets, movingEntity);
+        }
         foreach (var action in actingEntity.Actions)
         {
             var evaluatedAction = new EvaluatedAction();
@@ -156,38 +167,49 @@ public class AnimalEvaluator : IActionEvaluator
             if (systemAction != null)
             {
                 var target = systemAction.TargetedHex.Content;
-                if(target.Loyalty != Loyalty.Inactive)
+                if (target.Loyalty != Loyalty.Inactive)
                 {
                     evaluatedAction.EvaluatedPriority = m_entityEvaluator.EvaluateValue(target);
                     evaluatedAction.NecessaryConditions = () =>
                     {
                         return !actingEntity.Destroyed() && !target.Destroyed();
                     };
-                    evaluatedAction.AchievedGoal = () => 
+                    evaluatedAction.AchievedGoal = () =>
                     {
                         return target.Destroyed();
                     };
-                    evaluatedAction.EvaluatedPriority = m_entityEvaluator.EvaluateValue(target);
-                }
-            } 
-            else if (movementAction != null)
-            {
-                evaluatedAction.EvaluatedPriority = 0.0;
-                foreach(var target in potentialTargets)
-                {
-                    evaluatedAction.EvaluatedPriority +=  m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
-                        movementAction.TargetedHex, target.Hex, new AStarConfiguration(movingEntity.MovementMethod, (Hex hex) => 0));
                 }
             }
-            
+            else if (movementAction != null)
+            {
+                //the value of a hex is compared to that of the current location.
+                evaluatedAction.EvaluatedPriority = EvaluateHexValue(movementAction.TargetedHex, potentialTargets, movingEntity) - currentHexValue;
+                evaluatedAction.NecessaryConditions = () =>
+                {
+                    return movementAction.TargetedHex.Content == null;
+                };
+                evaluatedAction.AchievedGoal = () => { return true; };
+            }
+
             yield return evaluatedAction;
         }
     }
-    
-    #endregion
+
+    #endregion IActionEvaluator implementation
+
+    private double EvaluateHexValue(Hex evaluatedHex, IEnumerable<Entity> potentialTargets, MovingEntity movingEntity)
+    {
+        var result = 0.0;
+        foreach (var target in potentialTargets)
+        {
+            result += m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
+                evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.MovementMethod, (Hex hex) => 0));
+        }
+        return result;
+    }
 }
 
-#endregion
+#endregion AnimalEvaluator
 
 #region IEntityEvaluator
 
@@ -204,4 +226,4 @@ public class SimpleEntityEvaluator : IEntityEvaluator
     }
 }
 
-#endregion
+#endregion IEntityEvaluator

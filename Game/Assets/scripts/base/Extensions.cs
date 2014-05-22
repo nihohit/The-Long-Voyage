@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-
 public interface IIdentifiable
 {
-	string Name {get;}
+    string Name { get; }
 }
 
 public static class MyExtensions
@@ -36,10 +35,10 @@ public static class MyExtensions
 #endif
     }
 
-    public static T TryGetOrAdd<T,S>(this IDictionary<S, T> dict, S key, Func<T> defaultConstructor)
+    public static T TryGetOrAdd<T, S>(this IDictionary<S, T> dict, S key, Func<T> defaultConstructor)
     {
         T result;
-        if(!dict.TryGetValue(key, out result))
+        if (!dict.TryGetValue(key, out result))
         {
             result = defaultConstructor();
             dict.Add(key, result);
@@ -57,28 +56,28 @@ public static class MyExtensions
 
     #region IEnumerable
 
-    public static IEnumerable<T> GetValues<T>() 
+    public static IEnumerable<T> GetValues<T>()
     {
         return (T[])Enum.GetValues(typeof(T));
     }
-    
+
     public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
     {
         return new HashSet<T>(source);
     }
-    
+
     //this function ensures that a given enumeration materializes
-    public static IEnumerable<T> Materialize<T> (this IEnumerable<T> enumerable)
+    public static IEnumerable<T> Materialize<T>(this IEnumerable<T> enumerable)
     {
         if (enumerable is ICollection<T>) return enumerable;
         return enumerable.ToList();
     }
-    
+
     public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)
     {
-        if(enumerable != null)
+        if (enumerable != null)
         {
-            foreach(var val in enumerable)
+            foreach (var val in enumerable)
             {
                 op(val);
             }
@@ -94,18 +93,18 @@ public static class MyExtensions
     {
         return !enumerable.Any();
     }
-    
+
     public static T ChooseRandomValue<T>(this IEnumerable<T> group)
     {
         return Randomiser.ChooseValue(group);
     }
-    
+
     public static IEnumerable<T> ChooseRandomValues<T>(this IEnumerable<T> group, int amount)
     {
         return Randomiser.ChooseValues(group, amount);
     }
 
-    #endregion
+    #endregion IEnumerable
 }
 
 public static class Hasher
@@ -123,8 +122,8 @@ public static class Hasher
             {
                 foreach (var currentObject in values)
                 {
-                hash = hash * Multiplier
-                        + (currentObject != null ? currentObject.GetHashCode() : 0);
+                    hash = hash * Multiplier
+                            + (currentObject != null ? currentObject.GetHashCode() : 0);
                 }
             }
 

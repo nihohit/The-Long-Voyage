@@ -1,28 +1,27 @@
-﻿using UnityEngine;
-using System;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Generic;
+using UnityEngine;
 
-public class GenerateLevel : MonoBehaviour 
+public class GenerateLevel : MonoBehaviour
 {
     #region public members
 
     public GameObject greenHex;
     public GameObject woodHex;
-	public Camera mainCamera;
+    public Camera mainCamera;
 
-    #endregion
+    #endregion public members
 
     //HACK - to be deleted.
     private List<Hex> m_emptyHexes = new List<Hex>();
 
     #region MonoBehaviour overrides
 
-	void Update()
-	{
+    private void Update()
+    {
         //the first time that update is called, start the battle.
         // This has to be so, because otherwise the turn might start before all the hexes have started.
-        if(!TacticalState.BattleStarted)
+        if (!TacticalState.BattleStarted)
         {
             TacticalState.BattleStarted = true;
             TacticalState.StartTurn();
@@ -42,7 +41,7 @@ public class GenerateLevel : MonoBehaviour
                 if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
                 {
                     //TODO - this is just a temporary measure, to create mechs
-                    var mech = new Mech(new Subsystem[] {new Laser(Loyalty.EnemyArmy), new MissileLauncher(Loyalty.EnemyArmy)},
+                    var mech = new Mech(new Subsystem[] { new Laser(Loyalty.EnemyArmy), new MissileLauncher(Loyalty.EnemyArmy) },
                     ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
                     TacticalState.SelectedHex.MarkedHex.Content = mech;
                     TacticalState.AddEntity(mech);
@@ -59,10 +58,10 @@ public class GenerateLevel : MonoBehaviour
                 TacticalState.SelectedHex = null;
             }
         }
-	}
+    }
 
-	// Use this for initialization
-	void Start () 
+    // Use this for initialization
+    private void Start()
     {
         SubsystemTemplate.Init();
         Hex.Init();
@@ -70,39 +69,39 @@ public class GenerateLevel : MonoBehaviour
         InitiateGlobalState();
 
         var hexes = new List<Hex>();
-		var entryPoint = Vector3.zero;
-		var hexSize = greenHex.renderer.bounds.size;
+        var entryPoint = Vector3.zero;
+        var hexSize = greenHex.renderer.bounds.size;
 
-		var target = 2*GlobalState.AmountOfHexes - 1;
+        var target = 2 * GlobalState.AmountOfHexes - 1;
 
-		//the math became a bit complicated when trying to account for correct coordinates. 
-		for (int i = - GlobalState.AmountOfHexes + 1 ; i <= 0; i++)
+        //the math became a bit complicated when trying to account for correct coordinates.
+        for (int i = -GlobalState.AmountOfHexes + 1; i <= 0; i++)
         {
-			entryPoint = new Vector3(entryPoint.x - ( hexSize.x/2), entryPoint.y + (hexSize.x*Mathf.Sqrt(3)/2) , entryPoint.z);
-			var amountOfHexesInRow = i + target;
-			var entryCoordinate = (float)-i  / 2 - GlobalState.AmountOfHexes + 1;
-			for(float j = 0 ; j < amountOfHexesInRow  ; j++)
-			{
+            entryPoint = new Vector3(entryPoint.x - (hexSize.x / 2), entryPoint.y + (hexSize.x * Mathf.Sqrt(3) / 2), entryPoint.z);
+            var amountOfHexesInRow = i + target;
+            var entryCoordinate = (float)-i / 2 - GlobalState.AmountOfHexes + 1;
+            for (float j = 0; j < amountOfHexesInRow; j++)
+            {
                 hexes.Add(CreateRandomHex(
-					new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z), 
-					new Vector2(entryCoordinate + j, i)).MarkedHex);
-			}
+                    new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
+                    new Vector2(entryCoordinate + j, i)).MarkedHex);
+            }
         }
-		
-		mainCamera.transform.position = new Vector3(entryPoint.x  + ((GlobalState.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 70);
-		mainCamera.transform.Rotate(new Vector3(180,180,180));
 
-		for (int i = 1 ; i < target - GlobalState.AmountOfHexes + 1; i++)
+        mainCamera.transform.position = new Vector3(entryPoint.x + ((GlobalState.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 70);
+        mainCamera.transform.Rotate(new Vector3(180, 180, 180));
+
+        for (int i = 1; i < target - GlobalState.AmountOfHexes + 1; i++)
         {
-			entryPoint = new Vector3(entryPoint.x + ( hexSize.x/2), entryPoint.y + (hexSize.x*Mathf.Sqrt(3)/2) , entryPoint.z);
-			var amountOfHexesInRow = target - i;
-			var entryCoordinate = (float)i  / 2 - GlobalState.AmountOfHexes + 1;
-			for(float j = 0; j < amountOfHexesInRow ; j++)
-			{
+            entryPoint = new Vector3(entryPoint.x + (hexSize.x / 2), entryPoint.y + (hexSize.x * Mathf.Sqrt(3) / 2), entryPoint.z);
+            var amountOfHexesInRow = target - i;
+            var entryCoordinate = (float)i / 2 - GlobalState.AmountOfHexes + 1;
+            for (float j = 0; j < amountOfHexesInRow; j++)
+            {
                 hexes.Add(CreateRandomHex(
-					new Vector3(entryPoint.x + j*hexSize.x, entryPoint.y, entryPoint.z), 
-					new Vector2(entryCoordinate + j, i)).MarkedHex);
-			}
+                    new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
+                    new Vector2(entryCoordinate + j, i)).MarkedHex);
+            }
         }
 
         TacticalState.Init(GlobalState.EntitiesInBattle, hexes);
@@ -112,16 +111,16 @@ public class GenerateLevel : MonoBehaviour
         chosenHexes.ForEach(hex => hex.Content = GlobalState.EntitiesInBattle.First(ent => ent.Hex == null));
     }
 
-    #endregion
+    #endregion MonoBehaviour overrides
 
-	#region private methods
+    #region private methods
 
     private HexReactor CreateGrassHex(Vector3 nextPosition, Vector2 hexCoordinates)
-	{
+    {
         var reactor = CreateHex(nextPosition, hexCoordinates, greenHex);
         m_emptyHexes.Add(reactor.MarkedHex);
         return reactor;
-	}
+    }
 
     private HexReactor CreateLightTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
@@ -159,44 +158,44 @@ public class GenerateLevel : MonoBehaviour
         return reactor;
     }
 
-	
     private HexReactor CreateRandomHex(Vector3 nextPosition, Vector2 hexCoordinates)
-	{
-        var random = Randomiser.Next(1,8);
-        switch(random)
+    {
+        var random = Randomiser.Next(1, 8);
+        switch (random)
         {
-            case(1):
+            case (1):
                 return CreateLightTreesHex(nextPosition, hexCoordinates);
-            case(2):
+
+            case (2):
                 return CreateDenseTreesHex(nextPosition, hexCoordinates);
-            case(3):
+
+            case (3):
                 return CreateBuildingHex(nextPosition, hexCoordinates);
+
             default:
                 return CreateGrassHex(nextPosition, hexCoordinates);
-
         }
-	}
+    }
 
     private void CreateRandomHex(Vector2 hexCoordinates)
     {
         CreateRandomHex(Vector3.zero, hexCoordinates);
     }
 
-	
-	private float GetDistance(Vector3 origin, Vector3 target)
-	{
-		return Mathf.Sqrt(Mathf.Pow(origin.x - target.x, 2f)	+ Mathf.Pow(origin.y - target.y, 2f) + Mathf.Pow(origin.z - target.z, 2f));
-	}
+    private float GetDistance(Vector3 origin, Vector3 target)
+    {
+        return Mathf.Sqrt(Mathf.Pow(origin.x - target.x, 2f) + Mathf.Pow(origin.y - target.y, 2f) + Mathf.Pow(origin.z - target.z, 2f));
+    }
 
     private void InitiateGlobalState()
     {
         //TODO - replace with exception throwing when we remove the direct access to level generation
         FileHandler.Init();
         HexReactor.Init();
-        if(GlobalState.AmountOfHexes < 1)
+        if (GlobalState.AmountOfHexes < 1)
         {
             GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
-                "default map size", 
+                "default map size",
                 FileAccessor.TerrainGeneration);
         }
         GlobalState.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
@@ -204,11 +203,10 @@ public class GenerateLevel : MonoBehaviour
 
     private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
     {
-        return Enumerable.Range(0, number).Select(num => (ActiveEntity)new Mech(new Subsystem[] {new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty)},
-            ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(), 
+        return Enumerable.Range(0, number).Select(num => (ActiveEntity)new Mech(new Subsystem[] { new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty) },
+            ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
             loyalty: loyalty)).Materialize();
     }
 
-	#endregion
+    #endregion private methods
 }
-

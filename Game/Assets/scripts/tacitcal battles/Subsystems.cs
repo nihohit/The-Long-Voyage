@@ -1,7 +1,6 @@
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using UnityEngine;
 
 #region SubsystemTemplate
 
@@ -12,68 +11,68 @@ public class SubsystemTemplate
     private static readonly Dictionary<SystemType, SubsystemTemplate> s_knownTemplates = new Dictionary<SystemType, SubsystemTemplate>();
 
     private readonly int m_maxRange;
-    
+
     private readonly int m_minRange;
-    
+
     private readonly DeliveryMethod m_deliveryMethod;
-    
+
     private readonly EffectType m_effectType;
-    
+
     private readonly string m_name;
-    
+
     private readonly TargetingType m_targetingType;
-    
+
     private readonly double m_energyCost;
 
     private readonly double m_effectStrength;
 
     private readonly int m_maxAmmo;
 
-    #endregion
+    #endregion fields
 
     #region properties
-    
+
     public int MaxRange { get { return m_maxRange; } }
-    
+
     public int MinRange { get { return m_minRange; } }
-    
+
     public DeliveryMethod DeliveryMethod { get { return m_deliveryMethod; } }
-    
+
     public EffectType Effect { get { return m_effectType; } }
 
     public double EffectStrength { get { return m_effectStrength; } }
-    
+
     public string Name { get { return m_name; } }
-    
+
     public TargetingType PossibleTargets { get { return m_targetingType; } }
-    
+
     public double EnergyCost { get { return m_energyCost; } }
-    
+
     public int MaxAmmo { get { return m_maxAmmo; } }
-    
-    #endregion
+
+    #endregion properties
 
     #region constructor and initializer
 
-    private SubsystemTemplate(double energyCost, 
-                              int minRange, 
-                              int maxRange, 
-                              DeliveryMethod deliveryMethod, 
-                              string name, 
-                              EffectType effectType, 
-                              double effectStrength, 
+    private SubsystemTemplate(double energyCost,
+                              int minRange,
+                              int maxRange,
+                              DeliveryMethod deliveryMethod,
+                              string name,
+                              EffectType effectType,
+                              double effectStrength,
                               TargetingType targetingType)
         : this(0, energyCost, minRange, maxRange, deliveryMethod, name, effectType, effectStrength, targetingType)
     { }
 
     private SubsystemTemplate(int ammo,
-                              double energyCost, 
-                              int minRange, 
-                              int maxRange, 
-                              DeliveryMethod deliveryMethod, 
-                              string name, 
-                              EffectType effectType, 
-                              double effectStrength, 
+                              double energyCost,
+                              int minRange,
+                              int maxRange,
+                              DeliveryMethod deliveryMethod,
+                              string name,
+                              EffectType effectType,
+                              double effectStrength,
                               TargetingType targetingType)
     {
         m_minRange = minRange;
@@ -89,28 +88,28 @@ public class SubsystemTemplate
 
     public static SubsystemTemplate Init(SystemType type)
     {
-        //TODO - no error handling at the moment. 
+        //TODO - no error handling at the moment.
         return s_knownTemplates[type];
     }
 
     //TODO - this method should be removed after we have initialization from XML
     public static void Init()
     {
-        if(s_knownTemplates.Count == 0)
+        if (s_knownTemplates.Count == 0)
         {
             s_knownTemplates.Add(SystemType.EMP,
                                  new SubsystemTemplate(1, 0, 2, DeliveryMethod.Direct, "Emp", EffectType.EmpDamage, 1.5f, TargetingType.Enemy));
             s_knownTemplates.Add(SystemType.Laser,
-                                 new SubsystemTemplate(2, 0,4, DeliveryMethod.Direct, "Laser", EffectType.PhysicalDamage, 2f, TargetingType.Enemy));
+                                 new SubsystemTemplate(2, 0, 4, DeliveryMethod.Direct, "Laser", EffectType.PhysicalDamage, 2f, TargetingType.Enemy));
             s_knownTemplates.Add(SystemType.Missile,
                                  new SubsystemTemplate(4, 1, 2, 6, DeliveryMethod.Unobstructed, "Missile", EffectType.PhysicalDamage, 1f, TargetingType.Enemy));
         }
     }
 
-    #endregion
+    #endregion constructor and initializer
 }
 
-#endregion
+#endregion SubsystemTemplate
 
 #region Subsystem
 
@@ -128,7 +127,7 @@ public abstract class Subsystem
 
     private readonly HexOperation m_effect;
 
-    #endregion
+    #endregion fields
 
     #region properties
 
@@ -149,7 +148,7 @@ public abstract class Subsystem
         }
     }
 
-    #endregion
+    #endregion properties
 
     #region constructors
 
@@ -159,14 +158,14 @@ public abstract class Subsystem
         m_template = SubsystemTemplate.Init(type);
         m_conditionForTargeting = CreateTargetingCheck(loyalty, m_template.PossibleTargets);
         var effect = CreateSystemEffect(m_template.EffectStrength, m_template.Effect);
-        if(m_template.MaxAmmo > 0)
+        if (m_template.MaxAmmo > 0)
         {
-            m_ammo = m_template.MaxAmmo;   
-            m_effect = (hex) => 
+            m_ammo = m_template.MaxAmmo;
+            m_effect = (hex) =>
             {
                 effect(hex);
                 --m_ammo;
-                if(m_ammo == 0)
+                if (m_ammo == 0)
                 {
                     m_workingCondition = SystemCondition.OutOfAmmo;
                 }
@@ -178,7 +177,7 @@ public abstract class Subsystem
         }
     }
 
-    #endregion
+    #endregion constructors
 
     #region public methods
 
@@ -189,6 +188,7 @@ public abstract class Subsystem
             case (EffectType.EmpDamage):
                 OperationalCondition = SystemCondition.Neutralized;
                 break;
+
             case (EffectType.PhysicalDamage):
                 OperationalCondition = SystemCondition.Destroyed;
                 break;
@@ -207,25 +207,25 @@ public abstract class Subsystem
         return TargetsInRange(actingEntity.Hex).Select(targetedHex => CreateAction(actingEntity, targetedHex, dict));
     }
 
-    #endregion
+    #endregion public methods
 
     #region private methods
 
     private static HexOperation CreateSystemEffect(double effectStrength, EffectType damageType)
     {
-        return (hex) => 
+        return (hex) =>
         {
             hex.Content.Affect(effectStrength, damageType);
         };
     }
-    
+
     private static HexCheck CreateTargetingCheck(Loyalty loyalty, TargetingType targeting)
     {
-        return (hex) => 
+        return (hex) =>
         {
             return ((targeting & TargetingType.AllHexes) != 0) ||
                 (((targeting & TargetingType.Enemy) != 0) && (hex.Content != null && hex.Content.Loyalty != loyalty)) ||
-                (((targeting & TargetingType.Friendly) != 0)&& (hex.Content != null && hex.Content.Loyalty == loyalty));
+                (((targeting & TargetingType.Friendly) != 0) && (hex.Content != null && hex.Content.Loyalty == loyalty));
         };
     }
 
@@ -236,25 +236,30 @@ public abstract class Subsystem
         var size = ((CircleCollider2D)hex.Reactor.collider2D).radius;
         Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
 
-        switch(list.Count(action => !action.Destroyed))
+        switch (list.Count(action => !action.Destroyed))
         {
-            case(0):
+            case (0):
                 offset = new Vector2(-(size), 0);
                 break;
-            case(1):
-                offset = new Vector2(-(size/2), (size));
+
+            case (1):
+                offset = new Vector2(-(size / 2), (size));
                 break;
-            case(2):
-                offset = new Vector2((size/2), (size));
+
+            case (2):
+                offset = new Vector2((size / 2), (size));
                 break;
-            case(3):
+
+            case (3):
                 offset = new Vector2(size, 0);
                 break;
-            case(4):
-                offset = new Vector2(size/2, -size);
+
+            case (4):
+                offset = new Vector2(size / 2, -size);
                 break;
-            case(5):
-                offset = new Vector2(-(size/2), -size);
+
+            case (5):
+                offset = new Vector2(-(size / 2), -size);
                 break;
         }
 
@@ -264,20 +269,20 @@ public abstract class Subsystem
     }
 
     private IEnumerable<Hex> TargetsInRange(Hex hex)
-    { 
-        if(m_template.MaxRange == 0)
+    {
+        if (m_template.MaxRange == 0)
         {
             return new[] { hex };
         }
 
         var layerName = "Entities";
-        
+
         switch (m_template.DeliveryMethod)
         {
-            case(DeliveryMethod.Direct):
+            case (DeliveryMethod.Direct):
                 return hex.RaycastAndResolve(m_template.MinRange, m_template.MaxRange, m_conditionForTargeting, false, layerName);
 
-            case(DeliveryMethod.Unobstructed):
+            case (DeliveryMethod.Unobstructed):
                 return hex.RaycastAndResolve(m_template.MinRange, m_template.MaxRange, m_conditionForTargeting, true, layerName);
 
             default:
@@ -285,33 +290,34 @@ public abstract class Subsystem
         }
     }
 
-    #endregion
+    #endregion private methods
 }
 
-#endregion
+#endregion Subsystem
 
 #region weapons
+
 //TODO - should be replaced with XML configuration files
 
 public class Laser : Subsystem
 {
-    public Laser(Loyalty loyalty) : 
+    public Laser(Loyalty loyalty) :
         base(SystemType.Laser, loyalty)
-    {}
+    { }
 }
 
 public class MissileLauncher : Subsystem
 {
-    public MissileLauncher(Loyalty loyalty) : 
+    public MissileLauncher(Loyalty loyalty) :
         base(SystemType.Missile, loyalty)
-    {}
+    { }
 }
 
 public class EmpLauncher : Subsystem
 {
-    public EmpLauncher(Loyalty loyalty) : 
+    public EmpLauncher(Loyalty loyalty) :
         base(SystemType.EMP, loyalty)
-    {}
+    { }
 }
 
-#endregion
+#endregion weapons

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public abstract class TextureHandler 
+public abstract class TextureHandler
 {
     //the default switching color is white
     protected Texture2D CopyTexture2D(Texture2D copiedTexture, Color replacementColor, string textureName)
@@ -19,27 +19,27 @@ public abstract class TextureHandler
         texture.wrapMode = TextureWrapMode.Clamp;
 
         int y = 0;
-        while (y < texture.height)  
+        while (y < texture.height)
         {
             int x = 0;
 
-            while (x < texture.width) 
+            while (x < texture.width)
             {
-                if(copiedTexture.GetPixel(x,y) == originalColor)  
+                if (copiedTexture.GetPixel(x, y) == originalColor)
                 {
                     texture.SetPixel(x, y, replacementColor);
                 }
                 else
                 {
                     //This line of code is REQUIRED. Do NOT delete it. This is what copies the image as it was, without any change.
-                    texture.SetPixel(x, y, copiedTexture.GetPixel(x,y));
+                    texture.SetPixel(x, y, copiedTexture.GetPixel(x, y));
                 }
-                
+
                 ++x;
             }
             ++y;
         }
-        
+
         //Name the texture, if you want.
         texture.name = (textureName);
 

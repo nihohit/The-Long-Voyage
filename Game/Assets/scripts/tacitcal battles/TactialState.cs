@@ -1,6 +1,6 @@
-using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public static class TacticalState
 {
@@ -12,45 +12,43 @@ public static class TacticalState
 
     private static LinkedListNode<Loyalty> s_currentTurn;
 
-    private static object s_lock;
-
-    //for each entity and each hex, the available actions 
+    //for each entity and each hex, the available actions
     private static HashSet<ActiveEntity> s_activeEntities;
 
     private static IEnumerable<Hex> s_hexes;
 
     private static Dictionary<Loyalty, IAIRunner> s_nonPlayerTeams;
-	
-    #endregion
+
+    #endregion fields
 
     #region properties
 
     public static bool BattleStarted { get; set; }
-    
+
     public static TacticalTextureHandler TextureManager;
 
     public static HexReactor SelectedHex
-	{ 
-		get
-		{
-			return s_selectedHex;
-		}
-		set
-		{
-			if(s_selectedHex != null)
-			{
-				s_selectedHex.Unselect();
-			}
+    {
+        get
+        {
+            return s_selectedHex;
+        }
+        set
+        {
+            if (s_selectedHex != null)
+            {
+                s_selectedHex.Unselect();
+            }
 
-			s_selectedHex = value;
-			if(s_selectedHex != null)
-				s_selectedHex.Select();
-		}
-	}
+            s_selectedHex = value;
+            if (s_selectedHex != null)
+                s_selectedHex.Select();
+        }
+    }
 
     public static Loyalty CurrentTurn { get { return s_currentTurn.Value; } }
 
-    #endregion
+    #endregion properties
 
     #region public methods
 
@@ -58,19 +56,19 @@ public static class TacticalState
     {
         s_activeEntities.Remove(ent);
         //TODO - end battle logic
-        if(ent.Loyalty == Loyalty.Player)
+        if (ent.Loyalty == Loyalty.Player)
         {
             //check if player lost
-            if(s_activeEntities.None(entity => entity.Loyalty == Loyalty.Player))
+            if (s_activeEntities.None(entity => entity.Loyalty == Loyalty.Player))
             {
                 Debug.Log("Player lost");
                 Application.LoadLevel("MainScreen");
             }
         }
-        if(ent.Loyalty != Loyalty.Player)
+        if (ent.Loyalty != Loyalty.Player)
         {
             //check if player won
-            if(s_activeEntities.None(entity => entity.Loyalty != Loyalty.Player))
+            if (s_activeEntities.None(entity => entity.Loyalty != Loyalty.Player))
             {
                 Debug.Log("Player won");
                 Application.LoadLevel("MainScreen");
@@ -78,8 +76,8 @@ public static class TacticalState
         }
     }
 
-    public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes) 
-    { 
+    public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes)
+    {
         TextureManager = new TacticalTextureHandler();
         BattleStarted = false;
         s_activeEntities = new HashSet<ActiveEntity>(entities);
@@ -88,7 +86,7 @@ public static class TacticalState
         SetTurnOrder(loaylties);
         s_hexes = hexes;
         s_nonPlayerTeams = new Dictionary<Loyalty, IAIRunner>();
-        foreach(var loyalty in loaylties.Where(team => team != Loyalty.Player))
+        foreach (var loyalty in loaylties.Where(team => team != Loyalty.Player))
         {
             s_nonPlayerTeams.Add(loyalty, new AIRunner(new AnimalEvaluator(new SimpleEntityEvaluator())));
         }
@@ -99,7 +97,7 @@ public static class TacticalState
         var thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn);
         thisTurnActiveEntities.ForEach(ent => ent.ResetActions());
         s_currentTurn = s_currentTurn.Next;
-        if(s_currentTurn == null)
+        if (s_currentTurn == null)
         {
             s_currentTurn = s_turnOrder.First;
         }
@@ -108,7 +106,7 @@ public static class TacticalState
         thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn);
         thisTurnActiveEntities.ForEach(ent => ent.StartTurn());
         SelectedHex = null;
-        if(CurrentTurn != Loyalty.Player)
+        if (CurrentTurn != Loyalty.Player)
         {
             s_nonPlayerTeams[CurrentTurn].Act(thisTurnActiveEntities);
         }
@@ -124,7 +122,7 @@ public static class TacticalState
     public static void AddEntity(Entity ent)
     {
         var active = ent as ActiveEntity;
-        if(active != null)
+        if (active != null)
         {
             s_activeEntities.Add(active);
             TextureManager.UpdateEntityTexture(ent);
@@ -133,7 +131,7 @@ public static class TacticalState
         SelectedHex = SelectedHex;
     }
 
-    #endregion
+    #endregion public methods
 
     #region private method
 
@@ -143,5 +141,5 @@ public static class TacticalState
         s_currentTurn = s_turnOrder.First;
     }
 
-    #endregion
+    #endregion private method
 }

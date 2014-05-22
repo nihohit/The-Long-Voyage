@@ -17,18 +17,18 @@ public class TacticalTextureHandler : TextureHandler
         {Loyalty.Player, Color.blue},
     }; //inactive or monster units should have unique visuals.
 
-    #endregion
+    #endregion fields
 
     #region constructor
 
     public TacticalTextureHandler()
-    { 
+    {
         var textures = Resources.LoadAll<Texture2D>("effects");
         m_knownEffectsTextures = textures.ToDictionary(texture => texture.name,
                                                        texture => texture);
     }
 
-    #endregion
+    #endregion constructor
 
     #region public methods
 
@@ -46,7 +46,7 @@ public class TacticalTextureHandler : TextureHandler
         ReplaceTexture(renderer, newTexture, effectName);
     }
 
-    #endregion
+    #endregion public methods
 
     #region private methods
 
@@ -56,7 +56,7 @@ public class TacticalTextureHandler : TextureHandler
         Color replacementColor;
 
         //if the color isn't in the list of affiliation, we just return
-        if(!m_affiliationColors.TryGetValue(ent.Loyalty, out replacementColor))
+        if (!m_affiliationColors.TryGetValue(ent.Loyalty, out replacementColor))
         {
             return oldTexture;
         }
@@ -65,9 +65,9 @@ public class TacticalTextureHandler : TextureHandler
 
     private void ReplaceTexture(SpriteRenderer renderer, Texture2D newTexture, string name)
     {
-        renderer.sprite = Sprite.Create(newTexture, renderer.sprite.rect, new Vector2(0.5f,0.5f));
+        renderer.sprite = Sprite.Create(newTexture, renderer.sprite.rect, new Vector2(0.5f, 0.5f));
         renderer.sprite.name = name;
     }
 
-    #endregion
+    #endregion private methods
 }

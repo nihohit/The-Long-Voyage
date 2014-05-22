@@ -1,21 +1,23 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
+using UnityEngine;
 
 public class CircularButton : MarkerScript
 {
     public Action Action { get; set; }
+
     public Action OnMouseOverProperty { get; set; }
+
     public Action OnMouseExitProperty { get; set; }
 
     public CircularButton()
     {
         //just in case those value aren't inserted afterwards
-        OnMouseOverProperty = () => {};
-        OnMouseExitProperty = () => {};
-        Action = () => {};
+        OnMouseOverProperty = () => { };
+        OnMouseExitProperty = () => { };
+        Action = () => { };
     }
 
-    void OnMouseOver()
+    private void OnMouseOver()
     {
         if (enabled)
         {
@@ -23,7 +25,7 @@ public class CircularButton : MarkerScript
         }
     }
 
-    void OnMouseExit()
+    private void OnMouseExit()
     {
         if (enabled)
             OnMouseExitProperty();
@@ -41,7 +43,7 @@ public class CircularButton : MarkerScript
         this.GetComponent<Collider2D>().enabled = false;
     }
 
-    void OnMouseDown()
+    private void OnMouseDown()
     {
         if (enabled)
         {
@@ -49,4 +51,3 @@ public class CircularButton : MarkerScript
         }
     }
 }
-
