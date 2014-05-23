@@ -128,7 +128,7 @@ public class Hex
             {
                 Reactor.RemoveRadarBlipMarker();
             }
-            if (m_detected == 1 && m_seen == 0)
+            if (m_detected > 0 && m_seen == 0)
             {
                 Reactor.DisplayRadarBlipMarker();
             }

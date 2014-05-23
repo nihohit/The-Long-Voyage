@@ -19,6 +19,9 @@ public static class TacticalState
 
     private static Dictionary<Loyalty, IAIRunner> s_nonPlayerTeams;
 
+    //this is needed, since we need to enable all the entities before each radar sweep. 
+    private static List<Entity> s_radarableEntity = new List<Entity>();
+
     #endregion fields
 
     #region properties
@@ -46,33 +49,30 @@ public static class TacticalState
         }
     }
 
+    public static IEnumerable<Entity> RadarVisibleEntities { get { return s_radarableEntity; } }
+
     public static Loyalty CurrentTurn { get { return s_currentTurn.Value; } }
 
     #endregion properties
 
     #region public methods
 
-    public static void DestroyActiveEntity(ActiveEntity ent)
+    public static void AddRadarVisibleEntity(Entity ent)
     {
-        s_activeEntities.Remove(ent);
-        //TODO - end battle logic
-        if (ent.Loyalty == Loyalty.Player)
+        Assert.AssertConditionMet((ent.Visuals & VisualProperties.AppearsOnRadar) != 0, "Added entity isn't radar visible");
+        s_radarableEntity.Add(ent);
+    }
+
+    public static void DestroyEntity(Entity ent)
+    {
+        if((ent.Visuals & VisualProperties.AppearsOnRadar) != 0)
         {
-            //check if player lost
-            if (s_activeEntities.None(entity => entity.Loyalty == Loyalty.Player))
-            {
-                Debug.Log("Player lost");
-                Application.LoadLevel("MainScreen");
-            }
+            s_radarableEntity.Remove(ent);
         }
-        if (ent.Loyalty != Loyalty.Player)
+        var activeEntity = ent as ActiveEntity;
+        if(activeEntity != null)
         {
-            //check if player won
-            if (s_activeEntities.None(entity => entity.Loyalty != Loyalty.Player))
-            {
-                Debug.Log("Player won");
-                Application.LoadLevel("MainScreen");
-            }
+            DestroyActiveEntity(activeEntity);
         }
     }
 
@@ -135,6 +135,30 @@ public static class TacticalState
     #endregion public methods
 
     #region private method
+
+    private static void DestroyActiveEntity(ActiveEntity ent)
+    {
+        s_activeEntities.Remove(ent);
+        //TODO - end battle logic
+        if (ent.Loyalty == Loyalty.Player)
+        {
+            //check if player lost
+            if (s_activeEntities.None(entity => entity.Loyalty == Loyalty.Player))
+            {
+                Debug.Log("Player lost");
+                Application.LoadLevel("MainScreen");
+            }
+        }
+        if (ent.Loyalty != Loyalty.Player)
+        {
+            //check if player won
+            if (s_activeEntities.None(entity => entity.Loyalty != Loyalty.Player))
+            {
+                Debug.Log("Player won");
+                Application.LoadLevel("MainScreen");
+            }
+        }
+    }
 
     private static void SetTurnOrder(IEnumerable<Loyalty> players)
     {

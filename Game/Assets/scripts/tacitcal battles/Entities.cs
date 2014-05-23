@@ -29,6 +29,10 @@ public abstract class Entity
         this.Marker = reactor;
         m_id = s_idCounter++;
         m_name = "{0} {1} {2}".FormatWith(this.GetType().ToString(), Loyalty, m_id);
+        if((this.Visuals & VisualProperties.AppearsOnRadar) != 0)
+        {
+            TacticalState.AddRadarVisibleEntity(this);
+        }
     }
 
     #endregion constructor
@@ -115,6 +119,12 @@ public abstract class Entity
         return m_name;
     }
 
+    #endregion object overrides
+
+    #endregion public methods
+
+    #region protected methods
+
     protected virtual void InternalDamage(double damage, EffectType damageType)
     {
         if (EffectType.PhysicalDamage == damageType)
@@ -123,12 +133,6 @@ public abstract class Entity
         }
     }
 
-    #endregion object overrides
-
-    #endregion public methods
-
-    #region protected methods
-
     protected virtual void InternalDamage(double damage)
     { }
 
@@ -136,6 +140,7 @@ public abstract class Entity
     {
         Debug.Log("Destroy {0}".FormatWith(m_name));
         this.Hex.Content = null;
+        TacticalState.DestroyEntity(this);
         UnityEngine.Object.Destroy(this.Marker.gameObject);
     }
 
@@ -349,8 +354,11 @@ public abstract class ActiveEntity : Entity
 
     private IEnumerable<Hex> FindRadarHexes()
     {
-        //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
-        return Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
+        var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.Marker.enabled).Select(ent => ent.Marker);
+        inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
+        var results = Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
+        inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);
+        return results;
     }
 
     protected override void InternalDamage(double damage, EffectType damageType)
@@ -369,12 +377,6 @@ public abstract class ActiveEntity : Entity
         var dict = new Dictionary<Hex, List<PotentialAction>>();
         return m_systems.Where(system => system.Operational())
             .SelectMany(system => system.ActionsInRange(this, dict));
-    }
-
-    protected override void Destroy()
-    {
-        base.Destroy();
-        TacticalState.DestroyActiveEntity(this);
     }
 
     public override bool Destroyed()
