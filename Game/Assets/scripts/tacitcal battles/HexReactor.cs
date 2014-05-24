@@ -18,7 +18,7 @@ public class HexReactor : CircularButton
 
     public HexReactor()
     {
-        base.Action = () => TacticalState.SelectedHex = this;
+        base.Action = CheckIfClickIsOnUI ( () => TacticalState.SelectedHex = this);
     }
 
     #region markers

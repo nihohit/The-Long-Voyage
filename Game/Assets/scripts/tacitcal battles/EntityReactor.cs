@@ -1,4 +1,6 @@
-﻿#region EntityReactor
+﻿using UnityEngine;
+
+#region EntityReactor
 
 public class EntityReactor : CircularButton
 {
@@ -10,8 +12,7 @@ public class EntityReactor : CircularButton
         set
         {
             m_ent = value;
-            this.Action = () =>
-                TacticalState.SelectedHex = m_ent.Hex.Reactor;
+            this.Action = CheckIfClickIsOnUI ( () => TacticalState.SelectedHex = m_ent.Hex.Reactor );
         }
     }
 }

@@ -549,7 +549,14 @@ public class MovementAction : PotentialAction
     public override void RemoveDisplay()
     {
         base.RemoveDisplay();
+        TargetedHex.Reactor.OnMouseExitProperty = RemovePath;
         RemovePath();
+    }
+
+    public override void DisplayButton()
+    {
+        base.DisplayButton();
+        TargetedHex.Reactor.OnMouseOverProperty = DisplayPath;
     }
 
     public override void Destroy()
@@ -561,8 +568,7 @@ public class MovementAction : PotentialAction
     public override void Commit()
     {
         base.Commit();
-        var lastHex = m_path.Last();
-        lastHex.Content = ActingEntity;
+        TargetedHex.Content = ActingEntity;
         TacticalState.SelectedHex = null;
         //TODO - affects on commiting entity? Energy / heat cost, etc.?
         Destroy();
