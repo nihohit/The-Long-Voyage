@@ -3,7 +3,7 @@
 [Serializable]
 public class UnknownTypeException : Exception
 {
-    public UnknownTypeException(object obj) : 
+    public UnknownTypeException(object obj) :
         base("Type {0} wasn't defined.".FormatWith(obj.ToString()))
     { }
 }
@@ -11,7 +11,7 @@ public class UnknownTypeException : Exception
 [Serializable]
 public class AssertedException : Exception
 {
-    public AssertedException(string message) : 
+    public AssertedException(string message) :
         base("Condition wasn't met : {0}".FormatWith(message))
-     {}
+    { }
 }

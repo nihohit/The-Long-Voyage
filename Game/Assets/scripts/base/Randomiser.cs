@@ -44,17 +44,16 @@ public static class Randomiser
         int totalAmount = group.Count();
         Assert.EqualOrLesser(amount, totalAmount);
         var list = new List<T>();
-        foreach(var element in group)
+        foreach (var element in group)
         {
-            if(Randomiser.ProbabilityCheck((double)amount / (double)totalAmount))
+            if (Randomiser.ProbabilityCheck((double)amount / (double)totalAmount))
             {
                 list.Add(element);
                 amount--;
             }
-            if(amount == 0) break;
+            if (amount == 0) break;
             totalAmount--;
         }
         return list;
     }
 }
-

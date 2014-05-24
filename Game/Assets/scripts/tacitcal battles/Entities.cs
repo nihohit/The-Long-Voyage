@@ -15,7 +15,7 @@ public abstract class Entity
 
     private readonly String m_name;
 
-    #endregion
+    #endregion private fields
 
     #region constructor
 
@@ -29,13 +29,17 @@ public abstract class Entity
         this.Marker = reactor;
         m_id = s_idCounter++;
         m_name = "{0} {1} {2}".FormatWith(this.GetType().ToString(), Loyalty, m_id);
+        if((this.Visuals & VisualProperties.AppearsOnRadar) != 0)
+        {
+            TacticalState.AddRadarVisibleEntity(this);
+        }
     }
 
-    #endregion
+    #endregion constructor
 
     #region properties
 
-    public int ID { get {return m_id;}}
+    public int ID { get { return m_id; } }
 
     public MarkerScript Marker { get; private set; }
 
@@ -51,32 +55,37 @@ public abstract class Entity
 
     public String Name { get { return m_name; } }
 
-    #endregion
+    #endregion properties
 
     #region public methods
 
     public virtual void Affect(double strength, EffectType effectType)
     {
         Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, strength, effectType));
-        switch(effectType)
+        switch (effectType)
         {
             case EffectType.PhysicalDamage:
             case EffectType.EmpDamage:
                 Shield -= strength;
                 break;
+
             case EffectType.HeatDamage:
                 //TODO - implement heat mechanics
                 throw new NotImplementedException();
                 break;
         }
-        
-        if(Shield < 0)
+        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
+
+        if (Shield < 0)
         {
             InternalDamage(-Shield, effectType);
             Shield = 0;
         }
 
-        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
+        if (Destroyed())
+        {
+            Destroy();
+        }
     }
 
     // this function returns a string value that represents the mutable state of the entity
@@ -110,24 +119,19 @@ public abstract class Entity
         return m_name;
     }
 
+    #endregion object overrides
+
+    #endregion public methods
+
+    #region protected methods
+
     protected virtual void InternalDamage(double damage, EffectType damageType)
     {
-        if(EffectType.PhysicalDamage == damageType)
+        if (EffectType.PhysicalDamage == damageType)
         {
             Health -= damage;
         }
-
-        if(Destroyed())
-        {
-            Destroy();
-        }
     }
-
-    #endregion
-
-    #endregion
-
-    #region protected methods
 
     protected virtual void InternalDamage(double damage)
     { }
@@ -136,13 +140,14 @@ public abstract class Entity
     {
         Debug.Log("Destroy {0}".FormatWith(m_name));
         this.Hex.Content = null;
+        TacticalState.DestroyEntity(this);
         UnityEngine.Object.Destroy(this.Marker.gameObject);
     }
 
-    #endregion
+    #endregion protected methods
 }
 
-#endregion
+#endregion Entity
 
 #region inanimate entities
 
@@ -151,11 +156,12 @@ public abstract class TerrainEntity : Entity
     private Hex m_hex;
 
     public TerrainEntity(double health, bool visibleOnRadar, bool blocksSight, EntityReactor reactor)
-        : base(Loyalty.Inactive, health, 0, 
+        : base(Loyalty.Inactive, health, 0,
                VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None) | (blocksSight ? VisualProperties.BlocksSight : VisualProperties.None), reactor)
-    {}
+    { }
 
-    public override Hex Hex { 
+    public override Hex Hex
+    {
         get
         {
             return m_hex;
@@ -170,7 +176,7 @@ public abstract class TerrainEntity : Entity
     //inanimate objects take heat damage as physical damage
     public override void Affect(double damage, EffectType damageType)
     {
-        if(damageType == EffectType.HeatDamage)
+        if (damageType == EffectType.HeatDamage)
         {
             damageType = EffectType.PhysicalDamage;
         }
@@ -180,23 +186,26 @@ public abstract class TerrainEntity : Entity
 
 public class DenseTrees : TerrainEntity
 {
-    public DenseTrees(EntityReactor reactor) : base(FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), false, true, reactor)
+    public DenseTrees(EntityReactor reactor)
+        : base(FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), false, true, reactor)
     { }
 }
 
 public class SparseTrees : TerrainEntity
 {
-    public SparseTrees(EntityReactor reactor) : base(FileHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), false, false, reactor)
+    public SparseTrees(EntityReactor reactor)
+        : base(FileHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), false, false, reactor)
     { }
 }
 
 public class Building : TerrainEntity
 {
-    public Building(EntityReactor reactor) : base(FileHandler.GetIntProperty("Building health", FileAccessor.Units), true, true, reactor)
+    public Building(EntityReactor reactor)
+        : base(FileHandler.GetIntProperty("Building health", FileAccessor.Units), true, true, reactor)
     { }
 }
 
-#endregion
+#endregion inanimate entities
 
 #region ActiveEntity
 
@@ -214,10 +223,10 @@ public abstract class ActiveEntity : Entity
         CurrentEnergy = maximumEnergy;
     }
 
-    #endregion
+    #endregion constructor
 
     #region private fields
-    
+
     private HashSet<Hex> m_detectedHexes;
 
     private readonly int m_radarRange;
@@ -230,12 +239,12 @@ public abstract class ActiveEntity : Entity
 
     private readonly double m_maximumEnergy;
 
-    #endregion
+    #endregion private fields
 
     #region Properties
 
     public IEnumerable<PotentialAction> Actions
-    { 
+    {
         get
         {
             if (m_actions == null)
@@ -250,7 +259,7 @@ public abstract class ActiveEntity : Entity
 
     public HashSet<Hex> SeenHexes { get; private set; }
 
-    #endregion
+    #endregion Properties
 
     #region public methods
 
@@ -273,7 +282,7 @@ public abstract class ActiveEntity : Entity
         var whatTheEntitySeesNowInRadar = FindRadarHexes().Except(whatTheEntitySeesNow);
         //Debug.Log("{0} is setting seen hexes".FormatWith(Name));
 
-        if(SeenHexes != null)
+        if (SeenHexes != null)
         {
             var whatTheEntitySeesNowSet = new HashSet<Hex>(whatTheEntitySeesNow);
             var whatTheEntitySeesNowInRadarSet = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
@@ -282,30 +291,30 @@ public abstract class ActiveEntity : Entity
             whatTheEntitySeesNowSet.ExceptOnBoth(SeenHexes);
             whatTheEntitySeesNowInRadarSet.ExceptOnBoth(m_detectedHexes);
 
-            foreach(var hex in SeenHexes)
+            foreach (var hex in SeenHexes)
             {
                 hex.Unseen();
             }
-            foreach(var hex in m_detectedHexes)
+            foreach (var hex in m_detectedHexes)
             {
                 hex.Undetected();
             }
-            foreach(var hex in whatTheEntitySeesNowSet)
+            foreach (var hex in whatTheEntitySeesNowSet)
             {
                 hex.Seen();
             }
-            foreach(var hex in whatTheEntitySeesNowInRadarSet)
+            foreach (var hex in whatTheEntitySeesNowInRadarSet)
             {
                 hex.Detected();
             }
         }
         else
         {
-            foreach(var hex in whatTheEntitySeesNow)
+            foreach (var hex in whatTheEntitySeesNow)
             {
                 hex.Seen();
             }
-            foreach(var hex in whatTheEntitySeesNowInRadar)
+            foreach (var hex in whatTheEntitySeesNowInRadar)
             {
                 hex.Detected();
             }
@@ -333,25 +342,28 @@ public abstract class ActiveEntity : Entity
         return "{0} Energy {1}".FormatWith(base.FullState(), CurrentEnergy);
     }
 
-    #endregion
+    #endregion public methods
 
     #region private and protected methods
 
     private IEnumerable<Hex> FindSeenHexes()
     {
         //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
-        return Hex.RaycastAndResolve<HexReactor>(0, m_sightRange, (hex) => true, true, (hex) => (hex.Content != null  && ((hex.Content.Visuals & VisualProperties.BlocksSight) != 0)) ,"Hexes", (reactor)=> reactor.MarkedHex);
+        return Hex.RaycastAndResolve<HexReactor>(0, m_sightRange, (hex) => true, true, (hex) => (hex.Content != null && ((hex.Content.Visuals & VisualProperties.BlocksSight) != 0)), "Hexes", (reactor) => reactor.MarkedHex);
     }
-    
+
     private IEnumerable<Hex> FindRadarHexes()
     {
-        //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
-        return Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
+        var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.Marker.enabled).Select(ent => ent.Marker);
+        inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
+        var results = Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
+        inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);
+        return results;
     }
 
     protected override void InternalDamage(double damage, EffectType damageType)
-    { 
-        if(m_systems.Any(system => system.Operational()))
+    {
+        if (m_systems.Any(system => system.Operational()))
         {
             m_systems.Where(system => system.Operational()).ChooseRandomValue().Hit(damageType, damage);
         }
@@ -367,21 +379,15 @@ public abstract class ActiveEntity : Entity
             .SelectMany(system => system.ActionsInRange(this, dict));
     }
 
-    protected override void Destroy()
-    {
-        base.Destroy();
-        TacticalState.DestroyActiveEntity(this);
-    }
-
     public override bool Destroyed()
     {
         return base.Destroyed() || m_systems.None(system => system.Operational());
     }
 
-    #endregion
+    #endregion private and protected methods
 }
 
-#endregion
+#endregion ActiveEntity
 
 #region MovingEntity
 
@@ -391,14 +397,15 @@ public abstract class MovingEntity : ActiveEntity
 
     private readonly double m_maximumSpeed;
 
-    #endregion
+    #endregion private fields
 
     #region properties
 
-    public double AvailableSteps { get ; set; }
+    public double AvailableSteps { get; set; }
+
     public MovementType MovementMethod { get; private set; }
 
-    #endregion
+    #endregion properties
 
     #region constructor
 
@@ -410,7 +417,7 @@ public abstract class MovingEntity : ActiveEntity
         MovementMethod = movement;
     }
 
-    #endregion
+    #endregion constructor
 
     #region overrides
 
@@ -432,12 +439,13 @@ public abstract class MovingEntity : ActiveEntity
         return "{0} movement {1}".FormatWith(base.FullState(), AvailableSteps);
     }
 
-    #endregion
+    #endregion overrides
 }
 
-#endregion
+#endregion MovingEntity
 
 #region Mech
+
 //TODO - should be replaced with XML configuration files
 
 public class Mech : MovingEntity
@@ -455,4 +463,4 @@ public class Mech : MovingEntity
     { }
 }
 
-#endregion
+#endregion Mech

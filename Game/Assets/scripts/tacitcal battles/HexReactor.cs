@@ -1,52 +1,52 @@
-using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
-public class HexReactor : CircularButton 
+public class HexReactor : CircularButton
 {
     #region private fields
 
-	public Hex MarkedHex { get; set; }
-	private MarkerScript m_movementPathMarker;
+    public Hex MarkedHex { get; set; }
+
+    private MarkerScript m_movementPathMarker;
     private MarkerScript m_fogOfWarMarker;
     private MarkerScript m_radarBlipMarker;
-	private static MarkerScript s_selected;
+    private static MarkerScript s_selected;
 
-    #endregion
+    #endregion private fields
 
     #region public methods
 
     public HexReactor()
     {
-        base.Action = () => TacticalState.SelectedHex = this;
+        base.Action = CheckIfClickIsOnUI ( () => TacticalState.SelectedHex = this);
     }
 
     #region markers
 
-	public void RemoveMovementMarker()
-	{
+    public void RemoveMovementMarker()
+    {
         RemoveMarker(m_movementPathMarker);
-	}
+    }
 
-	public void DisplayMovementMarker()
-	{
+    public void DisplayMovementMarker()
+    {
         m_movementPathMarker = AddAndDisplayMarker(m_movementPathMarker, "PathMarker");
-	}
+    }
 
     public void RemoveFogOfWarMarker()
     {
         RemoveMarker(m_fogOfWarMarker);
         RemoveRadarBlipMarker();
-        if(MarkedHex.Content != null)
+        if (MarkedHex.Content != null)
         {
             MarkedHex.Content.Marker.Mark();
         }
     }
-    
+
     public void DisplayFogOfWarMarker()
     {
         m_fogOfWarMarker = AddAndDisplayMarker(m_fogOfWarMarker, "FogOfWar");
-        if(MarkedHex.Content != null)
+        if (MarkedHex.Content != null)
         {
             MarkedHex.Content.Marker.Unmark();
         }
@@ -56,40 +56,40 @@ public class HexReactor : CircularButton
     {
         RemoveMarker(m_radarBlipMarker);
     }
-    
+
     public void DisplayRadarBlipMarker()
     {
         m_radarBlipMarker = AddAndDisplayMarker(m_radarBlipMarker, "RadarBlip");
     }
 
-    #endregion
+    #endregion markers
 
-	public static void Init()
-	{
-		s_selected = GameObject.Find("Marker").GetComponent<MarkerScript>();
+    public static void Init()
+    {
+        s_selected = GameObject.Find("Marker").GetComponent<MarkerScript>();
         s_selected.Unmark();
-	}
+    }
 
-    void Start()
+    private void Start()
     {
         DisplayFogOfWarMarker();
     }
 
-	public void Select()
-	{
-		//Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex)); 
-		s_selected.Mark(this.transform.position);
+    public void Select()
+    {
+        //Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex));
+        s_selected.Mark(this.transform.position);
         ActionCheck().ForEach(action => action.DisplayButton());
-	}
+    }
 
-	public void Unselect()
-	{
-		//Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
-		s_selected.Unmark();
+    public void Unselect()
+    {
+        //Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
+        s_selected.Unmark();
         ActionCheck().ForEach(action => action.RemoveDisplay());
-	}
+    }
 
-    #endregion
+    #endregion public methods
 
     #region private methods
 
@@ -97,11 +97,11 @@ public class HexReactor : CircularButton
     private IEnumerable<PotentialAction> ActionCheck()
     {
         var activeEntity = MarkedHex.Content as ActiveEntity;
-        if(activeEntity == null || activeEntity.Loyalty != TacticalState.CurrentTurn)
+        if (activeEntity == null || activeEntity.Loyalty != TacticalState.CurrentTurn)
         {
             return null;
         }
-        
+
         return activeEntity.Actions.Materialize();
     }
 
@@ -115,7 +115,7 @@ public class HexReactor : CircularButton
 
     private MarkerScript AddAndDisplayMarker(MarkerScript marker, string markerName)
     {
-        if(marker == null)
+        if (marker == null)
         {
             marker = ((GameObject)Instantiate(Resources.Load(markerName), Vector3.zero, Quaternion.identity)).GetComponent<MarkerScript>();
             marker.internalRenderer = marker.GetComponent<SpriteRenderer>();
@@ -124,5 +124,5 @@ public class HexReactor : CircularButton
         return marker;
     }
 
-    #endregion
+    #endregion private methods
 }

@@ -4,9 +4,11 @@ using UnityEngine;
 
 #region delegates
 
-delegate List<Hex> pathfindFunction(Vector2 entry, Vector2 goal, MovementType traversalMethod);
+internal delegate List<Hex> pathfindFunction(Vector2 entry, Vector2 goal, MovementType traversalMethod);
+
 internal delegate float Heuristic(Hex check);
-#endregion
+
+#endregion delegates
 
 #region AstarNode
 
@@ -28,16 +30,16 @@ internal class AstarNode : IComparable<AstarNode>
         Open = true;
     }
 
-    public AstarNode(Hex value, AstarNode parent) : 
+    public AstarNode(Hex value, AstarNode parent) :
         this(value, 0, 0, 0, parent)
-    {}
+    { }
 
     //only first node uses this
-    public AstarNode(Hex value, float h) : 
+    public AstarNode(Hex value, float h) :
         this(value, 0, 0, h, null)
-    {}
+    { }
 
-    #endregion
+    #endregion constructors
 
     #region properties
 
@@ -57,7 +59,7 @@ internal class AstarNode : IComparable<AstarNode>
 
     public float FValue { get; private set; }
 
-    #endregion
+    #endregion properties
 
     #region comparers
 
@@ -70,7 +72,7 @@ internal class AstarNode : IComparable<AstarNode>
         return 0;
     }
 
-    static int NodeComparer(AstarNode a, AstarNode b)
+    private static int NodeComparer(AstarNode a, AstarNode b)
     {
         if (a.FValue > b.FValue) return 1;
         if (a.FValue < b.FValue) return -1;
@@ -79,7 +81,7 @@ internal class AstarNode : IComparable<AstarNode>
         return 0;
     }
 
-    #endregion
+    #endregion comparers
 }
 
-#endregion
+#endregion AstarNode
