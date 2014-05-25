@@ -199,7 +199,7 @@ public class Hex
                 foreach (var rayHit in rayHits)
                 {
                     var hex = hexExtractor(rayHit.collider.gameObject.GetComponent<T>());
-                    if (Distance(hex) < maxRange &&
+                    if (Distance(hex) <= maxRange &&
                        Distance(hex) >= minRange &&
                        addToListCheck(hex))
                     {
@@ -217,7 +217,7 @@ public class Hex
                 if (rayHit.collider != null)
                 {
                     var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
-                    if (Distance(hex) < maxRange &&
+                    if (Distance(hex) <= maxRange &&
                        Distance(hex) >= minRange &&
                        addToListCheck(hex))
                     {
@@ -344,7 +344,7 @@ public enum TargetingType
     AllHexes = 4
 }
 
-public enum EffectType { EmpDamage, HeatDamage, PhysicalDamage, }
+public enum EffectType { EmpDamage, HeatDamage, IncendiaryDamage, PhysicalDamage, FlameHex }
 
 public enum WeaponType { }
 
@@ -357,7 +357,7 @@ public enum SystemCondition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, D
 // the way a system reaches its targets
 public enum DeliveryMethod { Direct, Unobstructed }
 
-public enum SystemType { Laser, Missile, EMP }
+public enum SystemType { Laser, Missile, EMP, Flamer, IncidentaryGun, HeatWave }
 
 #endregion enums
 
@@ -536,6 +536,9 @@ public class MovementAction : PotentialAction
 
     private void RemovePath()
     {
+
+        TargetedHex.Reactor.OnMouseOverProperty = () => { };
+        TargetedHex.Reactor.OnMouseExitProperty = () => { };
         foreach (var hex in m_path)
         {
             hex.Reactor.RemoveMovementMarker();
@@ -549,7 +552,6 @@ public class MovementAction : PotentialAction
     public override void RemoveDisplay()
     {
         base.RemoveDisplay();
-        TargetedHex.Reactor.OnMouseExitProperty = RemovePath;
         RemovePath();
     }
 
@@ -557,6 +559,7 @@ public class MovementAction : PotentialAction
     {
         base.DisplayButton();
         TargetedHex.Reactor.OnMouseOverProperty = DisplayPath;
+        TargetedHex.Reactor.OnMouseExitProperty = RemovePath;
     }
 
     public override void Destroy()
