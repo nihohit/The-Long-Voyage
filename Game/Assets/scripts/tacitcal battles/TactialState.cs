@@ -74,6 +74,7 @@ public static class TacticalState
         {
             DestroyActiveEntity(activeEntity);
         }
+        s_activeEntities.ForEach(entity => entity.ResetActions());
     }
 
     public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes)

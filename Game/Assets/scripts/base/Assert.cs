@@ -23,6 +23,16 @@ public static class Assert
         AssertConditionMet(num <= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
     }
 
+    public static void Lesser(double num, double top)
+    {
+        Lesser(num, top, string.Empty);
+    }
+
+    public static void Lesser(double num, double top, string additionalMessage)
+    {
+        AssertConditionMet(num < top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
+    }
+
     public static void UnreachableCode(string message)
     {
         AssertConditionMet(false, "unreachable code: {0}".FormatWith(message));

@@ -199,7 +199,7 @@ public class Hex
                 foreach (var rayHit in rayHits)
                 {
                     var hex = hexExtractor(rayHit.collider.gameObject.GetComponent<T>());
-                    if (Distance(hex) < maxRange &&
+                    if (Distance(hex) <= maxRange &&
                        Distance(hex) >= minRange &&
                        addToListCheck(hex))
                     {
@@ -217,7 +217,7 @@ public class Hex
                 if (rayHit.collider != null)
                 {
                     var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
-                    if (Distance(hex) < maxRange &&
+                    if (Distance(hex) <= maxRange &&
                        Distance(hex) >= minRange &&
                        addToListCheck(hex))
                     {
@@ -344,7 +344,7 @@ public enum TargetingType
     AllHexes = 4
 }
 
-public enum EffectType { EmpDamage, HeatDamage, PhysicalDamage, }
+public enum EffectType { EmpDamage, HeatDamage, IncendiaryDamage, PhysicalDamage, FlameHex }
 
 public enum WeaponType { }
 
@@ -357,7 +357,7 @@ public enum SystemCondition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, D
 // the way a system reaches its targets
 public enum DeliveryMethod { Direct, Unobstructed }
 
-public enum SystemType { Laser, Missile, EMP }
+public enum SystemType { Laser, Missile, EMP, Flamer, IncediaryGun, HeatWave }
 
 #endregion enums
 
@@ -416,7 +416,9 @@ public abstract class PotentialAction
         m_active = false;
         Destroyed = false;
         ButtonName = buttonName;
-        m_button = ((GameObject)MonoBehaviour.Instantiate(Resources.Load(buttonName), position, Quaternion.identity)).GetComponent<CircularButton>();
+        var command = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Button"), position, Quaternion.identity));
+        TacticalState.TextureManager.UpdateButtonTexture(buttonName, command.GetComponent<SpriteRenderer>());
+        m_button = command.GetComponent<CircularButton>();
         m_button.Action = () =>
         {
             m_active = true;
@@ -467,7 +469,6 @@ public abstract class PotentialAction
     {
         Debug.Log("{0} committing {1}".FormatWith(ActingEntity, m_name));
         Assert.AssertConditionMet((!Destroyed) || m_active, "Action {0} was operated after being destroyed".FormatWith(this));
-        Assert.EqualOrLesser(1, ActingEntity.Health, "{0} shouldn't be destroyed. Its condition is {1}".FormatWith(ActingEntity, ActingEntity.FullState()));
         m_active = false;
         AffectEntity();
         //makes it display all buttons;
@@ -515,6 +516,8 @@ public class MovementAction : PotentialAction
         m_button.OnMouseOverProperty = DisplayPath;
         m_button.OnMouseExitProperty = RemovePath;
         m_cost = cost;
+        m_button.transform.localScale = new Vector3(m_button.transform.localScale.x * 2, m_button.transform.localScale.y * 2, m_button.transform.localScale.z);
+        m_button.gameObject.GetComponent<SpriteRenderer>().sortingOrder = 0;
     }
 
     public MovementAction(MovementAction action, Hex hex, double cost) :
@@ -549,7 +552,8 @@ public class MovementAction : PotentialAction
     public override void RemoveDisplay()
     {
         base.RemoveDisplay();
-        TargetedHex.Reactor.OnMouseExitProperty = RemovePath;
+        TargetedHex.Reactor.OnMouseOverProperty = () => { };
+        TargetedHex.Reactor.OnMouseExitProperty = () => { };
         RemovePath();
     }
 
@@ -557,10 +561,13 @@ public class MovementAction : PotentialAction
     {
         base.DisplayButton();
         TargetedHex.Reactor.OnMouseOverProperty = DisplayPath;
+        TargetedHex.Reactor.OnMouseExitProperty = RemovePath;
     }
 
     public override void Destroy()
     {
+        TargetedHex.Reactor.OnMouseOverProperty = () => { };
+        TargetedHex.Reactor.OnMouseExitProperty = () => { };
         RemovePath();
         base.Destroy();
     }
@@ -618,6 +625,7 @@ public class OperateSystemAction : PotentialAction
         var from = ActingEntity.Marker.transform.position;
         var to = TargetedHex.Reactor.transform.position;
         var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>(); ;
+        m_button.gameObject.GetComponent<SpriteRenderer>().sortingOrder = 1;
         shot.Init(to, from, ButtonName);
         m_action();
     }

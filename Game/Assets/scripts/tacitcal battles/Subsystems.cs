@@ -55,6 +55,7 @@ public class SubsystemTemplate
     #region constructor and initializer
 
     private SubsystemTemplate(double energyCost,
+                              double heatGenerated,
                               int minRange,
                               int maxRange,
                               DeliveryMethod deliveryMethod,
@@ -62,18 +63,19 @@ public class SubsystemTemplate
                               EffectType effectType,
                               double effectStrength,
                               TargetingType targetingType)
-        : this(0, energyCost, minRange, maxRange, deliveryMethod, name, effectType, effectStrength, targetingType)
+        : this(0, energyCost, heatGenerated, minRange, maxRange, deliveryMethod, name, effectType, effectStrength, targetingType)
     { }
 
     private SubsystemTemplate(int ammo,
-                              double energyCost,
-                              int minRange,
-                              int maxRange,
-                              DeliveryMethod deliveryMethod,
-                              string name,
-                              EffectType effectType,
-                              double effectStrength,
-                              TargetingType targetingType)
+                            double energyCost,
+                            double heatGenerated,
+                            int minRange,
+                            int maxRange,
+                            DeliveryMethod deliveryMethod,
+                            string name,
+                            EffectType effectType,
+                            double effectStrength,
+                            TargetingType targetingType)
     {
         m_minRange = minRange;
         m_maxRange = maxRange;
@@ -98,11 +100,17 @@ public class SubsystemTemplate
         if (s_knownTemplates.Count == 0)
         {
             s_knownTemplates.Add(SystemType.EMP,
-                                 new SubsystemTemplate(1, 0, 2, DeliveryMethod.Direct, "Emp", EffectType.EmpDamage, 1.5f, TargetingType.Enemy));
+                                 new SubsystemTemplate(1, 0, 0, 2, DeliveryMethod.Direct, "Emp", EffectType.EmpDamage, 1.5f, TargetingType.Enemy));
             s_knownTemplates.Add(SystemType.Laser,
-                                 new SubsystemTemplate(2, 0, 4, DeliveryMethod.Direct, "Laser", EffectType.PhysicalDamage, 2f, TargetingType.Enemy));
+                                 new SubsystemTemplate(2, 2, 0, 4, DeliveryMethod.Direct, "Laser", EffectType.PhysicalDamage, 2f, TargetingType.Enemy));
             s_knownTemplates.Add(SystemType.Missile,
-                                 new SubsystemTemplate(4, 1, 2, 6, DeliveryMethod.Unobstructed, "Missile", EffectType.PhysicalDamage, 1f, TargetingType.Enemy));
+                                 new SubsystemTemplate(4, 1, 0, 2, 6, DeliveryMethod.Unobstructed, "Missile", EffectType.PhysicalDamage, 1f, TargetingType.Enemy));
+            s_knownTemplates.Add(SystemType.Flamer,
+                                 new SubsystemTemplate(2, 2, 2, 0, 2, DeliveryMethod.Unobstructed, "Flamer", EffectType.FlameHex, 1f, TargetingType.AllHexes));
+            s_knownTemplates.Add(SystemType.HeatWave,
+                                 new SubsystemTemplate(2, 1, 0, 3, DeliveryMethod.Direct, "HeatWave", EffectType.HeatDamage, 2f, TargetingType.Enemy));
+            s_knownTemplates.Add(SystemType.IncediaryGun,
+                                 new SubsystemTemplate(10, 0, 0, 0, 4, DeliveryMethod.Direct, "IncediaryGun", EffectType.IncendiaryDamage, 1.5f, TargetingType.Enemy));
         }
     }
 
@@ -183,15 +191,19 @@ public abstract class Subsystem
 
     public void Hit(EffectType type, double damage)
     {
-        switch (type)
+        //TODO - decide on a relevant value
+        if (Randomiser.ProbabilityCheck(damage / 5))
         {
-            case (EffectType.EmpDamage):
-                OperationalCondition = SystemCondition.Neutralized;
-                break;
+            switch (type)
+            {
+                case (EffectType.EmpDamage):
+                    OperationalCondition = SystemCondition.Neutralized;
+                    break;
 
-            case (EffectType.PhysicalDamage):
-                OperationalCondition = SystemCondition.Destroyed;
-                break;
+                case (EffectType.PhysicalDamage):
+                    OperationalCondition = SystemCondition.Destroyed;
+                    break;
+            }
         }
         Debug.Log("{0} was hit for {1} {2} damage, it is now {3}".FormatWith(m_template.Name, damage, type, OperationalCondition));
     }
@@ -317,6 +329,20 @@ public class EmpLauncher : Subsystem
 {
     public EmpLauncher(Loyalty loyalty) :
         base(SystemType.EMP, loyalty)
+    { }
+}
+
+public class HeatWaveProjector : Subsystem
+{
+    public HeatWaveProjector(Loyalty loyalty) :
+        base(SystemType.HeatWave, loyalty)
+    { }
+}
+
+public class IncediaryGun : Subsystem
+{
+    public IncediaryGun(Loyalty loyalty) :
+        base(SystemType.IncediaryGun, loyalty)
     { }
 }
 

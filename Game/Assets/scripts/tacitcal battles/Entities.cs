@@ -15,15 +15,16 @@ public abstract class Entity
 
     private readonly String m_name;
 
+    private readonly double m_armor;
+
     #endregion private fields
 
     #region constructor
 
-    public Entity(Loyalty loyalty, double health, double shield, VisualProperties visuals, EntityReactor reactor)
+    public Entity(Loyalty loyalty, double health, VisualProperties visuals, EntityReactor reactor)
     {
         Loyalty = loyalty;
         Health = health;
-        Shield = shield;
         Visuals = visuals;
         reactor.Entity = this;
         this.Marker = reactor;
@@ -45,8 +46,6 @@ public abstract class Entity
 
     public double Health { get; private set; }
 
-    public double Shield { get; private set; }
-
     public VisualProperties Visuals { get; private set; }
 
     public virtual Hex Hex { get; set; }
@@ -59,28 +58,12 @@ public abstract class Entity
 
     #region public methods
 
-    public virtual void Affect(double strength, EffectType effectType)
+    public void Affect(double strength, EffectType effectType)
     {
         Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, strength, effectType));
-        switch (effectType)
-        {
-            case EffectType.PhysicalDamage:
-            case EffectType.EmpDamage:
-                Shield -= strength;
-                break;
-
-            case EffectType.HeatDamage:
-                //TODO - implement heat mechanics
-                throw new NotImplementedException();
-                break;
-        }
-        Debug.Log("{0} has now {1} health and {2} shields".FormatWith(m_name, Health, Shield));
-
-        if (Shield < 0)
-        {
-            InternalDamage(-Shield, effectType);
-            Shield = 0;
-        }
+        var remainingDamage = ExternalDamage(strength, effectType);
+        InternalDamage(remainingDamage, effectType);
+        Debug.Log("{0} is now in state {1}".FormatWith(m_name, FullState()));
 
         if (Destroyed())
         {
@@ -91,7 +74,7 @@ public abstract class Entity
     // this function returns a string value that represents the mutable state of the entity
     public virtual string FullState()
     {
-        return "Health {0} shields {1} Hex {2}".FormatWith(Health, Shield, Hex);
+        return "Health {0} Hex {1}".FormatWith(Health, Hex);
     }
 
     // just a simple function to make the code more readable
@@ -127,14 +110,35 @@ public abstract class Entity
 
     protected virtual void InternalDamage(double damage, EffectType damageType)
     {
-        if (EffectType.PhysicalDamage == damageType)
+        switch (damageType)
         {
-            Health -= damage;
+            case EffectType.PhysicalDamage:
+                Health -= damage;
+                break;
+
+            case EffectType.IncendiaryDamage:
+                Health -= damage/2;
+                break;
         }
     }
 
-    protected virtual void InternalDamage(double damage)
-    { }
+    protected virtual double ExternalDamage(double strength, EffectType damageType)
+    {
+        switch (damageType)
+        {
+            case EffectType.PhysicalDamage:
+            case EffectType.IncendiaryDamage:
+                return strength - m_armor;
+                
+            case EffectType.EmpDamage:
+            case EffectType.HeatDamage:
+                return strength;
+
+
+            default:
+                throw new UnknownTypeException(damageType);
+        }
+    }
 
     protected virtual void Destroy()
     {
@@ -156,7 +160,7 @@ public abstract class TerrainEntity : Entity
     private Hex m_hex;
 
     public TerrainEntity(double health, bool visibleOnRadar, bool blocksSight, EntityReactor reactor)
-        : base(Loyalty.Inactive, health, 0,
+        : base(Loyalty.Inactive, health, 
                VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None) | (blocksSight ? VisualProperties.BlocksSight : VisualProperties.None), reactor)
     { }
 
@@ -174,13 +178,13 @@ public abstract class TerrainEntity : Entity
     }
 
     //inanimate objects take heat damage as physical damage
-    public override void Affect(double damage, EffectType damageType)
+    protected override void InternalDamage(double damage, EffectType damageType)
     {
-        if (damageType == EffectType.HeatDamage)
+        if (damageType == EffectType.HeatDamage || damageType == EffectType.IncendiaryDamage)
         {
             damageType = EffectType.PhysicalDamage;
         }
-        base.Affect(damage, damageType);
+        base.InternalDamage(damage, damageType);
     }
 }
 
@@ -214,13 +218,19 @@ public abstract class ActiveEntity : Entity
     #region constructor
 
     public ActiveEntity(double maximumEnergy, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
-        base(loyalty, health, shield, visuals, reactor)
+        base(loyalty, health, visuals, reactor)
     {
         m_radarRange = radarRange;
         m_sightRange = sightRange;
         m_systems = systems;
-        m_maximumEnergy = maximumEnergy;
+        m_maxEnergy = maximumEnergy;
         CurrentEnergy = maximumEnergy;
+        m_tempMaxEnergy = maximumEnergy;
+        m_maxShields = shield;
+        Shield = shield;
+        //TODO - add those variables
+        m_shieldRechargeRate = 1;
+        m_maxHeat = 5;
     }
 
     #endregion constructor
@@ -229,15 +239,17 @@ public abstract class ActiveEntity : Entity
 
     private HashSet<Hex> m_detectedHexes;
 
-    private readonly int m_radarRange;
-
-    private readonly int m_sightRange;
+    private readonly int m_radarRange, m_sightRange;
 
     private readonly IEnumerable<Subsystem> m_systems;
 
     private IEnumerable<PotentialAction> m_actions;
 
-    private readonly double m_maximumEnergy;
+    private readonly double m_maxEnergy, m_maxHeat, m_maxShields, m_heatLossRate, m_shieldRechargeRate;
+
+    private double m_tempMaxEnergy;
+
+    private bool m_wasShutDown = false;
 
     #endregion private fields
 
@@ -258,6 +270,10 @@ public abstract class ActiveEntity : Entity
     public double CurrentEnergy { get; set; }
 
     public HashSet<Hex> SeenHexes { get; private set; }
+
+    public double Shield { get; private set; }
+
+    public double Heat { get; private set; }
 
     #endregion Properties
 
@@ -330,16 +346,39 @@ public abstract class ActiveEntity : Entity
         SetSeenHexes();
     }
 
-    public virtual void StartTurn()
+    public virtual bool StartTurn()
     {
+        Debug.Log(FullState());
         ResetActions();
         ResetSeenHexes();
-        CurrentEnergy = m_maximumEnergy;
+        CurrentEnergy = m_tempMaxEnergy;
+        Heat = Math.Max(Heat - m_heatLossRate, 0);
+        if (m_tempMaxEnergy <= 0 || Heat >= m_maxHeat)
+        {
+            if (Heat >= m_maxHeat) Heat = 0;
+            m_tempMaxEnergy = m_maxEnergy;
+            m_wasShutDown = true;
+            return false;
+        }
+        m_wasShutDown = false;
+        m_tempMaxEnergy = m_maxEnergy;
+        Shield = Math.Min(m_maxShields, Shield + m_shieldRechargeRate);
+        return true;
     }
 
     public override string FullState()
     {
-        return "{0} Energy {1}".FormatWith(base.FullState(), CurrentEnergy);
+        return "Shields {5}/{6} Heat {3}/{4} Energy {1}/{2} {0} ".FormatWith(base.FullState(), CurrentEnergy, m_maxEnergy, Heat, m_maxHeat, Shield, m_maxShields);
+    }
+
+    public override bool Destroyed()
+    {
+        return base.Destroyed() || m_systems.None(system => system.Operational()) || ((m_tempMaxEnergy <= 0 || Heat >= m_maxHeat) && m_wasShutDown);
+    }
+
+    public bool ShutDown()
+    {
+        return m_wasShutDown;
     }
 
     #endregion public methods
@@ -363,25 +402,84 @@ public abstract class ActiveEntity : Entity
 
     protected override void InternalDamage(double damage, EffectType damageType)
     {
-        if (m_systems.Any(system => system.Operational()))
+        var heatDamage = 0.0;
+        var physicalDamage = 0.0;
+        var energyDamage = 0.0;
+
+        switch (damageType)
         {
-            m_systems.Where(system => system.Operational()).ChooseRandomValue().Hit(damageType, damage);
+            case EffectType.IncendiaryDamage:
+                heatDamage = damage / 2;
+                physicalDamage = damage / 2;
+                break;
+
+            case EffectType.PhysicalDamage:
+                physicalDamage = damage;
+                break;
+
+            case EffectType.EmpDamage:
+                energyDamage = damage;
+                break;
+
+            case EffectType.HeatDamage:
+                heatDamage = damage;
+                break;
         }
 
-        base.InternalDamage(damage, damageType);
+        Heat += heatDamage;
+        m_tempMaxEnergy -= energyDamage;
+
+        if (m_systems.Any(system => system.Operational()))
+        {
+            m_systems.Where(system => system.Operational()).ChooseRandomValue().Hit(damageType, physicalDamage + energyDamage);
+        }
+
+        base.InternalDamage(physicalDamage, EffectType.PhysicalDamage);
     }
 
     protected virtual IEnumerable<PotentialAction> ComputeActions()
     {
         Debug.Log("{0} is computing actions. Its condition is {1}".FormatWith(this, FullState()));
         var dict = new Dictionary<Hex, List<PotentialAction>>();
+        if(m_wasShutDown)
+        {
+            return new PotentialAction[0];
+        }
         return m_systems.Where(system => system.Operational())
             .SelectMany(system => system.ActionsInRange(this, dict));
     }
 
-    public override bool Destroyed()
+    protected override double ExternalDamage(double strength, EffectType effectType)
     {
-        return base.Destroyed() || m_systems.None(system => system.Operational());
+        var result = strength;
+        if(Shield > 0)
+        { 
+            switch (effectType)
+            {
+                case EffectType.PhysicalDamage:
+                case EffectType.EmpDamage:
+                    Shield -= strength;
+                    strength = -Shield;
+                    break;
+
+                case EffectType.IncendiaryDamage:
+                    Shield -= strength / 2;
+                    strength = - Shield;
+                    break;
+
+                case EffectType.HeatDamage:
+                    //TODO - implement heat mechanics
+                    Shield -= 1;
+                    break;
+            }
+        }
+
+        if (Shield <= 0)
+        {
+            result = base.ExternalDamage(strength, effectType);
+            Shield = 0;
+        }
+        return result;
     }
 
     #endregion private and protected methods
@@ -428,10 +526,18 @@ public abstract class MovingEntity : ActiveEntity
         return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
     }
 
-    public override void StartTurn()
+    public override bool StartTurn()
     {
-        base.StartTurn();
-        AvailableSteps = m_maximumSpeed;
+        if(base.StartTurn())
+        {
+            AvailableSteps = m_maximumSpeed;
+            return true;
+        }
+        else
+        {
+            AvailableSteps = 0;
+            return false;
+        }
     }
 
     public override string FullState()
