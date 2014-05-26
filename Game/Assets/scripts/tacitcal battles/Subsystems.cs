@@ -109,8 +109,8 @@ public class SubsystemTemplate
                                  new SubsystemTemplate(2, 2, 2, 0, 2, DeliveryMethod.Unobstructed, "Flamer", EffectType.FlameHex, 1f, TargetingType.AllHexes));
             s_knownTemplates.Add(SystemType.HeatWave,
                                  new SubsystemTemplate(2, 1, 0, 3, DeliveryMethod.Direct, "HeatWave", EffectType.HeatDamage, 2f, TargetingType.Enemy));
-            s_knownTemplates.Add(SystemType.IncidentaryGun,
-                                 new SubsystemTemplate(10, 0, 0, 0, 4, DeliveryMethod.Direct, "IncidentaryGun", EffectType.IncendiaryDamage, 1.5f, TargetingType.Enemy));
+            s_knownTemplates.Add(SystemType.IncediaryGun,
+                                 new SubsystemTemplate(10, 0, 0, 0, 4, DeliveryMethod.Direct, "IncediaryGun", EffectType.IncendiaryDamage, 1.5f, TargetingType.Enemy));
         }
     }
 
@@ -329,6 +329,20 @@ public class EmpLauncher : Subsystem
 {
     public EmpLauncher(Loyalty loyalty) :
         base(SystemType.EMP, loyalty)
+    { }
+}
+
+public class HeatWaveProjector : Subsystem
+{
+    public HeatWaveProjector(Loyalty loyalty) :
+        base(SystemType.HeatWave, loyalty)
+    { }
+}
+
+public class IncediaryGun : Subsystem
+{
+    public IncediaryGun(Loyalty loyalty) :
+        base(SystemType.IncediaryGun, loyalty)
     { }
 }
 

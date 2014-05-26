@@ -8,6 +8,7 @@ public class TacticalTextureHandler : TextureHandler
 
     private Dictionary<string, Texture2D> m_knownEntityTextures = new Dictionary<string, Texture2D>();
     private Dictionary<string, Texture2D> m_knownEffectsTextures;
+    private Dictionary<string, Texture2D> m_knownButtonTextures;
 
     private Dictionary<Loyalty, Color> m_affiliationColors = new Dictionary<Loyalty, Color>
     {
@@ -25,6 +26,9 @@ public class TacticalTextureHandler : TextureHandler
     {
         var textures = Resources.LoadAll<Texture2D>("effects");
         m_knownEffectsTextures = textures.ToDictionary(texture => texture.name,
+                                                       texture => texture);
+        textures = Resources.LoadAll<Texture2D>("UI");
+        m_knownButtonTextures = textures.ToDictionary(texture => texture.name,
                                                        texture => texture);
     }
 
@@ -44,6 +48,12 @@ public class TacticalTextureHandler : TextureHandler
     {
         var newTexture = m_knownEffectsTextures[effectName];
         ReplaceTexture(renderer, newTexture, effectName);
+    }
+
+    public void UpdateButtonTexture(string buttonName, SpriteRenderer renderer)
+    {
+        var newTexture = m_knownButtonTextures[buttonName];
+        ReplaceTexture(renderer, newTexture, buttonName);
     }
 
     #endregion public methods

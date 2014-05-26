@@ -131,7 +131,10 @@ public abstract class Entity
                 return strength - m_armor;
                 
             case EffectType.EmpDamage:
+            case EffectType.HeatDamage:
                 return strength;
+
+
             default:
                 throw new UnknownTypeException(damageType);
         }
@@ -373,6 +376,11 @@ public abstract class ActiveEntity : Entity
         return base.Destroyed() || m_systems.None(system => system.Operational()) || ((m_tempMaxEnergy <= 0 || Heat >= m_maxHeat) && m_wasShutDown);
     }
 
+    public bool ShutDown()
+    {
+        return m_wasShutDown;
+    }
+
     #endregion public methods
 
     #region private and protected methods
@@ -412,6 +420,10 @@ public abstract class ActiveEntity : Entity
             case EffectType.EmpDamage:
                 energyDamage = damage;
                 break;
+
+            case EffectType.HeatDamage:
+                heatDamage = damage;
+                break;
         }
 
         Heat += heatDamage;
@@ -429,29 +441,42 @@ public abstract class ActiveEntity : Entity
     {
         Debug.Log("{0} is computing actions. Its condition is {1}".FormatWith(this, FullState()));
         var dict = new Dictionary<Hex, List<PotentialAction>>();
+        if(m_wasShutDown)
+        {
+            return new PotentialAction[0];
+        }
         return m_systems.Where(system => system.Operational())
             .SelectMany(system => system.ActionsInRange(this, dict));
     }
 
     protected override double ExternalDamage(double strength, EffectType effectType)
     {
-        var result = 0.0;
-        switch (effectType)
-        {
-            case EffectType.PhysicalDamage:
-            case EffectType.EmpDamage:
-                Shield -= strength;
-                break;
+        var result = strength;
+        if(Shield > 0)
+        { 
+            switch (effectType)
+            {
+                case EffectType.PhysicalDamage:
+                case EffectType.EmpDamage:
+                    Shield -= strength;
+                    strength = -Shield;
+                    break;
 
-            case EffectType.HeatDamage:
-                //TODO - implement heat mechanics
-                throw new NotImplementedException();
-                break;
+                case EffectType.IncendiaryDamage:
+                    Shield -= strength / 2;
+                    strength = - Shield;
+                    break;
+
+                case EffectType.HeatDamage:
+                    //TODO - implement heat mechanics
+                    Shield -= 1;
+                    break;
+            }
         }
 
-        if (Shield < 0)
+        if (Shield <= 0)
         {
-            result = base.ExternalDamage(-Shield, effectType);
+            result = base.ExternalDamage(strength, effectType);
             Shield = 0;
         }
         return result;
