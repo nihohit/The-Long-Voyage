@@ -159,10 +159,7 @@ public class AnimalEvaluator : IActionEvaluator
         }
         foreach (var action in actingEntity.Actions)
         {
-<<<<<<< Shachar
-=======
             //TODO - possible to create an AI usage hint enumerator, which will say whether a given system should be used on friendlies or enemies, weakend or strong, etc. 
->>>>>>> local
             var evaluatedAction = new EvaluatedAction();
             evaluatedAction.Action = action;
             var systemAction = action as OperateSystemAction;
