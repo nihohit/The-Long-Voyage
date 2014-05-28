@@ -273,7 +273,9 @@ public abstract class ActiveEntity : Entity
 
     public double Shield { get; private set; }
 
-    public double Heat { get; private set; }
+    public double CurrentHeat { get; set; }
+
+    public IEnumerable<Subsystem> Systems { get { return m_systems.Where(system => system.Operational()); } }
 
     #endregion Properties
 
@@ -352,10 +354,10 @@ public abstract class ActiveEntity : Entity
         ResetActions();
         ResetSeenHexes();
         CurrentEnergy = m_tempMaxEnergy;
-        Heat = Math.Max(Heat - m_heatLossRate, 0);
-        if (m_tempMaxEnergy <= 0 || Heat >= m_maxHeat)
+        CurrentHeat = Math.Max(CurrentHeat - m_heatLossRate, 0);
+        if (m_tempMaxEnergy <= 0 || CurrentHeat >= m_maxHeat)
         {
-            if (Heat >= m_maxHeat) Heat = 0;
+            if (CurrentHeat >= m_maxHeat) CurrentHeat = 0;
             m_tempMaxEnergy = m_maxEnergy;
             m_wasShutDown = true;
             return false;
@@ -368,12 +370,12 @@ public abstract class ActiveEntity : Entity
 
     public override string FullState()
     {
-        return "Shields {5}/{6} Heat {3}/{4} Energy {1}/{2} {0} ".FormatWith(base.FullState(), CurrentEnergy, m_maxEnergy, Heat, m_maxHeat, Shield, m_maxShields);
+        return "Shields {5}/{6} Heat {3}/{4} Energy {1}/{2} {0} ".FormatWith(base.FullState(), CurrentEnergy, m_maxEnergy, CurrentHeat, m_maxHeat, Shield, m_maxShields);
     }
 
     public override bool Destroyed()
     {
-        return base.Destroyed() || m_systems.None(system => system.Operational()) || ((m_tempMaxEnergy <= 0 || Heat >= m_maxHeat) && m_wasShutDown);
+        return base.Destroyed() || m_systems.None(system => system.Operational()) || ((m_tempMaxEnergy <= 0 || CurrentHeat >= m_maxHeat) && m_wasShutDown);
     }
 
     public bool ShutDown()
@@ -426,7 +428,7 @@ public abstract class ActiveEntity : Entity
                 break;
         }
 
-        Heat += heatDamage;
+        CurrentHeat += heatDamage;
         m_tempMaxEnergy -= energyDamage;
 
         if (m_systems.Any(system => system.Operational()))

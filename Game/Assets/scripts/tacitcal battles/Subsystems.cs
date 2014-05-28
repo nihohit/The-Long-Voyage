@@ -24,6 +24,8 @@ public class SubsystemTemplate
 
     private readonly double m_energyCost;
 
+    private readonly double m_heatGenerated;
+
     private readonly double m_effectStrength;
 
     private readonly int m_maxAmmo;
@@ -47,6 +49,8 @@ public class SubsystemTemplate
     public TargetingType PossibleTargets { get { return m_targetingType; } }
 
     public double EnergyCost { get { return m_energyCost; } }
+
+    public double HeatGenerated { get { return m_heatGenerated; } }
 
     public int MaxAmmo { get { return m_maxAmmo; } }
 
@@ -86,6 +90,7 @@ public class SubsystemTemplate
         m_targetingType = targetingType;
         m_energyCost = energyCost;
         m_maxAmmo = ammo;
+        m_heatGenerated = heatGenerated;
     }
 
     public static SubsystemTemplate Init(SystemType type)
@@ -127,8 +132,6 @@ public abstract class Subsystem
 
     private SystemCondition m_workingCondition;
 
-    private readonly SubsystemTemplate m_template;
-
     private int m_ammo;
 
     private readonly HexCheck m_conditionForTargeting;
@@ -156,6 +159,8 @@ public abstract class Subsystem
         }
     }
 
+    public SubsystemTemplate Template { get; private set; }
+
     #endregion properties
 
     #region constructors
@@ -163,12 +168,12 @@ public abstract class Subsystem
     protected Subsystem(SystemType type, Loyalty loyalty)
     {
         m_workingCondition = SystemCondition.Operational;
-        m_template = SubsystemTemplate.Init(type);
-        m_conditionForTargeting = CreateTargetingCheck(loyalty, m_template.PossibleTargets);
-        var effect = CreateSystemEffect(m_template.EffectStrength, m_template.Effect);
-        if (m_template.MaxAmmo > 0)
+        Template = SubsystemTemplate.Init(type);
+        m_conditionForTargeting = CreateTargetingCheck(loyalty, Template.PossibleTargets);
+        var effect = CreateSystemEffect(Template.EffectStrength, Template.Effect);
+        if (Template.MaxAmmo > 0)
         {
-            m_ammo = m_template.MaxAmmo;
+            m_ammo = Template.MaxAmmo;
             m_effect = (hex) =>
             {
                 effect(hex);
@@ -205,7 +210,7 @@ public abstract class Subsystem
                     break;
             }
         }
-        Debug.Log("{0} was hit for {1} {2} damage, it is now {3}".FormatWith(m_template.Name, damage, type, OperationalCondition));
+        Debug.Log("{0} was hit for {1} {2} damage, it is now {3}".FormatWith(Template.Name, damage, type, OperationalCondition));
     }
 
     public bool Operational()
@@ -243,7 +248,7 @@ public abstract class Subsystem
 
     private PotentialAction CreateAction(ActiveEntity actingEntity, Hex hex, Dictionary<Hex, List<PotentialAction>> dict)
     {
-        Vector2 offset = Vector2.zero;
+        Vector2 displayOffset = Vector2.zero;
         var list = dict.TryGetOrAdd(hex, () => new List<PotentialAction>());
         var size = ((CircleCollider2D)hex.Reactor.collider2D).radius;
         Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
@@ -251,54 +256,54 @@ public abstract class Subsystem
         switch (list.Count(action => !action.Destroyed))
         {
             case (0):
-                offset = new Vector2(-(size), 0);
+                displayOffset = new Vector2(-(size), 0);
                 break;
 
             case (1):
-                offset = new Vector2(-(size / 2), (size));
+                displayOffset = new Vector2(-(size / 2), (size));
                 break;
 
             case (2):
-                offset = new Vector2((size / 2), (size));
+                displayOffset = new Vector2((size / 2), (size));
                 break;
 
             case (3):
-                offset = new Vector2(size, 0);
+                displayOffset = new Vector2(size, 0);
                 break;
 
             case (4):
-                offset = new Vector2(size / 2, -size);
+                displayOffset = new Vector2(size / 2, -size);
                 break;
 
             case (5):
-                offset = new Vector2(-(size / 2), -size);
+                displayOffset = new Vector2(-(size / 2), -size);
                 break;
         }
 
-        var operation = new OperateSystemAction(actingEntity, m_effect, m_template.Name, hex, offset, m_template.EnergyCost);
+        var operation = new OperateSystemAction(actingEntity, m_effect, Template, hex, displayOffset);
         list.Add(operation);
         return operation;
     }
 
     private IEnumerable<Hex> TargetsInRange(Hex hex)
     {
-        if (m_template.MaxRange == 0)
+        if (Template.MaxRange == 0)
         {
             return new[] { hex };
         }
 
         var layerName = "Entities";
 
-        switch (m_template.DeliveryMethod)
+        switch (Template.DeliveryMethod)
         {
             case (DeliveryMethod.Direct):
-                return hex.RaycastAndResolve(m_template.MinRange, m_template.MaxRange, m_conditionForTargeting, false, layerName);
+                return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, m_conditionForTargeting, false, layerName);
 
             case (DeliveryMethod.Unobstructed):
-                return hex.RaycastAndResolve(m_template.MinRange, m_template.MaxRange, m_conditionForTargeting, true, layerName);
+                return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, m_conditionForTargeting, true, layerName);
 
             default:
-                throw new UnknownTypeException(m_template.DeliveryMethod);
+                throw new UnknownTypeException(Template.DeliveryMethod);
         }
     }
 

@@ -74,7 +74,7 @@ public static class TacticalState
         {
             DestroyActiveEntity(activeEntity);
         }
-        s_activeEntities.ForEach(entity => entity.ResetActions());
+        ResetAllActions();
     }
 
     public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes)
@@ -89,7 +89,7 @@ public static class TacticalState
         s_nonPlayerTeams = new Dictionary<Loyalty, IAIRunner>();
         foreach (var loyalty in loaylties.Where(team => team != Loyalty.Player))
         {
-            s_nonPlayerTeams.Add(loyalty, new AIRunner(new AnimalEvaluator(new SimpleEntityEvaluator())));
+            s_nonPlayerTeams.Add(loyalty, new AIRunner(new SimpleEvaluator(new SimpleEntityEvaluator())));
         }
     }
 

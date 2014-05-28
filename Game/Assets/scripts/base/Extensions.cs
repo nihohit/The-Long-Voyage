@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public interface IIdentifiable
 {
@@ -52,6 +53,29 @@ public static class MyExtensions
         thisSet.SymmetricExceptWith(otherSet);
         otherSet.IntersectWith(thisSet);
         thisSet.ExceptWith(otherSet);
+    }
+
+    public static float GetAngleBetweenTwoPoints(this Vector2 from, Vector2 to)
+    {
+        var differenceVector = to - from;
+        var angle = Vector2.Angle(new Vector2(0, 1), differenceVector);
+        if (differenceVector.x < 0)
+        {
+            angle = 360-angle;
+        }
+        return angle;
+    }
+
+    public static float GetAngleBetweenTwoPoints(this Vector3 from, Vector3 to)
+    {
+        var from2 = new Vector2(from.x, from.y);
+        var to2 = new Vector2(to.x, to.y);
+        return from2.GetAngleBetweenTwoPoints(to2);
+    }
+
+    public static float ToRadians(this float degrees)
+    {
+        return (float)Math.PI * degrees / 180;
     }
 
     #region IEnumerable

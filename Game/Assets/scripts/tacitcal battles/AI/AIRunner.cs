@@ -106,10 +106,11 @@ public class AIRunner : IAIRunner
     {
         Debug.Log("Evaluating actions");
         controlledEntities.ForEach(ent => ent.ResetActions());
+        var loyalty = controlledEntities.First().Loyalty;
         var entitiesSeen = Enumerable.Empty<Entity>();
         foreach (var ent in controlledEntities)
         {
-            entitiesSeen = entitiesSeen.Union(ent.SeenHexes.Select(hex => hex.Content).Where(entity => entity != null));
+            entitiesSeen = entitiesSeen.Union(ent.SeenHexes.Select(hex => hex.Content).Where(entity => entity != null && entity.Loyalty != loyalty));
         }
         entitiesSeen = entitiesSeen.Distinct();
         controlledEntities.SelectMany(ent => m_actionEvaluator.EvaluateActions(ent, entitiesSeen))
@@ -125,7 +126,7 @@ public class AIRunner : IAIRunner
  * a system which affects empty hexes. Since this is supposed to be
  * only for the simplest of AIs, this assumption should hold. */
 
-public class AnimalEvaluator : IActionEvaluator
+public class SimpleEvaluator : IActionEvaluator
 {
     #region fields
 
@@ -135,7 +136,7 @@ public class AnimalEvaluator : IActionEvaluator
 
     #region constructor
 
-    public AnimalEvaluator(IEntityEvaluator entityEvaluator)
+    public SimpleEvaluator(IEntityEvaluator entityEvaluator)
     {
         m_entityEvaluator = entityEvaluator;
     }
@@ -147,16 +148,25 @@ public class AnimalEvaluator : IActionEvaluator
     /**evaluates a system action based on the importance of its target,
      * and movement commands based on nearness to potential targets.
      * If no potential targets are in sight, randomly roam. */
-
     public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<Entity> entitiesSeenByTeam)
     {
+        //initiate relevant information
         var potentialTargets = entitiesSeenByTeam.Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
+        var minRange = 10000;
+        var maxRange = 0;
+        foreach (var system in actingEntity.Systems)
+        {
+            maxRange = Math.Max(maxRange, system.Template.MaxRange);
+            minRange = Math.Min(minRange, system.Template.MinRange);
+        }
         var movingEntity = actingEntity as MovingEntity;
         var currentHexValue = 0.0;
         if (movingEntity != null)
         {
-            currentHexValue = EvaluateHexValue(actingEntity.Hex, potentialTargets, movingEntity);
+            currentHexValue = EvaluateHexValue(actingEntity.Hex, potentialTargets, movingEntity, minRange, maxRange);
         }
+
+        //evaluate each action
         foreach (var action in actingEntity.Actions)
         {
             //TODO - possible to create an AI usage hint enumerator, which will say whether a given system should be used on friendlies or enemies, weakend or strong, etc. 
@@ -170,7 +180,7 @@ public class AnimalEvaluator : IActionEvaluator
                 var target = systemAction.TargetedHex.Content;
                 if (target.Loyalty != Loyalty.Inactive)
                 {
-                    evaluatedAction.EvaluatedPriority = m_entityEvaluator.EvaluateValue(target);
+                    evaluatedAction.EvaluatedPriority += EvaluateSystemEffect(systemAction.System, target);
                     evaluatedAction.NecessaryConditions = () =>
                     {
                         return !actingEntity.Destroyed() && !target.Destroyed();
@@ -180,11 +190,12 @@ public class AnimalEvaluator : IActionEvaluator
                         return target.Destroyed();
                     };
                 }
+                Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
             }
             else if (movementAction != null)
             {
                 //the value of a hex is compared to that of the current location.
-                evaluatedAction.EvaluatedPriority = EvaluateHexValue(movementAction.TargetedHex, potentialTargets, movingEntity) - currentHexValue;
+                evaluatedAction.EvaluatedPriority = EvaluateHexValue(movementAction.TargetedHex, potentialTargets, movingEntity, minRange, maxRange) - currentHexValue;
                 evaluatedAction.NecessaryConditions = () =>
                 {
                     return movementAction.TargetedHex.Content == null;
@@ -198,15 +209,37 @@ public class AnimalEvaluator : IActionEvaluator
 
     #endregion IActionEvaluator implementation
 
-    private double EvaluateHexValue(Hex evaluatedHex, IEnumerable<Entity> potentialTargets, MovingEntity movingEntity)
+    private double EvaluateHexValue(Hex evaluatedHex, IEnumerable<Entity> potentialTargets, MovingEntity movingEntity, int minRange, int maxRange)
     {
         var result = 0.0;
+        
         foreach (var target in potentialTargets)
         {
-            result += m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
-                evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.MovementMethod, (Hex hex) => 0));
+            var distance = evaluatedHex.Distance(target.Hex);
+            if (distance >= minRange && distance <= maxRange)
+            {
+                foreach(var system in movingEntity.Systems)
+                {
+                    if(evaluatedHex.CanAffect(target.Hex, system.Template.DeliveryMethod, minRange, maxRange))
+                    {
+                         result += EvaluateSystemEffect(system.Template, target);
+                    }
+                }
+            }
+            if (result == 0)
+            {
+                //TODO - time complexity could be reduced significantly by a. feeding astar some heuristic or b. replacing a star with a heuristic
+                result += m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
+                    evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.MovementMethod, (Hex hex) => 0));
+            }
         }
+        Debug.Log("Hex {0} valued as {1}".FormatWith(evaluatedHex, result));
         return result;
+    }
+
+    private double EvaluateSystemEffect(SubsystemTemplate system, Entity target)
+    {
+        return (m_entityEvaluator.EvaluateValue(target) + system.EffectStrength) / (system.EnergyCost + system.HeatGenerated);
     }
 }
 
@@ -223,7 +256,7 @@ public class SimpleEntityEvaluator : IEntityEvaluator
 {
     public double EvaluateValue(Entity entity)
     {
-        return (entity.Loyalty == Loyalty.Inactive) ? 0 : 10000;
+        return (entity.Loyalty == Loyalty.Inactive) ? 0 : 100;
     }
 }
 
