@@ -237,7 +237,6 @@ public class Hex
             return (distance >= minRange && distance <= maxRange);
         }
 
-        targetHex.Reactor.Select();
         if (Content != null)
         {
             Content.Marker.collider2D.enabled = false;

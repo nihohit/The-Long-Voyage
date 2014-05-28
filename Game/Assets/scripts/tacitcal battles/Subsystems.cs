@@ -115,7 +115,7 @@ public class SubsystemTemplate
             s_knownTemplates.Add(SystemType.HeatWave,
                                  new SubsystemTemplate(2, 1, 0, 3, DeliveryMethod.Direct, "HeatWave", EffectType.HeatDamage, 2f, TargetingType.Enemy));
             s_knownTemplates.Add(SystemType.IncediaryGun,
-                                 new SubsystemTemplate(10, 0, 0, 0, 4, DeliveryMethod.Direct, "IncediaryGun", EffectType.IncendiaryDamage, 1.5f, TargetingType.Enemy));
+                                 new SubsystemTemplate(10, 0.5, 0.5, 0, 4, DeliveryMethod.Direct, "IncediaryGun", EffectType.IncendiaryDamage, 1.5f, TargetingType.Enemy));
         }
     }
 

@@ -120,7 +120,7 @@ public class AIRunner : IAIRunner
 
 #endregion AIRunner
 
-#region AnimalEvaluator
+#region SimpleEvaluator
 
 /**there's a hidden assumption here that no AI of this type will have
  * a system which affects empty hexes. Since this is supposed to be
@@ -185,12 +185,9 @@ public class SimpleEvaluator : IActionEvaluator
                     {
                         return !actingEntity.Destroyed() && !target.Destroyed();
                     };
-                    evaluatedAction.AchievedGoal = () =>
-                    {
-                        return target.Destroyed();
-                    };
+                    evaluatedAction.AchievedGoal = target.Destroyed;
+                    Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
                 }
-                Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
             }
             else if (movementAction != null)
             {
