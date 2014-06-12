@@ -5,11 +5,11 @@ public class CircularButton : MarkerScript
 {
     #region properties
 
-    public Action Action { get; set; }
+    public Action ClickableAction { get; set; }
 
-    public Action OnMouseOverProperty { get; set; }
+    public virtual Action OnMouseOverProperty { get; set; }
 
-    public Action OnMouseExitProperty { get; set; }
+    public virtual Action OnMouseExitProperty { get; set; }
 
     #endregion
 
@@ -20,12 +20,17 @@ public class CircularButton : MarkerScript
         //just in case those value aren't inserted afterwards
         OnMouseOverProperty = () => { };
         OnMouseExitProperty = () => { };
-        Action = () => { };
+        ClickableAction = () => { };
     }
 
     public override void Mark()
     {
-        base.Mark();
+        Mark(this.transform.position);
+    }
+
+    public override void Mark(Vector3 position)
+    {
+        base.Mark(position);
         this.GetComponent<Collider2D>().enabled = true;
     }
 
@@ -55,7 +60,7 @@ public class CircularButton : MarkerScript
                     if (clickedComponent.layer == LayerMask.NameToLayer("UI"))
                     {
                         var button = clickedComponent.GetComponent<CircularButton>();
-                        button.Action();
+                        button.ClickableAction();
                         return;
                     }
                 }
@@ -81,7 +86,7 @@ public class CircularButton : MarkerScript
     {
         if (enabled)
         {
-            Action();
+            ClickableAction();
         }
     }
 

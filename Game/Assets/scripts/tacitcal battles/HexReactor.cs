@@ -1,24 +1,52 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class HexReactor : CircularButton
 {
     #region private fields
 
-    public Hex MarkedHex { get; set; }
-
+    private Action m_setMouseOverAction;
     private MarkerScript m_movementPathMarker;
     private MarkerScript m_fogOfWarMarker;
     private MarkerScript m_radarBlipMarker;
+    private MarkerScript m_targetMarker;
     private static MarkerScript s_selected;
+    private Dictionary<ActiveEntity, List<OperateSystemAction>> m_orders = new Dictionary<ActiveEntity, List<OperateSystemAction>>();
+    private int m_displayCommands;
+    private static HexReactor m_currentHoveredHex;
 
     #endregion private fields
+
+    #region properties
+
+    public Hex MarkedHex { get; set; }
+    public override Action OnMouseOverProperty
+    {
+        get
+        {
+            return () =>
+            {
+                m_setMouseOverAction();
+                DisplayCommands();
+            };
+        }
+
+        set
+        {
+            m_setMouseOverAction = value;
+        }
+    }
+
+    #endregion
 
     #region public methods
 
     public HexReactor()
     {
-        base.Action = CheckIfClickIsOnUI ( () => TacticalState.SelectedHex = this);
+        base.ClickableAction = CheckIfClickIsOnUI(() => TacticalState.SelectedHex = this);
+        m_setMouseOverAction = () => { };
     }
 
     #region markers
@@ -39,7 +67,7 @@ public class HexReactor : CircularButton
         RemoveRadarBlipMarker();
         if (MarkedHex.Content != null)
         {
-            MarkedHex.Content.Marker.Mark();
+            MarkedHex.Content.Reactor.Mark();
         }
     }
 
@@ -48,7 +76,7 @@ public class HexReactor : CircularButton
         m_fogOfWarMarker = AddAndDisplayMarker(m_fogOfWarMarker, "FogOfWar");
         if (MarkedHex.Content != null)
         {
-            MarkedHex.Content.Marker.Unmark();
+            MarkedHex.Content.Reactor.Unmark();
         }
     }
 
@@ -60,6 +88,41 @@ public class HexReactor : CircularButton
     public void DisplayRadarBlipMarker()
     {
         m_radarBlipMarker = AddAndDisplayMarker(m_radarBlipMarker, "RadarBlip");
+    }
+
+    public void RemoveTargetMarker(OperateSystemAction action)
+    {
+        if (TacticalState.SelectedHex == null)
+        {
+            RemoveMarker(m_targetMarker);
+            return;
+        }
+        var activeEntity = TacticalState.SelectedHex.MarkedHex.Content as ActiveEntity;
+        if (activeEntity == null)
+        {
+            RemoveMarker(m_targetMarker);
+            return;
+        }
+        List<OperateSystemAction> actions = null;
+        if (activeEntity != null && m_orders.TryGetValue(activeEntity, out actions))
+        {
+            actions.Remove(action);
+            m_displayCommands = actions.Count;
+            if (actions.Count == 0)
+            {
+                RemoveMarker(m_targetMarker);
+            }
+        }
+    }
+
+    public void RemoveTargetMarker()
+    {
+        RemoveMarker(m_targetMarker);
+    }
+
+    public void DisplayTargetMarker()
+    {
+        m_targetMarker = AddAndDisplayMarker(m_targetMarker, "targetMarker");
     }
 
     #endregion markers
@@ -86,7 +149,111 @@ public class HexReactor : CircularButton
     {
         //Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
         s_selected.Unmark();
-        ActionCheck().ForEach(action => action.RemoveDisplay());
+        var actions = ActionCheck();
+        if (actions != null)
+        {
+            foreach (var action in actions)
+            {
+                action.RemoveDisplay();
+                action.TargetedHex.Reactor.RemoveTargetMarker();
+            }
+        }
+    }
+
+    public void AddCommands(ActiveEntity activeEntity, List<OperateSystemAction> list)
+    {
+        Assert.AssertConditionMet(!m_orders.ContainsKey(activeEntity) || m_orders[activeEntity].None(order => !order.Destroyed), "Existing orders weren't destroyed");
+        m_orders[activeEntity] = list;
+    }
+
+    public void StartTurn()
+    {
+        m_orders.Clear();
+        RemoveMarker(m_targetMarker);
+    }
+
+    public void DisplayCommands()
+    {
+        DisplayCommands(false);
+    }
+
+    public void DisplayCommands(bool forceUpdate)
+    {
+        if (!forceUpdate && m_currentHoveredHex == this) return;
+
+        if (m_currentHoveredHex != null)
+        {
+            m_currentHoveredHex.RemoveCommands();
+        }
+        m_currentHoveredHex = this;
+
+        if (TacticalState.SelectedHex != null && m_orders.Any())
+        {
+            List<OperateSystemAction> actions = null;
+            var activeEntity = TacticalState.SelectedHex.MarkedHex.Content as ActiveEntity;
+            if (activeEntity != null && m_orders.TryGetValue(activeEntity, out actions))
+            {
+                var activeCommands = actions.Where(command => !command.Destroyed).Materialize();
+                var commandCount = activeCommands.Count();
+                if (m_displayCommands != commandCount)
+                {
+                    m_displayCommands = commandCount;
+                    Vector2 displayOffset = default(Vector2);
+                    var size = ((CircleCollider2D)this.collider2D).radius;
+
+                    int i = 0;
+                    foreach (var action in activeCommands)
+                    {
+                        i++;
+                        switch (i)
+                        {
+                            case (0):
+                                displayOffset = new Vector2(-(size * 2 / 3), 0);
+                                break;
+
+                            case (1):
+                                displayOffset = new Vector2(-(size / 2), (size * 2 / 3));
+                                break;
+
+                            case (2):
+                                displayOffset = new Vector2((size / 2), (size * 2 / 3));
+                                break;
+
+                            case (3):
+                                displayOffset = new Vector2(size * 2 / 3, 0);
+                                break;
+
+                            case (4):
+                                displayOffset = new Vector2(size / 2, -(size * 2 / 3));
+                                break;
+
+                            case (5):
+                                displayOffset = new Vector2(-(size / 2), -(size * 2 / 3));
+                                break;
+                        }
+
+                        action.DisplayButton((Vector2)this.transform.position + displayOffset);
+                    }
+                }
+            }
+        }
+    }
+
+    public void RemoveCommands()
+    {
+        if (TacticalState.SelectedHex != null)
+        {
+            List<OperateSystemAction> actions = null;
+            var activeEntity = TacticalState.SelectedHex.MarkedHex.Content as ActiveEntity;
+            if (activeEntity != null && m_orders.TryGetValue(activeEntity, out actions))
+            {
+                m_displayCommands = 0;
+                foreach (var action in actions.Where(command => !command.Destroyed))
+                {
+                    action.RemoveDisplay();
+                }
+            }
+        }
     }
 
     #endregion public methods

@@ -27,7 +27,7 @@ public abstract class Entity
         Health = health;
         Visuals = visuals;
         reactor.Entity = this;
-        this.Marker = reactor;
+        this.Reactor = reactor;
         m_id = s_idCounter++;
         m_name = "{0} {1} {2}".FormatWith(this.GetType().ToString(), Loyalty, m_id);
         if((this.Visuals & VisualProperties.AppearsOnRadar) != 0)
@@ -42,7 +42,7 @@ public abstract class Entity
 
     public int ID { get { return m_id; } }
 
-    public MarkerScript Marker { get; private set; }
+    public EntityReactor Reactor { get; private set; }
 
     public double Health { get; private set; }
 
@@ -94,7 +94,7 @@ public abstract class Entity
 
     public override int GetHashCode()
     {
-        return Hasher.GetHashCode(m_name, Marker, m_id);
+        return Hasher.GetHashCode(m_name, Reactor, m_id);
     }
 
     public override string ToString()
@@ -145,7 +145,7 @@ public abstract class Entity
         Debug.Log("Destroy {0}".FormatWith(m_name));
         this.Hex.Content = null;
         TacticalState.DestroyEntity(this);
-        UnityEngine.Object.Destroy(this.Marker.gameObject);
+        UnityEngine.Object.Destroy(this.Reactor.gameObject);
     }
 
     #endregion protected methods
@@ -395,7 +395,7 @@ public abstract class ActiveEntity : Entity
 
     private IEnumerable<Hex> FindRadarHexes()
     {
-        var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.Marker.enabled).Select(ent => ent.Marker);
+        var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.Reactor.enabled).Select(ent => ent.Reactor);
         inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
         var results = Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
         inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);
@@ -442,13 +442,21 @@ public abstract class ActiveEntity : Entity
     protected virtual IEnumerable<PotentialAction> ComputeActions()
     {
         Debug.Log("{0} is computing actions. Its condition is {1}".FormatWith(this, FullState()));
-        var dict = new Dictionary<Hex, List<PotentialAction>>();
         if(m_wasShutDown)
         {
             return new PotentialAction[0];
         }
-        return m_systems.Where(system => system.Operational())
-            .SelectMany(system => system.ActionsInRange(this, dict));
+
+        var dict = new Dictionary<Hex, List<OperateSystemAction>>();
+        var results = m_systems.Where(system => system.Operational())
+            .SelectMany(system => system.ActionsInRange(this, dict)).Materialize();
+
+        foreach(var hex in dict.Keys)
+        {
+            hex.Reactor.AddCommands(this, dict[hex]);
+        }
+
+        return results.Select(subsytemAction => (PotentialAction)subsytemAction);
     }
 
     protected override double ExternalDamage(double strength, EffectType effectType)

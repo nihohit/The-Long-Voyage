@@ -53,7 +53,7 @@ public class Hex
 
                         var otherHex = m_content.Hex;
                         m_content.Hex = this;
-                        m_content.Marker.Mark(Position);
+                        m_content.Reactor.Mark(Position);
 
                         if (otherHex != null)
                         {
@@ -86,7 +86,7 @@ public class Hex
             {
                 m_content = value;
                 m_content.Hex = this;
-                m_content.Marker.Mark(Position);
+                m_content.Reactor.Mark(Position);
             }
         }
     }
@@ -182,7 +182,7 @@ public class Hex
     {
         Assert.NotNull(Content, "Operating out of empty hex {0}".FormatWith(this));
 
-        Content.Marker.collider2D.enabled = false;
+        Content.Reactor.collider2D.enabled = false;
         var results = new HashSet<Hex>();
         var layerMask = 1 << LayerMask.NameToLayer(layerName);
         var amountOfHexesToCheck = 6 * maxRange;
@@ -225,7 +225,7 @@ public class Hex
             }
         }
 
-        Content.Marker.collider2D.enabled = true;
+        Content.Reactor.collider2D.enabled = true;
         return results;
     }
 
@@ -239,7 +239,7 @@ public class Hex
 
         if (Content != null)
         {
-            Content.Marker.collider2D.enabled = false;
+            Content.Reactor.collider2D.enabled = false;
         }
         var layerMask = 1 << LayerMask.NameToLayer(layerName);
         var angle = this.Position.GetAngleBetweenTwoPoints(targetHex.Position);
@@ -251,7 +251,7 @@ public class Hex
         var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Entity.Hex;
         if (Content != null)
         {
-            Content.Marker.collider2D.enabled = true;
+            Content.Reactor.collider2D.enabled = true;
         }
         return hex.Equals(targetHex);
     }
@@ -287,6 +287,7 @@ public class Hex
     {
         SeenAmount = 0;
         DetectedAmount = 0;
+        Reactor.RemoveTargetMarker();
     }
 
     #endregion sight

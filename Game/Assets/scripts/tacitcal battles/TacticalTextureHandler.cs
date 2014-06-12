@@ -39,7 +39,7 @@ public class TacticalTextureHandler : TextureHandler
     public void UpdateEntityTexture(Entity ent)
     {
         var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.GetType().ToString());
-        var renderer = ent.Marker.GetComponent<SpriteRenderer>();
+        var renderer = ent.Reactor.GetComponent<SpriteRenderer>();
         var newTexture = m_knownEntityTextures.TryGetOrAdd(name, () => GetEntityTexture(ent, name, renderer));
         ReplaceTexture(renderer, newTexture, name);
     }
@@ -62,7 +62,7 @@ public class TacticalTextureHandler : TextureHandler
 
     private Texture2D GetEntityTexture(Entity ent, string name, SpriteRenderer renderer)
     {
-        var oldTexture = ent.Marker.GetComponent<SpriteRenderer>().sprite.texture;
+        var oldTexture = ent.Reactor.GetComponent<SpriteRenderer>().sprite.texture;
         Color replacementColor;
 
         //if the color isn't in the list of affiliation, we just return

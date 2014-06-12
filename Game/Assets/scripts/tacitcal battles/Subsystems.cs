@@ -218,9 +218,13 @@ public abstract class Subsystem
         return m_workingCondition == SystemCondition.Operational;
     }
 
-    public IEnumerable<PotentialAction> ActionsInRange(ActiveEntity actingEntity, Dictionary<Hex, List<PotentialAction>> dict)
+    public IEnumerable<OperateSystemAction> ActionsInRange(ActiveEntity actingEntity, Dictionary<Hex, List<OperateSystemAction>> dict)
     {
-        //TODO - noe longer targeting inactive objects. This should be removed.
+        //if we can't operate the system, return no actions
+        if(actingEntity.CurrentEnergy < Template.EnergyCost)
+        {
+            return new OperateSystemAction[0];
+        }
         return TargetsInRange(actingEntity.Hex).Select(targetedHex => CreateAction(actingEntity, targetedHex, dict));
     }
 
@@ -246,41 +250,14 @@ public abstract class Subsystem
         };
     }
 
-    private PotentialAction CreateAction(ActiveEntity actingEntity, Hex hex, Dictionary<Hex, List<PotentialAction>> dict)
+    private OperateSystemAction CreateAction(ActiveEntity actingEntity, Hex hex, Dictionary<Hex, List<OperateSystemAction>> dict)
     {
-        Vector2 displayOffset = Vector2.zero;
-        var list = dict.TryGetOrAdd(hex, () => new List<PotentialAction>());
-        var size = ((CircleCollider2D)hex.Reactor.collider2D).radius;
+        var list = dict.TryGetOrAdd(hex, () => new List<OperateSystemAction>());
         Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
 
-        switch (list.Count(action => !action.Destroyed))
-        {
-            case (0):
-                displayOffset = new Vector2(-(size), 0);
-                break;
+        var operation = new OperateSystemAction(actingEntity, m_effect, Template, hex);
+        if(operation.NecessaryConditions())
 
-            case (1):
-                displayOffset = new Vector2(-(size / 2), (size));
-                break;
-
-            case (2):
-                displayOffset = new Vector2((size / 2), (size));
-                break;
-
-            case (3):
-                displayOffset = new Vector2(size, 0);
-                break;
-
-            case (4):
-                displayOffset = new Vector2(size / 2, -size);
-                break;
-
-            case (5):
-                displayOffset = new Vector2(-(size / 2), -size);
-                break;
-        }
-
-        var operation = new OperateSystemAction(actingEntity, m_effect, Template, hex, displayOffset);
         list.Add(operation);
         return operation;
     }

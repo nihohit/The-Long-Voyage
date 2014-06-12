@@ -4,16 +4,13 @@
 
 public class EntityReactor : CircularButton
 {
-    private Entity m_ent;
 
-    public Entity Entity
+    public Entity Entity { get; set; }
+
+    public EntityReactor()
     {
-        get { return m_ent; }
-        set
-        {
-            m_ent = value;
-            this.Action = CheckIfClickIsOnUI ( () => TacticalState.SelectedHex = m_ent.Hex.Reactor );
-        }
+        ClickableAction = CheckIfClickIsOnUI(() => TacticalState.SelectedHex = Entity.Hex.Reactor);
+        OnMouseOverProperty = () => Entity.Hex.Reactor.OnMouseOverProperty();
     }
 }
 

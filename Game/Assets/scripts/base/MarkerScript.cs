@@ -4,7 +4,7 @@ public class MarkerScript : MonoBehaviour
 {
     public SpriteRenderer internalRenderer;
 
-    public void Mark(Vector3 position)
+    public virtual void Mark(Vector3 position)
     {
         this.enabled = true;
         internalRenderer.enabled = true;

@@ -92,7 +92,7 @@ public abstract class PotentialAction
 
     protected readonly CircularButton m_button;
 
-    //TODO - remove after testing
+    //TODO - remove after testing if no longer needed
     private readonly string m_name;
 
     private bool m_active;
@@ -121,11 +121,13 @@ public abstract class PotentialAction
         var command = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Button"), position, Quaternion.identity));
         TacticalState.TextureManager.UpdateButtonTexture(buttonName, command.GetComponent<SpriteRenderer>());
         m_button = command.GetComponent<CircularButton>();
-        m_button.Action = () =>
+        m_button.ClickableAction = () =>
         {
             m_active = true;
             Commit();
         };
+        m_button.OnMouseOverProperty = () => targetedHex.Reactor.OnMouseOverProperty();
+        m_button.OnMouseExitProperty = () => targetedHex.Reactor.OnMouseExitProperty();
         m_button.Unmark();
         m_name = name;
         ActingEntity = entity;
@@ -136,17 +138,22 @@ public abstract class PotentialAction
 
     #region public methods
 
-    public virtual void DisplayButton()
+    public virtual void DisplayButton(Vector3 position)
     {
         //if the condition for this command still stands, display it. otherwise destroy it
         if (!Destroyed && NecessaryConditions())
         {
-            m_button.Mark();
+            m_button.Mark(position);
         }
         else
         {
             Destroy();
         }
+    }
+
+    public virtual void DisplayButton()
+    {
+        DisplayButton(m_button.transform.position);
     }
 
     public virtual void RemoveDisplay()
@@ -161,7 +168,7 @@ public abstract class PotentialAction
     {
         if (!Destroyed)
         {
-            m_button.Unmark();
+            RemoveDisplay();
             UnityEngine.Object.Destroy(m_button.gameObject);
             Destroyed = true;
         }
@@ -173,6 +180,13 @@ public abstract class PotentialAction
         Assert.AssertConditionMet((!Destroyed) || m_active, "Action {0} was operated after being destroyed".FormatWith(this));
         m_active = false;
         AffectEntity();
+        foreach(var action in ActingEntity.Actions)
+        {
+            if(!action.NecessaryConditions())
+            {
+                action.Destroy();
+            }
+        }
         //makes it display all buttons;
         TacticalState.SelectedHex = TacticalState.SelectedHex;
     }
@@ -279,7 +293,7 @@ public class MovementAction : PotentialAction
         base.Commit();
         TargetedHex.Content = ActingEntity;
         TacticalState.SelectedHex = null;
-        //TODO - affects on commiting entity? Energy / heat cost, etc.?
+        //TODO - should effects on commiting entity be calculated here? Energy / heat cost, etc.?
         Destroy();
     }
 
@@ -315,22 +329,24 @@ public class OperateSystemAction : PotentialAction
 
     public SubsystemTemplate System { get; private set; }
 
-    public OperateSystemAction(ActiveEntity entity, HexOperation effect, SubsystemTemplate template, Hex targetedHex, Vector2 displayOffset) :
-        base(entity, template.Name, (Vector2)targetedHex.Position + (Vector2)displayOffset, targetedHex, "Operate {0} on {1}".FormatWith(template.Name, targetedHex))
+    public OperateSystemAction(ActiveEntity entity, HexOperation effect, SubsystemTemplate template, Hex targetedHex) :
+        base(entity, template.Name, (Vector2)targetedHex.Position, targetedHex, "Operate {0} on {1}".FormatWith(template.Name, targetedHex))
     {
         m_action = () => effect(targetedHex);
         System = template;
+        RemoveDisplay();
     }
 
     public override void Commit()
     {
         base.Commit();
-        var from = ActingEntity.Marker.transform.position;
+        var from = ActingEntity.Reactor.transform.position;
         var to = TargetedHex.Reactor.transform.position;
         var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>(); ;
         m_button.gameObject.GetComponent<SpriteRenderer>().sortingOrder = 1;
         shot.Init(to, from, Name);
         m_action();
+        TargetedHex.Reactor.DisplayCommands(true);
     }
 
     protected override void AffectEntity()
@@ -344,7 +360,23 @@ public class OperateSystemAction : PotentialAction
 
     public override bool NecessaryConditions()
     {
+        
         return System.EnergyCost <= ActingEntity.CurrentEnergy;
+    }
+
+    //TODO - is there a more elegant way to prevent them from displaying?
+    public override void DisplayButton()
+    {
+        if (!Destroyed)
+        {
+            TargetedHex.Reactor.DisplayTargetMarker();
+        }
+    }
+
+    public override void Destroy()
+    {
+        TargetedHex.Reactor.RemoveTargetMarker(this);
+        base.Destroy();
     }
 }
 
