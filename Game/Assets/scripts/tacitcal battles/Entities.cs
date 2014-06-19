@@ -3,6 +3,114 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum EntityType { Mech, SparseTrees, DenseTrees, Building }
+
+#region EntityTemplate
+
+//TODO - we can create different levels of templates for the different entities. Not sure it's needed now
+public class EntityTemplate
+{
+    #region fields
+
+    private static readonly Dictionary<EntityType, EntityTemplate> s_knownTemplates = new Dictionary<EntityType, EntityTemplate>();
+
+    #endregion
+
+    #region properties
+
+    //TODO - if we'll want entities with fixed systems, we'll need to add their templates here and merge them in the entity constructor
+    public double Health { get; private set; }
+
+    public VisualProperties Visuals { get; private set; }
+
+    public String Name { get; private set; }
+
+    public double Armor { get; private set; }
+
+    public int RadarRange { get; private set; }
+
+    public int SightRange { get; private set; }
+
+    public double MaxEnergy { get; private set; }
+
+    public double MaxHeat { get; private set; }
+
+    public double MaxShields { get; private set; }
+
+    public double HeatLossRate { get; private set; }
+
+    public double ShieldRechargeRate { get; private set; }
+
+    public MovementType MovementMethod { get; private set; }
+
+    public double MaxSpeed { get; private set; }
+
+    #endregion
+
+    #region constructors
+
+    //for inanimate entities
+    private EntityTemplate(string name, int health, VisualProperties visualProperties) :
+        this(name, health, visualProperties, 0, 0, 0, 0, 0, 0, 0, 0)
+    { }
+
+    //for unmoving entities
+    private EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
+        int radarRange, int sightRange, double maxEnergy, double maxHeat, double maxShields,
+        double heatLossRate, double shieldRechargeRate) :
+        this(name, health, visualProperties, armor, radarRange, sightRange, maxEnergy, maxHeat, maxShields, heatLossRate, shieldRechargeRate, MovementType.Unmoving, 0)
+    { }
+
+    private EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
+        int radarRange, int sightRange, double maxEnergy, double maxHeat, double maxShields,
+        double heatLossRate, double shieldRechargeRate, MovementType movementType, double maximumSpeed)
+    {
+        Health = health;
+        Visuals = visualProperties;
+        Armor = armor;
+        RadarRange = radarRange;
+        SightRange = sightRange;
+        MaxEnergy = maxEnergy;
+        MaxHeat = maxHeat;
+        MaxShields = maxShields;
+        HeatLossRate = heatLossRate;
+        ShieldRechargeRate = shieldRechargeRate;
+        MovementMethod = movementType;
+        MaxSpeed = maximumSpeed;
+    }
+
+    #endregion
+
+    #region static methods
+
+    public static EntityTemplate GetTemplate(EntityType type)
+    {
+        //TODO - no error handling at the moment.
+        return s_knownTemplates[type];
+    }
+
+    //TODO - this method should be removed after we have initialization from XML
+    public static void Init()
+    {
+        if (s_knownTemplates.Count == 0)
+        {
+            s_knownTemplates.Add(EntityType.Mech, new EntityTemplate("Mech", 5,
+                VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
+                0, 20, 10, 2, 5, 3, 1, 1, MovementType.Walker, 4));
+            s_knownTemplates.Add(EntityType.DenseTrees, new EntityTemplate("Dense trees",
+                FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight));
+            s_knownTemplates.Add(EntityType.SparseTrees, new EntityTemplate("Sparse trees",
+                FileHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), VisualProperties.AppearsOnSight));
+            s_knownTemplates.Add(EntityType.Building, new EntityTemplate("Building",
+                FileHandler.GetIntProperty("Building health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight | VisualProperties.AppearsOnRadar));
+        }
+    }
+
+    #endregion
+}
+
+#endregion
+
 #region Entity
 
 public abstract class Entity
@@ -13,24 +121,20 @@ public abstract class Entity
 
     private readonly int m_id;
 
-    private readonly String m_name;
-
-    private readonly double m_armor;
-
     #endregion private fields
 
     #region constructor
 
-    public Entity(Loyalty loyalty, double health, VisualProperties visuals, EntityReactor reactor)
+    public Entity(EntityTemplate template, Loyalty loyalty, EntityReactor reactor)
     {
+        Template = template;
         Loyalty = loyalty;
-        Health = health;
-        Visuals = visuals;
+        Health = template.Health;
         reactor.Entity = this;
         this.Reactor = reactor;
         m_id = s_idCounter++;
-        m_name = "{0} {1} {2}".FormatWith(this.GetType().ToString(), Loyalty, m_id);
-        if((this.Visuals & VisualProperties.AppearsOnRadar) != 0)
+        Name = "{0} {1} {2}".FormatWith(template.Name, Loyalty, m_id);
+        if((template.Visuals & VisualProperties.AppearsOnRadar) != 0)
         {
             TacticalState.AddRadarVisibleEntity(this);
         }
@@ -46,13 +150,13 @@ public abstract class Entity
 
     public double Health { get; private set; }
 
-    public VisualProperties Visuals { get; private set; }
-
     public virtual Hex Hex { get; set; }
 
     public Loyalty Loyalty { get; private set; }
 
-    public String Name { get { return m_name; } }
+    public String Name { get; private set; }
+
+    public EntityTemplate Template { get; private set; }
 
     #endregion properties
 
@@ -60,10 +164,10 @@ public abstract class Entity
 
     public void Affect(double strength, EffectType effectType)
     {
-        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(m_name, strength, effectType));
+        Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(Name, strength, effectType));
         var remainingDamage = ExternalDamage(strength, effectType);
         InternalDamage(remainingDamage, effectType);
-        Debug.Log("{0} is now in state {1}".FormatWith(m_name, FullState()));
+        Debug.Log(FullState());
 
         if (Destroyed())
         {
@@ -74,7 +178,7 @@ public abstract class Entity
     // this function returns a string value that represents the mutable state of the entity
     public virtual string FullState()
     {
-        return "Health {0} Hex {1}".FormatWith(Health, Hex);
+        return "{0}: Health {1}/{2} Hex {3}".FormatWith(Name, Health, Template.Health, Hex);
     }
 
     // just a simple function to make the code more readable
@@ -94,12 +198,12 @@ public abstract class Entity
 
     public override int GetHashCode()
     {
-        return Hasher.GetHashCode(m_name, Reactor, m_id);
+        return Hasher.GetHashCode(Name, Reactor, m_id);
     }
 
     public override string ToString()
     {
-        return m_name;
+        return Name;
     }
 
     #endregion object overrides
@@ -128,7 +232,8 @@ public abstract class Entity
         {
             case EffectType.PhysicalDamage:
             case EffectType.IncendiaryDamage:
-                return strength - m_armor;
+                //TODO - Can armor be ablated away? if so, it needs to be copied over into a local field in the entity
+                return strength - Template.Armor;
                 
             case EffectType.EmpDamage:
             case EffectType.HeatDamage:
@@ -142,7 +247,7 @@ public abstract class Entity
 
     protected virtual void Destroy()
     {
-        Debug.Log("Destroy {0}".FormatWith(m_name));
+        Debug.Log("Destroy {0}".FormatWith(Name));
         this.Hex.Content = null;
         TacticalState.DestroyEntity(this);
         UnityEngine.Object.Destroy(this.Reactor.gameObject);
@@ -155,13 +260,12 @@ public abstract class Entity
 
 #region inanimate entities
 
-public abstract class TerrainEntity : Entity
+public class TerrainEntity : Entity
 {
     private Hex m_hex;
 
-    public TerrainEntity(double health, bool visibleOnRadar, bool blocksSight, EntityReactor reactor)
-        : base(Loyalty.Inactive, health, 
-               VisualProperties.AppearsOnSight | (visibleOnRadar ? VisualProperties.AppearsOnRadar : VisualProperties.None) | (blocksSight ? VisualProperties.BlocksSight : VisualProperties.None), reactor)
+    public TerrainEntity(EntityTemplate template, EntityReactor reactor)
+        : base(template, Loyalty.Inactive, reactor)
     { }
 
     public override Hex Hex
@@ -188,49 +292,21 @@ public abstract class TerrainEntity : Entity
     }
 }
 
-public class DenseTrees : TerrainEntity
-{
-    public DenseTrees(EntityReactor reactor)
-        : base(FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), false, true, reactor)
-    { }
-}
-
-public class SparseTrees : TerrainEntity
-{
-    public SparseTrees(EntityReactor reactor)
-        : base(FileHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), false, false, reactor)
-    { }
-}
-
-public class Building : TerrainEntity
-{
-    public Building(EntityReactor reactor)
-        : base(FileHandler.GetIntProperty("Building health", FileAccessor.Units), true, true, reactor)
-    { }
-}
-
 #endregion inanimate entities
 
 #region ActiveEntity
 
-public abstract class ActiveEntity : Entity
+public class ActiveEntity : Entity
 {
     #region constructor
 
-    public ActiveEntity(double maximumEnergy, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
-        base(loyalty, health, visuals, reactor)
+    public ActiveEntity(EntityTemplate template, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
+        base(template, loyalty, reactor)
     {
-        m_radarRange = radarRange;
-        m_sightRange = sightRange;
         m_systems = systems;
-        m_maxEnergy = maximumEnergy;
-        CurrentEnergy = maximumEnergy;
-        m_tempMaxEnergy = maximumEnergy;
-        m_maxShields = shield;
-        Shield = shield;
-        //TODO - add those variables
-        m_shieldRechargeRate = 1;
-        m_maxHeat = 5;
+        CurrentEnergy = template.MaxEnergy;
+        m_tempMaxEnergy = template.MaxEnergy;
+        Shield = template.MaxShields;
     }
 
     #endregion constructor
@@ -239,13 +315,9 @@ public abstract class ActiveEntity : Entity
 
     private HashSet<Hex> m_detectedHexes;
 
-    private readonly int m_radarRange, m_sightRange;
-
     private readonly IEnumerable<Subsystem> m_systems;
 
     private IEnumerable<PotentialAction> m_actions;
-
-    private readonly double m_maxEnergy, m_maxHeat, m_maxShields, m_heatLossRate, m_shieldRechargeRate;
 
     private double m_tempMaxEnergy;
 
@@ -354,28 +426,29 @@ public abstract class ActiveEntity : Entity
         ResetActions();
         ResetSeenHexes();
         CurrentEnergy = m_tempMaxEnergy;
-        CurrentHeat = Math.Max(CurrentHeat - m_heatLossRate, 0);
-        if (m_tempMaxEnergy <= 0 || CurrentHeat >= m_maxHeat)
+        CurrentHeat = Math.Max(CurrentHeat - Template.HeatLossRate, 0);
+        if (m_tempMaxEnergy <= 0 || CurrentHeat >= Template.MaxHeat)
         {
-            if (CurrentHeat >= m_maxHeat) CurrentHeat = 0;
-            m_tempMaxEnergy = m_maxEnergy;
+            if (CurrentHeat >= Template.MaxHeat) CurrentHeat = 0;
+            m_tempMaxEnergy = Template.MaxEnergy;
             m_wasShutDown = true;
             return false;
         }
         m_wasShutDown = false;
-        m_tempMaxEnergy = m_maxEnergy;
-        Shield = Math.Min(m_maxShields, Shield + m_shieldRechargeRate);
+        m_tempMaxEnergy = Template.MaxEnergy;
+        Shield = Math.Min(Template.MaxShields, Shield + Template.ShieldRechargeRate);
         return true;
     }
 
     public override string FullState()
     {
-        return "Shields {5}/{6} Heat {3}/{4} Energy {1}/{2} {0} ".FormatWith(base.FullState(), CurrentEnergy, m_maxEnergy, CurrentHeat, m_maxHeat, Shield, m_maxShields);
+        return "{0} Shields {5}/{6} Heat {3}/{4} Energy {1}/{2} ".
+            FormatWith(base.FullState(), CurrentEnergy, Template.MaxEnergy, CurrentHeat, Template.MaxHeat, Shield, Template.MaxShields);
     }
 
     public override bool Destroyed()
     {
-        return base.Destroyed() || m_systems.None(system => system.Operational()) || ((m_tempMaxEnergy <= 0 || CurrentHeat >= m_maxHeat) && m_wasShutDown);
+        return base.Destroyed() || m_systems.None(system => system.Operational()) || ((m_tempMaxEnergy <= 0 || CurrentHeat >= Template.MaxHeat) && m_wasShutDown);
     }
 
     public bool ShutDown()
@@ -390,14 +463,14 @@ public abstract class ActiveEntity : Entity
     private IEnumerable<Hex> FindSeenHexes()
     {
         //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
-        return Hex.RaycastAndResolve<HexReactor>(0, m_sightRange, (hex) => true, true, (hex) => (hex.Content != null && ((hex.Content.Visuals & VisualProperties.BlocksSight) != 0)), "Hexes", (reactor) => reactor.MarkedHex);
+        return Hex.RaycastAndResolve<HexReactor>(0, Template.SightRange, (hex) => true, true, (hex) => (hex.Content != null && ((hex.Content.Template.Visuals & VisualProperties.BlocksSight) != 0)), "Hexes", (reactor) => reactor.MarkedHex);
     }
 
     private IEnumerable<Hex> FindRadarHexes()
     {
         var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.Reactor.enabled).Select(ent => ent.Reactor);
         inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
-        var results = Hex.RaycastAndResolve(0, m_radarRange, (hex) => hex.Content != null, true, "Entities");
+        var results = Hex.RaycastAndResolve(0, Template.RadarRange, (hex) => hex.Content != null, true, "Entities");
         inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);
         return results;
     }
@@ -441,7 +514,7 @@ public abstract class ActiveEntity : Entity
 
     protected virtual IEnumerable<PotentialAction> ComputeActions()
     {
-        Debug.Log("{0} is computing actions. Its condition is {1}".FormatWith(this, FullState()));
+        Debug.Log("{0} is computing actions".FormatWith(FullState()));
         if(m_wasShutDown)
         {
             return new PotentialAction[0];
@@ -499,30 +572,21 @@ public abstract class ActiveEntity : Entity
 
 #region MovingEntity
 
-public abstract class MovingEntity : ActiveEntity
+public class MovingEntity : ActiveEntity
 {
-    #region private fields
-
-    private readonly double m_maximumSpeed;
-
-    #endregion private fields
 
     #region properties
 
     public double AvailableSteps { get; set; }
 
-    public MovementType MovementMethod { get; private set; }
-
     #endregion properties
 
     #region constructor
 
-    public MovingEntity(double maximumEnergy, MovementType movement, double speed, Loyalty loyalty, int radarRange, int sightRange, IEnumerable<Subsystem> systems, double health, double shield, VisualProperties visuals, EntityReactor reactor) :
-        base(maximumEnergy, loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
+    public MovingEntity(EntityTemplate template, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
+        base(template, loyalty, reactor, systems)
     {
-        m_maximumSpeed = speed;
-        AvailableSteps = speed;
-        MovementMethod = movement;
+        AvailableSteps = template.MaxSpeed;
     }
 
     #endregion constructor
@@ -532,7 +596,7 @@ public abstract class MovingEntity : ActiveEntity
     protected override IEnumerable<PotentialAction> ComputeActions()
     {
         var baseActions = base.ComputeActions();
-        var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, MovementMethod);
+        var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, Template.MovementMethod);
         return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
     }
 
@@ -540,7 +604,7 @@ public abstract class MovingEntity : ActiveEntity
     {
         if(base.StartTurn())
         {
-            AvailableSteps = m_maximumSpeed;
+            AvailableSteps = Template.MaxSpeed;
             return true;
         }
         else
@@ -552,31 +616,10 @@ public abstract class MovingEntity : ActiveEntity
 
     public override string FullState()
     {
-        return "{0} movement {1}".FormatWith(base.FullState(), AvailableSteps);
+        return "{0} movement {1}/{2}".FormatWith(base.FullState(), AvailableSteps, Template.MaxSpeed);
     }
 
     #endregion overrides
 }
 
 #endregion MovingEntity
-
-#region Mech
-
-//TODO - should be replaced with XML configuration files
-
-public class Mech : MovingEntity
-{
-    public Mech(IEnumerable<Subsystem> systems, EntityReactor reactor,
-                double maximumEnergy = 2,
-                double health = 5,
-                double shield = 3,
-                VisualProperties visuals = VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
-                double speed = 4,
-                Loyalty loyalty = Loyalty.Player,
-                int radarRange = 20,
-                int sightRange = 10) :
-        base(maximumEnergy, MovementType.Walker, speed, loyalty, radarRange, sightRange, systems, health, shield, visuals, reactor)
-    { }
-}
-
-#endregion Mech

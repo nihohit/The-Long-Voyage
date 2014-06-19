@@ -13,7 +13,7 @@ public class HexReactor : CircularButton
     private MarkerScript m_radarBlipMarker;
     private MarkerScript m_targetMarker;
     private static MarkerScript s_selected;
-    private Dictionary<ActiveEntity, List<OperateSystemAction>> m_orders = new Dictionary<ActiveEntity, List<OperateSystemAction>>();
+    private Dictionary<Entity, List<OperateSystemAction>> m_orders = new Dictionary<Entity, List<OperateSystemAction>>();
     private int m_displayCommands;
     private static HexReactor m_currentHoveredHex;
 
@@ -97,14 +97,14 @@ public class HexReactor : CircularButton
             RemoveMarker(m_targetMarker);
             return;
         }
-        var activeEntity = TacticalState.SelectedHex.MarkedHex.Content as ActiveEntity;
-        if (activeEntity == null)
+        var Entity = TacticalState.SelectedHex.MarkedHex.Content as Entity;
+        if (Entity == null)
         {
             RemoveMarker(m_targetMarker);
             return;
         }
         List<OperateSystemAction> actions = null;
-        if (activeEntity != null && m_orders.TryGetValue(activeEntity, out actions))
+        if (Entity != null && m_orders.TryGetValue(Entity, out actions))
         {
             actions.Remove(action);
             m_displayCommands = actions.Count;
@@ -160,10 +160,10 @@ public class HexReactor : CircularButton
         }
     }
 
-    public void AddCommands(ActiveEntity activeEntity, List<OperateSystemAction> list)
+    public void AddCommands(Entity Entity, List<OperateSystemAction> list)
     {
-        Assert.AssertConditionMet(!m_orders.ContainsKey(activeEntity) || m_orders[activeEntity].None(order => !order.Destroyed), "Existing orders weren't destroyed");
-        m_orders[activeEntity] = list;
+        Assert.AssertConditionMet(!m_orders.ContainsKey(Entity) || m_orders[Entity].None(order => !order.Destroyed), "Existing orders weren't destroyed");
+        m_orders[Entity] = list;
     }
 
     public void StartTurn()
@@ -190,8 +190,8 @@ public class HexReactor : CircularButton
         if (TacticalState.SelectedHex != null && m_orders.Any())
         {
             List<OperateSystemAction> actions = null;
-            var activeEntity = TacticalState.SelectedHex.MarkedHex.Content as ActiveEntity;
-            if (activeEntity != null && m_orders.TryGetValue(activeEntity, out actions))
+            var Entity = TacticalState.SelectedHex.MarkedHex.Content as Entity;
+            if (Entity != null && m_orders.TryGetValue(Entity, out actions))
             {
                 var activeCommands = actions.Where(command => !command.Destroyed).Materialize();
                 var commandCount = activeCommands.Count();
@@ -244,8 +244,8 @@ public class HexReactor : CircularButton
         if (TacticalState.SelectedHex != null)
         {
             List<OperateSystemAction> actions = null;
-            var activeEntity = TacticalState.SelectedHex.MarkedHex.Content as ActiveEntity;
-            if (activeEntity != null && m_orders.TryGetValue(activeEntity, out actions))
+            var Entity = TacticalState.SelectedHex.MarkedHex.Content as Entity;
+            if (Entity != null && m_orders.TryGetValue(Entity, out actions))
             {
                 m_displayCommands = 0;
                 foreach (var action in actions.Where(command => !command.Destroyed))
@@ -263,13 +263,13 @@ public class HexReactor : CircularButton
     //returns null if can't return actions, otherwise returns all available actions
     private IEnumerable<PotentialAction> ActionCheck()
     {
-        var activeEntity = MarkedHex.Content as ActiveEntity;
-        if (activeEntity == null || activeEntity.Loyalty != TacticalState.CurrentTurn)
+        var Entity = MarkedHex.Content as ActiveEntity;
+        if (Entity == null || Entity.Loyalty != TacticalState.CurrentTurn)
         {
             return null;
         }
 
-        return activeEntity.Actions.Materialize();
+        return Entity.Actions.Materialize();
     }
 
     private void RemoveMarker(MarkerScript marker)

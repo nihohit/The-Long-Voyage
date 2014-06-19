@@ -42,10 +42,11 @@ public class GenerateLevel : MonoBehaviour
                 {
                     //TODO - this is just a temporary measure, to create mechs
                     var loyalty = TacticalState.CurrentTurn;
-                    var mech = new Mech(
-                        new Subsystem[] { new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty), new HeatWaveProjector(loyalty), new IncediaryGun(loyalty) },
+                    var mech = new MovingEntity(
+                        EntityTemplate.GetTemplate(EntityType.Mech),
+                        loyalty, 
                         ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
-                        loyalty: loyalty);
+                        new Subsystem[] { new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty), new HeatWaveProjector(loyalty), new IncediaryGun(loyalty) });
                     TacticalState.SelectedHex.MarkedHex.Content = mech;
                     TacticalState.AddEntity(mech);
                     Debug.Log("created {0} at {1}".FormatWith(mech, TacticalState.SelectedHex));
@@ -66,10 +67,7 @@ public class GenerateLevel : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
-        SubsystemTemplate.Init();
-        Hex.Init();
-        TacticalState.BattleStarted = false;
-        InitiateGlobalState();
+        InitClasses();
 
         var hexes = new List<Hex>();
         var entryPoint = Vector3.zero;
@@ -114,6 +112,12 @@ public class GenerateLevel : MonoBehaviour
         chosenHexes.ForEach(hex => hex.Content = GlobalState.EntitiesInBattle.First(ent => ent.Hex == null));
     }
 
+    private void InitClasses()
+    {
+        TacticalState.BattleStarted = false;
+        InitiateGlobalState();
+    }
+
     #endregion MonoBehaviour overrides
 
     #region private methods
@@ -128,21 +132,24 @@ public class GenerateLevel : MonoBehaviour
     private HexReactor CreateLightTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
         var hex = CreateWoodHex(nextPosition, hexCoordinates);
-        hex.MarkedHex.Content = new SparseTrees(((GameObject)Instantiate(Resources.Load("SparseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        hex.MarkedHex.Content = new TerrainEntity(EntityTemplate.GetTemplate(EntityType.SparseTrees),
+            ((GameObject)Instantiate(Resources.Load("SparseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
         return hex;
     }
 
     private HexReactor CreateDenseTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
         var hex = CreateWoodHex(nextPosition, hexCoordinates);
-        hex.MarkedHex.Content = new DenseTrees(((GameObject)Instantiate(Resources.Load("DenseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        hex.MarkedHex.Content = new TerrainEntity(EntityTemplate.GetTemplate(EntityType.DenseTrees), 
+            ((GameObject)Instantiate(Resources.Load("DenseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
         return hex;
     }
 
     private HexReactor CreateBuildingHex(Vector3 nextPosition, Vector2 hexCoordinates)
     {
         var hex = CreateWoodHex(nextPosition, hexCoordinates);
-        hex.MarkedHex.Content = new Building(((GameObject)Instantiate(Resources.Load("Building"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+        hex.MarkedHex.Content = new TerrainEntity(EntityTemplate.GetTemplate(EntityType.Building), 
+            ((GameObject)Instantiate(Resources.Load("Building"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
         return hex;
     }
 
@@ -195,6 +202,9 @@ public class GenerateLevel : MonoBehaviour
         //TODO - replace with exception throwing when we remove the direct access to level generation
         FileHandler.Init();
         HexReactor.Init();
+        SubsystemTemplate.Init();
+        EntityTemplate.Init();
+        Hex.Init();
         if (GlobalState.AmountOfHexes < 1)
         {
             GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
@@ -206,10 +216,17 @@ public class GenerateLevel : MonoBehaviour
 
     private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
     {
-        return Enumerable.Range(0, number).Select(num => (ActiveEntity)new Mech(
-            new Subsystem[] { new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty), new HeatWaveProjector(loyalty), new IncediaryGun(loyalty) },
+        return Enumerable.Range(0, number).Select(num => (ActiveEntity)new MovingEntity(
+            EntityTemplate.GetTemplate(EntityType.Mech), 
+            loyalty,
             ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
-            loyalty: loyalty)).Materialize();
+            new Subsystem[] { 
+                new Laser(loyalty), 
+                new MissileLauncher(loyalty), 
+                new EmpLauncher(loyalty), 
+                new HeatWaveProjector(loyalty), 
+                new IncediaryGun(loyalty) })
+            ).Materialize();
     }
 
     #endregion private methods

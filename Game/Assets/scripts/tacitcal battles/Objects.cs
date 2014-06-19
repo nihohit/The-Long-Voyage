@@ -26,7 +26,7 @@ public enum TraversalConditions
 }
 
 // see TraversalAbility's comment
-public enum MovementType { Crawler = 3, Walker = 2, Hover = 1, Flyer = 0 }
+public enum MovementType { Crawler = 3, Walker = 2, Hover = 1, Flyer = 0, Unmoving = Int32.MaxValue}
 
 [Flags]
 public enum VisualProperties
@@ -48,8 +48,6 @@ public enum TargetingType
 
 public enum EffectType { EmpDamage, HeatDamage, IncendiaryDamage, PhysicalDamage, FlameHex }
 
-public enum WeaponType { }
-
 //to be filled with all different sides
 public enum Loyalty { Player, EnemyArmy, Monsters, Bandits, Inactive, Friendly }
 
@@ -58,8 +56,6 @@ public enum SystemCondition { Operational = 0, OutOfAmmo = 1, Neutralized = 2, D
 
 // the way a system reaches its targets
 public enum DeliveryMethod { Direct, Unobstructed }
-
-public enum SystemType { Laser, Missile, EMP, Flamer, IncediaryGun, HeatWave }
 
 #endregion enums
 
@@ -221,11 +217,11 @@ public class MovementAction : PotentialAction
 
     #region constructors
 
-    public MovementAction(MovingEntity entity, IEnumerable<Hex> path, double cost) :
+    public MovementAction(ActiveEntity entity, IEnumerable<Hex> path, double cost) :
         this(entity, path, cost, path.Last())
     { }
 
-    public MovementAction(MovingEntity entity, IEnumerable<Hex> path, double cost, Hex lastHex) :
+    public MovementAction(ActiveEntity entity, IEnumerable<Hex> path, double cost, Hex lastHex) :
         base(entity, "movementMarker", path.Last().Position, lastHex, "movement to {0}".FormatWith(path.Last().Coordinates))
     {
         m_path = path;
@@ -237,7 +233,7 @@ public class MovementAction : PotentialAction
     }
 
     public MovementAction(MovementAction action, Hex hex, double cost) :
-        this((MovingEntity)action.ActingEntity, action.m_path.Union(new[] { hex }), cost, hex)
+        this(action.ActingEntity, action.m_path.Union(new[] { hex }), cost, hex)
     {
     }
 

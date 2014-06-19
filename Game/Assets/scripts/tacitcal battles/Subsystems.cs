@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+public enum SystemType { Laser, Missile, EMP, Flamer, IncediaryGun, HeatWave }
+
 #region SubsystemTemplate
 
 public class SubsystemTemplate
@@ -10,49 +12,29 @@ public class SubsystemTemplate
 
     private static readonly Dictionary<SystemType, SubsystemTemplate> s_knownTemplates = new Dictionary<SystemType, SubsystemTemplate>();
 
-    private readonly int m_maxRange;
-
-    private readonly int m_minRange;
-
-    private readonly DeliveryMethod m_deliveryMethod;
-
-    private readonly EffectType m_effectType;
-
-    private readonly string m_name;
-
-    private readonly TargetingType m_targetingType;
-
-    private readonly double m_energyCost;
-
-    private readonly double m_heatGenerated;
-
-    private readonly double m_effectStrength;
-
-    private readonly int m_maxAmmo;
-
-    #endregion fields
+    #endregion
 
     #region properties
 
-    public int MaxRange { get { return m_maxRange; } }
+    public int MaxRange { get; private set; }
 
-    public int MinRange { get { return m_minRange; } }
+    public int MinRange { get; private set; }
 
-    public DeliveryMethod DeliveryMethod { get { return m_deliveryMethod; } }
+    public DeliveryMethod DeliveryMethod { get; private set; }
 
-    public EffectType Effect { get { return m_effectType; } }
+    public EffectType Effect { get; private set; }
 
-    public double EffectStrength { get { return m_effectStrength; } }
+    public double EffectStrength { get; private set; }
 
-    public string Name { get { return m_name; } }
+    public string Name { get; private set; }
 
-    public TargetingType PossibleTargets { get { return m_targetingType; } }
+    public TargetingType PossibleTargets { get; private set; }
 
-    public double EnergyCost { get { return m_energyCost; } }
+    public double EnergyCost { get; private set; }
 
-    public double HeatGenerated { get { return m_heatGenerated; } }
+    public double HeatGenerated { get; private set; }
 
-    public int MaxAmmo { get { return m_maxAmmo; } }
+    public int MaxAmmo { get; private set; }
 
     #endregion properties
 
@@ -81,16 +63,16 @@ public class SubsystemTemplate
                             double effectStrength,
                             TargetingType targetingType)
     {
-        m_minRange = minRange;
-        m_maxRange = maxRange;
-        m_effectType = effectType;
-        m_effectStrength = effectStrength;
-        m_deliveryMethod = deliveryMethod;
-        m_name = name;
-        m_targetingType = targetingType;
-        m_energyCost = energyCost;
-        m_maxAmmo = ammo;
-        m_heatGenerated = heatGenerated;
+        MinRange = minRange;
+        MaxRange = maxRange;
+        Effect = effectType;
+        EffectStrength = effectStrength;
+        DeliveryMethod = deliveryMethod;
+        Name = name;
+        PossibleTargets = targetingType;
+        EnergyCost = energyCost;
+        MaxAmmo = ammo;
+        HeatGenerated = heatGenerated;
     }
 
     public static SubsystemTemplate Init(SystemType type)

@@ -3,6 +3,16 @@ using System.Linq;
 
 public static class Assert
 {
+    public static void NotEqual(int first, int second, string additionalMessage)
+    {
+        AssertConditionMet(first != second, additionalMessage);
+    }
+
+    public static void NotEqual(int first, int second)
+    {
+        NotEqual(first, second, string.Empty);
+    }
+
     public static void EqualOrLesser(int num, int top, string additionalMessage)
     {
         AssertConditionMet(num <= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));

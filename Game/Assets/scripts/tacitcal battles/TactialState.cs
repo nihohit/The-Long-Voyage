@@ -59,20 +59,20 @@ public static class TacticalState
 
     public static void AddRadarVisibleEntity(Entity ent)
     {
-        Assert.AssertConditionMet((ent.Visuals & VisualProperties.AppearsOnRadar) != 0, "Added entity isn't radar visible");
+        Assert.AssertConditionMet((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0, "Added entity isn't radar visible");
         s_radarableEntity.Add(ent);
     }
 
     public static void DestroyEntity(Entity ent)
     {
-        if((ent.Visuals & VisualProperties.AppearsOnRadar) != 0)
+        if((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0)
         {
             s_radarableEntity.Remove(ent);
         }
-        var activeEntity = ent as ActiveEntity;
-        if(activeEntity != null)
+        var Entity = ent as ActiveEntity;
+        if(Entity != null)
         {
-            DestroyActiveEntity(activeEntity);
+            DestroyEntity(Entity);
         }
         ResetAllActions();
     }
@@ -137,7 +137,7 @@ public static class TacticalState
 
     #region private method
 
-    private static void DestroyActiveEntity(ActiveEntity ent)
+    private static void DestroyEntity(ActiveEntity ent)
     {
         s_activeEntities.Remove(ent);
         //TODO - end battle logic

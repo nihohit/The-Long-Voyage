@@ -227,7 +227,7 @@ public class SimpleEvaluator : IActionEvaluator
             {
                 //TODO - time complexity could be reduced significantly by a. feeding astar some heuristic or b. replacing a star with a heuristic
                 result += m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
-                    evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.MovementMethod, (Hex hex) => 0));
+                    evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.Template.MovementMethod, (Hex hex) => 0));
             }
         }
         Debug.Log("Hex {0} valued as {1}".FormatWith(evaluatedHex, result));

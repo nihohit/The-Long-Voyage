@@ -345,6 +345,7 @@ internal class AStarConfiguration
 {
     public AStarConfiguration(MovementType traversalMethod, Heuristic heuristic)
     {
+        Assert.NotEqual((int)traversalMethod, (int)MovementType.Unmoving, "Unmoving entities shouldn't be pathfinding");
         TraversalMethod = traversalMethod;
         Heuristic = heuristic;
     }
