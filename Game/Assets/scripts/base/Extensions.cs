@@ -3,155 +3,158 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public interface IIdentifiable
+namespace Assets.scripts.Base
 {
-    string Name { get; }
-}
-
-public static class MyExtensions
-{
-    public static String FormatWith(this string str, params object[] formattingInfo)
+    public interface IIdentifiable
     {
-        return String.Format(str, formattingInfo);
+        string Name { get; }
     }
 
-    public static void StartTiming(this IIdentifiable timer, string operation)
+    public static class MyExtensions
     {
-        Timer.StartTiming(timer.Name, operation);
-    }
-
-    public static void StopTiming(this IIdentifiable timer, string operation)
-    {
-        Timer.StopTiming(timer.Name, operation);
-    }
-
-    public static void TimeAction(this IIdentifiable timer, string operation, Action action)
-    {
-#if DEBUG
-        Timer.StartTiming(timer.Name, operation);
-#endif
-        action();
-#if DEBUG
-        Timer.StopTiming(timer.Name, operation);
-#endif
-    }
-
-    public static T TryGetOrAdd<T, S>(this IDictionary<S, T> dict, S key, Func<T> defaultConstructor)
-    {
-        T result;
-        if (!dict.TryGetValue(key, out result))
+        public static String FormatWith(this string str, params object[] formattingInfo)
         {
-            result = defaultConstructor();
-            dict.Add(key, result);
+            return String.Format(str, formattingInfo);
         }
-        return result;
-    }
 
-    //removes from both sets the common elements.
-    public static void ExceptOnBoth<T>(this HashSet<T> thisSet, HashSet<T> otherSet)
-    {
-        thisSet.SymmetricExceptWith(otherSet);
-        otherSet.IntersectWith(thisSet);
-        thisSet.ExceptWith(otherSet);
-    }
-
-    public static float GetAngleBetweenTwoPoints(this Vector2 from, Vector2 to)
-    {
-        var differenceVector = to - from;
-        var angle = Vector2.Angle(new Vector2(0, 1), differenceVector);
-        if (differenceVector.x < 0)
+        public static void StartTiming(this IIdentifiable timer, string operation)
         {
-            angle = 360-angle;
+            Timer.StartTiming(timer.Name, operation);
         }
-        return angle;
-    }
 
-    public static float GetAngleBetweenTwoPoints(this Vector3 from, Vector3 to)
-    {
-        var from2 = new Vector2(from.x, from.y);
-        var to2 = new Vector2(to.x, to.y);
-        return from2.GetAngleBetweenTwoPoints(to2);
-    }
-
-    public static float ToRadians(this float degrees)
-    {
-        return (float)Math.PI * degrees / 180;
-    }
-
-    #region IEnumerable
-
-    public static IEnumerable<T> GetValues<T>()
-    {
-        return (T[])Enum.GetValues(typeof(T));
-    }
-
-    public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
-    {
-        return new HashSet<T>(source);
-    }
-
-    //this function ensures that a given enumeration materializes
-    public static IEnumerable<T> Materialize<T>(this IEnumerable<T> enumerable)
-    {
-        if (enumerable is ICollection<T>) return enumerable;
-        return enumerable.ToList();
-    }
-
-    public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)
-    {
-        if (enumerable != null)
+        public static void StopTiming(this IIdentifiable timer, string operation)
         {
-            foreach (var val in enumerable)
+            Timer.StopTiming(timer.Name, operation);
+        }
+
+        public static void TimeAction(this IIdentifiable timer, string operation, Action action)
+        {
+#if DEBUG
+            Timer.StartTiming(timer.Name, operation);
+#endif
+            action();
+#if DEBUG
+            Timer.StopTiming(timer.Name, operation);
+#endif
+        }
+
+        public static T TryGetOrAdd<T, S>(this IDictionary<S, T> dict, S key, Func<T> defaultConstructor)
+        {
+            T result;
+            if (!dict.TryGetValue(key, out result))
             {
-                op(val);
+                result = defaultConstructor();
+                dict.Add(key, result);
             }
+            return result;
         }
-    }
 
-    public static bool None<T>(this IEnumerable<T> enumerable, Func<T, bool> op)
-    {
-        return !enumerable.Any(op);
-    }
-
-    public static bool None<T>(this IEnumerable<T> enumerable)
-    {
-        return !enumerable.Any();
-    }
-
-    public static T ChooseRandomValue<T>(this IEnumerable<T> group)
-    {
-        return Randomiser.ChooseValue(group);
-    }
-
-    public static IEnumerable<T> ChooseRandomValues<T>(this IEnumerable<T> group, int amount)
-    {
-        return Randomiser.ChooseValues(group, amount);
-    }
-
-    #endregion IEnumerable
-}
-
-public static class Hasher
-{
-    private static int InitialHash = 53; // Prime number
-    private static int Multiplier = 29; // Different prime number
-
-    public static int GetHashCode(params object[] values)
-    {
-        unchecked // Overflow is fine, just wrap
+        //removes from both sets the common elements.
+        public static void ExceptOnBoth<T>(this HashSet<T> thisSet, HashSet<T> otherSet)
         {
-            int hash = InitialHash;
+            thisSet.SymmetricExceptWith(otherSet);
+            otherSet.IntersectWith(thisSet);
+            thisSet.ExceptWith(otherSet);
+        }
 
-            if (values != null)
+        public static float GetAngleBetweenTwoPoints(this Vector2 from, Vector2 to)
+        {
+            var differenceVector = to - from;
+            var angle = Vector2.Angle(new Vector2(0, 1), differenceVector);
+            if (differenceVector.x < 0)
             {
-                foreach (var currentObject in values)
+                angle = 360 - angle;
+            }
+            return angle;
+        }
+
+        public static float GetAngleBetweenTwoPoints(this Vector3 from, Vector3 to)
+        {
+            var from2 = new Vector2(from.x, from.y);
+            var to2 = new Vector2(to.x, to.y);
+            return from2.GetAngleBetweenTwoPoints(to2);
+        }
+
+        public static float ToRadians(this float degrees)
+        {
+            return (float)Math.PI * degrees / 180;
+        }
+
+        #region IEnumerable
+
+        public static IEnumerable<T> GetValues<T>()
+        {
+            return (T[])Enum.GetValues(typeof(T));
+        }
+
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
+        {
+            return new HashSet<T>(source);
+        }
+
+        //this function ensures that a given enumeration materializes
+        public static IEnumerable<T> Materialize<T>(this IEnumerable<T> enumerable)
+        {
+            if (enumerable is ICollection<T>) return enumerable;
+            return enumerable.ToList();
+        }
+
+        public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)
+        {
+            if (enumerable != null)
+            {
+                foreach (var val in enumerable)
                 {
-                    hash = hash * Multiplier
-                            + (currentObject != null ? currentObject.GetHashCode() : 0);
+                    op(val);
                 }
             }
+        }
 
-            return hash;
+        public static bool None<T>(this IEnumerable<T> enumerable, Func<T, bool> op)
+        {
+            return !enumerable.Any(op);
+        }
+
+        public static bool None<T>(this IEnumerable<T> enumerable)
+        {
+            return !enumerable.Any();
+        }
+
+        public static T ChooseRandomValue<T>(this IEnumerable<T> group)
+        {
+            return Randomiser.ChooseValue(group);
+        }
+
+        public static IEnumerable<T> ChooseRandomValues<T>(this IEnumerable<T> group, int amount)
+        {
+            return Randomiser.ChooseValues(group, amount);
+        }
+
+        #endregion IEnumerable
+    }
+
+    public static class Hasher
+    {
+        private static int InitialHash = 53; // Prime number
+        private static int Multiplier = 29; // Different prime number
+
+        public static int GetHashCode(params object[] values)
+        {
+            unchecked // Overflow is fine, just wrap
+            {
+                int hash = InitialHash;
+
+                if (values != null)
+                {
+                    foreach (var currentObject in values)
+                    {
+                        hash = hash * Multiplier
+                                + (currentObject != null ? currentObject.GetHashCode() : 0);
+                    }
+                }
+
+                return hash;
+            }
         }
     }
 }
