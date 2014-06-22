@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Assets.scripts.MainScreenScene
 {
-    public class MainScreen : MonoBehaviour
+    public class MainScreenScript : MonoBehaviour
     {
         private float screenWidth, screenHeight, sliderHeight, sliderWidth, buttonHeight, markerHeight;
 
@@ -39,7 +39,7 @@ namespace Assets.scripts.MainScreenScene
             if (GUI.Button(new Rect(sliderWidth - 40, buttonHeight, 80, 20), "StartGame"))
             {
                 GlobalState.AmountOfHexes = sliderValue;
-                Application.LoadLevel("generateLevel");
+                Application.LoadLevel("TacticalBattleScene");
             }
         }
     }

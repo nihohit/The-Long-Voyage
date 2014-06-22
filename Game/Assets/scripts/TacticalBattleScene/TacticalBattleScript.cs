@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
 {
-    public class GenerateLevel : MonoBehaviour
+    public class TacticalBattleScript : MonoBehaviour
     {
         #region public members
 
