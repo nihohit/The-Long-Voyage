@@ -1,4 +1,5 @@
 ﻿using Assets.scripts.Base;
+using Assets.scripts.InterSceneCommunication;
 using Assets.scripts.LogicBase;
 using System;
 using UnityEngine;
@@ -38,7 +39,7 @@ namespace Assets.scripts.MainScreenScene
 
             if (GUI.Button(new Rect(sliderWidth - 40, buttonHeight, 80, 20), "StartGame"))
             {
-                GlobalState.AmountOfHexes = sliderValue;
+                GlobalState.TacticalBattle.AmountOfHexes = sliderValue;
                 Application.LoadLevel("TacticalBattleScene");
             }
         }

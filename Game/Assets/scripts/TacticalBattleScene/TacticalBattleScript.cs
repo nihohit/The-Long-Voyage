@@ -1,4 +1,5 @@
 ﻿using Assets.scripts.Base;
+using Assets.scripts.InterSceneCommunication;
 using Assets.scripts.LogicBase;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,15 +77,17 @@ namespace Assets.scripts.TacticalBattleScene
             var hexes = new List<Hex>();
             var entryPoint = Vector3.zero;
             var hexSize = greenHex.renderer.bounds.size;
+            var state = GlobalState.TacticalBattle;
+            GlobalState.TacticalBattle = null;
 
-            var target = 2 * GlobalState.AmountOfHexes - 1;
+            var target = 2 * state.AmountOfHexes - 1;
 
             //the math became a bit complicated when trying to account for correct coordinates.
-            for (int i = -GlobalState.AmountOfHexes + 1; i <= 0; i++)
+            for (int i = -state.AmountOfHexes + 1; i <= 0; i++)
             {
                 entryPoint = new Vector3(entryPoint.x - (hexSize.x / 2), entryPoint.y + (hexSize.x * Mathf.Sqrt(3) / 2), entryPoint.z);
                 var amountOfHexesInRow = i + target;
-                var entryCoordinate = (float)-i / 2 - GlobalState.AmountOfHexes + 1;
+                var entryCoordinate = (float)-i / 2 - state.AmountOfHexes + 1;
                 for (float j = 0; j < amountOfHexesInRow; j++)
                 {
                     hexes.Add(CreateRandomHex(
@@ -93,14 +96,14 @@ namespace Assets.scripts.TacticalBattleScene
                 }
             }
 
-            mainCamera.transform.position = new Vector3(entryPoint.x + ((GlobalState.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 70);
+            mainCamera.transform.position = new Vector3(entryPoint.x + ((state.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 70);
             mainCamera.transform.Rotate(new Vector3(180, 180, 180));
 
-            for (int i = 1; i < target - GlobalState.AmountOfHexes + 1; i++)
+            for (int i = 1; i < target - state.AmountOfHexes + 1; i++)
             {
                 entryPoint = new Vector3(entryPoint.x + (hexSize.x / 2), entryPoint.y + (hexSize.x * Mathf.Sqrt(3) / 2), entryPoint.z);
                 var amountOfHexesInRow = target - i;
-                var entryCoordinate = (float)i / 2 - GlobalState.AmountOfHexes + 1;
+                var entryCoordinate = (float)i / 2 - state.AmountOfHexes + 1;
                 for (float j = 0; j < amountOfHexesInRow; j++)
                 {
                     hexes.Add(CreateRandomHex(
@@ -109,11 +112,11 @@ namespace Assets.scripts.TacticalBattleScene
                 }
             }
 
-            TacticalState.Init(GlobalState.EntitiesInBattle, hexes);
+            TacticalState.Init(state.EntitiesInBattle, hexes);
 
             //HACK - to be removed. in charge of positioning the first entities
-            var chosenHexes = m_emptyHexes.ChooseRandomValues(GlobalState.EntitiesInBattle.Count()).OrderBy(x => Randomiser.Next());
-            chosenHexes.ForEach(hex => hex.Content = GlobalState.EntitiesInBattle.First(ent => ent.Hex == null));
+            var chosenHexes = m_emptyHexes.ChooseRandomValues(state.EntitiesInBattle.Count()).OrderBy(x => Randomiser.Next());
+            chosenHexes.ForEach(hex => hex.Content = state.EntitiesInBattle.First(ent => ent.Hex == null));
         }
 
         private void InitClasses()
@@ -209,13 +212,16 @@ namespace Assets.scripts.TacticalBattleScene
             SubsystemTemplate.Init();
             EntityTemplate.Init();
             Hex.Init();
-            if (GlobalState.AmountOfHexes < 1)
+            
+            if (GlobalState.TacticalBattle == null)
             {
-                GlobalState.AmountOfHexes = FileHandler.GetIntProperty(
+                var state = new TacticalBattleInformation();
+                state.AmountOfHexes = FileHandler.GetIntProperty(
                     "default map size",
                     FileAccessor.TerrainGeneration);
+                state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
+                GlobalState.TacticalBattle = state;
             }
-            GlobalState.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
         }
 
         private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
