@@ -42,6 +42,8 @@ namespace Assets.scripts.LogicBase
 
         public double MaxSpeed { get; private set; }
 
+        public int SystemSlots { get; private set; }
+
         #endregion properties
 
         #region constructors

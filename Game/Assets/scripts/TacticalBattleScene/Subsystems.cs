@@ -9,7 +9,7 @@ namespace Assets.scripts.TacticalBattleScene
 {
     #region Subsystem
 
-    public abstract class Subsystem
+    public class Subsystem
     {
         #region fields
 
@@ -48,10 +48,14 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region constructors
 
-        protected Subsystem(Int32 id, Loyalty loyalty)
+        public Subsystem(Int32 id, Loyalty loyalty)
+            : this(SubsystemTemplate.Init(id), loyalty)
+        { }
+
+        public Subsystem(SubsystemTemplate template, Loyalty loyalty)
         {
             m_workingCondition = SystemCondition.Operational;
-            Template = SubsystemTemplate.Init(id);
+            Template = template;
             m_conditionForTargeting = CreateTargetingCheck(loyalty, Template.PossibleTargets);
             var effect = CreateSystemEffect(Template.EffectStrength, Template.Effect);
             if (Template.MaxAmmo > 0)
