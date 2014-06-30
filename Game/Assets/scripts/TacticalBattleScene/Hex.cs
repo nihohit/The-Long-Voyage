@@ -14,7 +14,7 @@ namespace Assets.scripts.TacticalBattleScene
         //holds all the hexes by their hex-coordinates
         private static Dictionary<Vector2, Hex> s_repository = new Dictionary<Vector2, Hex>();
 
-        private Entity m_content = null;
+        private TacticalEntity m_content = null;
 
         //these shouldn't be touched directly. There's a property for that.
         private int m_seen = 0, m_detected = 0;
@@ -35,7 +35,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         public TraversalConditions Conditions { get; set; }
 
-        public Entity Content
+        public TacticalEntity Content
         {
             get
             {

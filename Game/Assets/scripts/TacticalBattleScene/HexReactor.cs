@@ -17,7 +17,7 @@ namespace Assets.scripts.TacticalBattleScene
         private MarkerScript m_radarBlipMarker;
         private MarkerScript m_targetMarker;
         private static MarkerScript s_selected;
-        private Dictionary<Entity, List<OperateSystemAction>> m_orders = new Dictionary<Entity, List<OperateSystemAction>>();
+        private Dictionary<TacticalEntity, List<OperateSystemAction>> m_orders = new Dictionary<TacticalEntity, List<OperateSystemAction>>();
         private int m_displayCommands;
         private static HexReactor m_currentHoveredHex;
 
@@ -102,7 +102,7 @@ namespace Assets.scripts.TacticalBattleScene
                 RemoveMarker(m_targetMarker);
                 return;
             }
-            var Entity = TacticalState.SelectedHex.MarkedHex.Content as Entity;
+            var Entity = TacticalState.SelectedHex.MarkedHex.Content as TacticalEntity;
             if (Entity == null)
             {
                 RemoveMarker(m_targetMarker);
@@ -165,7 +165,7 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
-        public void AddCommands(Entity Entity, List<OperateSystemAction> list)
+        public void AddCommands(TacticalEntity Entity, List<OperateSystemAction> list)
         {
             Assert.AssertConditionMet(!m_orders.ContainsKey(Entity) || m_orders[Entity].None(order => !order.Destroyed), "Existing orders weren't destroyed");
             m_orders[Entity] = list;
@@ -195,7 +195,7 @@ namespace Assets.scripts.TacticalBattleScene
             if (TacticalState.SelectedHex != null && m_orders.Any())
             {
                 List<OperateSystemAction> actions = null;
-                var Entity = TacticalState.SelectedHex.MarkedHex.Content as Entity;
+                var Entity = TacticalState.SelectedHex.MarkedHex.Content as TacticalEntity;
                 if (Entity != null && m_orders.TryGetValue(Entity, out actions))
                 {
                     var activeCommands = actions.Where(command => !command.Destroyed).Materialize();
@@ -249,7 +249,7 @@ namespace Assets.scripts.TacticalBattleScene
             if (TacticalState.SelectedHex != null)
             {
                 List<OperateSystemAction> actions = null;
-                var Entity = TacticalState.SelectedHex.MarkedHex.Content as Entity;
+                var Entity = TacticalState.SelectedHex.MarkedHex.Content as TacticalEntity;
                 if (Entity != null && m_orders.TryGetValue(Entity, out actions))
                 {
                     m_displayCommands = 0;

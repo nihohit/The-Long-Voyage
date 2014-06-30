@@ -10,7 +10,7 @@ namespace Assets.scripts.TacticalBattleScene
 {
     #region Entity
 
-    public abstract class Entity
+    public abstract class TacticalEntity
     {
         #region private fields
 
@@ -22,16 +22,16 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region constructor
 
-        public Entity(EntityTemplate template, Loyalty loyalty, EntityReactor reactor)
+        public TacticalEntity(SpecificEntity entity, Loyalty loyalty, EntityReactor reactor)
         {
-            Template = template;
+            Template = entity.Template;
             Loyalty = loyalty;
-            Health = template.Health;
+            Health = Template.Health;
             reactor.Entity = this;
             this.Reactor = reactor;
             m_id = s_idCounter++;
-            Name = "{0} {1} {2}".FormatWith(template.Name, Loyalty, m_id);
-            if ((template.Visuals & VisualProperties.AppearsOnRadar) != 0)
+            Name = "{0} {1} {2}".FormatWith(Template.Name, Loyalty, m_id);
+            if ((Template.Visuals & VisualProperties.AppearsOnRadar) != 0)
             {
                 TacticalState.AddRadarVisibleEntity(this);
             }
@@ -88,7 +88,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         public override bool Equals(object obj)
         {
-            var ent = obj as Entity;
+            var ent = obj as TacticalEntity;
             return ent != null &&
                 ID == ent.ID;
         }
@@ -156,12 +156,12 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region inanimate entities
 
-    public class TerrainEntity : Entity
+    public class TerrainEntity : TacticalEntity
     {
         private Hex m_hex;
 
         public TerrainEntity(EntityTemplate template, EntityReactor reactor)
-            : base(template, Loyalty.Inactive, reactor)
+            : base(new SpecificEntity(template), Loyalty.Inactive, reactor)
         { }
 
         public override Hex Hex
@@ -192,17 +192,17 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region ActiveEntity
 
-    public class ActiveEntity : Entity
+    public class ActiveEntity : TacticalEntity
     {
         #region constructor
 
-        public ActiveEntity(EntityTemplate template, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
-            base(template, loyalty, reactor)
+        public ActiveEntity(SpecificEntity entity, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
+            base(entity, loyalty, reactor)
         {
             m_systems = systems;
-            CurrentEnergy = template.MaxEnergy;
-            m_tempMaxEnergy = template.MaxEnergy;
-            Shield = template.MaxShields;
+            CurrentEnergy = Template.MaxEnergy;
+            m_tempMaxEnergy = Template.MaxEnergy;
+            Shield = Template.MaxShields;
         }
 
         #endregion constructor
@@ -478,10 +478,10 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region constructor
 
-        public MovingEntity(EntityTemplate template, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
-            base(template, loyalty, reactor, systems)
+        public MovingEntity(SpecificEntity entity, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
+            base(entity, loyalty, reactor, systems)
         {
-            AvailableSteps = template.MaxSpeed;
+            AvailableSteps = Template.MaxSpeed;
         }
 
         #endregion constructor

@@ -23,6 +23,9 @@ namespace Assets.scripts.LogicBase
         AllHexes = 4
     }
 
+    public enum EntityVariant
+    { Regular }
+
     // the way a system reaches its targets
     public enum DeliveryMethod { Direct, Unobstructed }
 

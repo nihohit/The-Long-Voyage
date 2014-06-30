@@ -37,7 +37,7 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region delegates
 
-    public delegate bool EntityCheck(Entity ent);
+    public delegate bool EntityCheck(TacticalEntity ent);
 
     public delegate void HexOperation(Hex hex);
 

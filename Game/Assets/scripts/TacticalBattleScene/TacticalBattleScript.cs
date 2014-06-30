@@ -47,8 +47,7 @@ namespace Assets.scripts.TacticalBattleScene
                     {
                         //TODO - this is just a temporary measure, to create mechs
                         var loyalty = TacticalState.CurrentTurn;
-                        var mech = new MovingEntity(
-                            EntityTemplate.GetTemplate(0),
+                        var mech = new MovingEntity(new SpecificEntity(EntityTemplate.GetTemplate(0)),
                             loyalty,
                             ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
                             new Subsystem[] { new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty), new HeatWaveProjector(loyalty), new IncediaryGun(loyalty) });
@@ -227,7 +226,7 @@ namespace Assets.scripts.TacticalBattleScene
         private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
         {
             return Enumerable.Range(0, number).Select(num => (ActiveEntity)new MovingEntity(
-                EntityTemplate.GetTemplate(1),
+                new SpecificEntity(EntityTemplate.GetTemplate(1)),
                 loyalty,
                 ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
                 new Subsystem[] {

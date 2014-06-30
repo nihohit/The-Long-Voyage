@@ -41,7 +41,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region public methods
 
-        public void UpdateEntityTexture(Entity ent)
+        public void UpdateEntityTexture(TacticalEntity ent)
         {
             var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.GetType().ToString());
             var renderer = ent.Reactor.GetComponent<SpriteRenderer>();
@@ -65,7 +65,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region private methods
 
-        private Texture2D GetEntityTexture(Entity ent, string name, SpriteRenderer renderer)
+        private Texture2D GetEntityTexture(TacticalEntity ent, string name, SpriteRenderer renderer)
         {
             var oldTexture = ent.Reactor.GetComponent<SpriteRenderer>().sprite.texture;
             Color replacementColor;

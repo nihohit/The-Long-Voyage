@@ -57,6 +57,8 @@
      <Compile Include="Assets\scripts\InterSceneCommunication\GlobalState.cs" />
      <Compile Include="Assets\scripts\InterSceneCommunication\StrategicMapInformation.cs" />
      <Compile Include="Assets\scripts\InterSceneCommunication\TacticalBattleInformation.cs" />
+     <Compile Include="Assets\scripts\InventoryScreen\SystemSelectionBoxScript.cs" />
+     <Compile Include="Assets\scripts\InventoryScreen\UnitSelectionBoxScript.cs" />
      <Compile Include="Assets\scripts\LogicBase\EntityTemplate.cs" />
      <Compile Include="Assets\scripts\LogicBase\EquippedEntity.cs" />
      <Compile Include="Assets\scripts\LogicBase\Objects.cs" />

@@ -7,7 +7,7 @@ namespace Assets.scripts.TacticalBattleScene
 
     public class EntityReactor : CircularButton
     {
-        public Entity Entity { get; set; }
+        public TacticalEntity Entity { get; set; }
 
         public EntityReactor()
         {

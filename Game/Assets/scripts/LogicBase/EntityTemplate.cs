@@ -108,4 +108,19 @@ namespace Assets.scripts.LogicBase
 
         #endregion static methods
     }
+
+    public class SpecificEntity
+    {
+        public EntityTemplate Template { get; private set; }
+        public EntityVariant Variant { get; private set; }
+
+        public SpecificEntity(EntityTemplate template, EntityVariant variant)
+        {
+            Template = template;
+            Variant = variant;
+        }
+
+        public SpecificEntity(EntityTemplate template) : this(template, EntityVariant.Regular)
+        { }
+    }
 }

@@ -59,7 +59,8 @@ namespace Assets.scripts.UnityBase
                     foreach (var rayHit in rayHits)
                     {
                         var clickedComponent = rayHit.collider.gameObject;
-                        if (clickedComponent.layer == LayerMask.NameToLayer("UI"))
+                        var layerMask = LayerMask.NameToLayer("AddedUI");
+                        if (clickedComponent.layer == layerMask)
                         {
                             var button = clickedComponent.GetComponent<CircularButton>();
                             button.ClickableAction();

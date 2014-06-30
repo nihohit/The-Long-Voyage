@@ -15,7 +15,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
     public interface IActionEvaluator
     {
-        IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<Entity> entitiesSeenByTeam);
+        IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<TacticalEntity> entitiesSeenByTeam);
     }
 
     public interface IAIRunner
@@ -112,7 +112,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
             Debug.Log("Evaluating actions");
             controlledEntities.ForEach(ent => ent.ResetActions());
             var loyalty = controlledEntities.First().Loyalty;
-            var entitiesSeen = Enumerable.Empty<Entity>();
+            var entitiesSeen = Enumerable.Empty<TacticalEntity>();
             foreach (var ent in controlledEntities)
             {
                 entitiesSeen = entitiesSeen.Union(ent.SeenHexes.Select(hex => hex.Content).Where(entity => entity != null && entity.Loyalty != loyalty));
@@ -154,7 +154,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
      * and movement commands based on nearness to potential targets.
      * If no potential targets are in sight, randomly roam. */
 
-        public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<Entity> entitiesSeenByTeam)
+        public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<TacticalEntity> entitiesSeenByTeam)
         {
             //initiate relevant information
             var potentialTargets = entitiesSeenByTeam.Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
@@ -212,7 +212,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
         #endregion IActionEvaluator implementation
 
-        private double EvaluateHexValue(Hex evaluatedHex, IEnumerable<Entity> potentialTargets, MovingEntity movingEntity, int minRange, int maxRange)
+        private double EvaluateHexValue(Hex evaluatedHex, IEnumerable<TacticalEntity> potentialTargets, MovingEntity movingEntity, int minRange, int maxRange)
         {
             var result = 0.0;
 
@@ -240,7 +240,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
             return result;
         }
 
-        private double EvaluateSystemEffect(SubsystemTemplate system, Entity target)
+        private double EvaluateSystemEffect(SubsystemTemplate system, TacticalEntity target)
         {
             return (m_entityEvaluator.EvaluateValue(target) + system.EffectStrength) / (system.EnergyCost + system.HeatGenerated);
         }
@@ -252,12 +252,12 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
     public interface IEntityEvaluator
     {
-        double EvaluateValue(Entity entity);
+        double EvaluateValue(TacticalEntity entity);
     }
 
     public class SimpleEntityEvaluator : IEntityEvaluator
     {
-        public double EvaluateValue(Entity entity)
+        public double EvaluateValue(TacticalEntity entity)
         {
             return (entity.Loyalty == Loyalty.Inactive) ? 0 : 100;
         }

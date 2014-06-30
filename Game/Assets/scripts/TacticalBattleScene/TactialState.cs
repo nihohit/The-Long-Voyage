@@ -25,7 +25,7 @@ namespace Assets.scripts.TacticalBattleScene
         private static Dictionary<Loyalty, IAIRunner> s_nonPlayerTeams;
 
         //this is needed, since we need to enable all the entities before each radar sweep.
-        private static List<Entity> s_radarableEntity = new List<Entity>();
+        private static List<TacticalEntity> s_radarableEntity = new List<TacticalEntity>();
 
         #endregion fields
 
@@ -54,7 +54,7 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
-        public static IEnumerable<Entity> RadarVisibleEntities { get { return s_radarableEntity; } }
+        public static IEnumerable<TacticalEntity> RadarVisibleEntities { get { return s_radarableEntity; } }
 
         public static Loyalty CurrentTurn { get { return s_currentTurn.Value; } }
 
@@ -62,13 +62,13 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region public methods
 
-        public static void AddRadarVisibleEntity(Entity ent)
+        public static void AddRadarVisibleEntity(TacticalEntity ent)
         {
             Assert.AssertConditionMet((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0, "Added entity isn't radar visible");
             s_radarableEntity.Add(ent);
         }
 
-        public static void DestroyEntity(Entity ent)
+        public static void DestroyEntity(TacticalEntity ent)
         {
             if ((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0)
             {
@@ -126,7 +126,7 @@ namespace Assets.scripts.TacticalBattleScene
         }
 
         //TODO - remove once we don't have active creation of entities
-        public static void AddEntity(Entity ent)
+        public static void AddEntity(TacticalEntity ent)
         {
             var active = ent as ActiveEntity;
             if (active != null)
