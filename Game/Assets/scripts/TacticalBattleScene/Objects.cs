@@ -62,7 +62,7 @@ namespace Assets.scripts.TacticalBattleScene
     {
         #region fields
 
-        protected readonly CircularButton m_button;
+        protected readonly SimpleButton m_button;
 
         //TODO - remove after testing if no longer needed
         private readonly string m_name;
@@ -92,7 +92,7 @@ namespace Assets.scripts.TacticalBattleScene
             Name = buttonName;
             var command = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Button"), position, Quaternion.identity));
             TacticalState.TextureManager.UpdateButtonTexture(buttonName, command.GetComponent<SpriteRenderer>());
-            m_button = command.GetComponent<CircularButton>();
+            m_button = command.GetComponent<SimpleButton>();
             m_button.ClickableAction = () =>
             {
                 m_active = true;

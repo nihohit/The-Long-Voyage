@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
 {
-    public class HexReactor : CircularButton
+    public class HexReactor : SimpleButton
     {
         #region private fields
 

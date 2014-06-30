@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Assets.scripts.UnityBase
 {
-    public class CircularButton : MarkerScript
+    public class SimpleButton : MarkerScript
     {
         #region properties
 
@@ -17,7 +17,7 @@ namespace Assets.scripts.UnityBase
 
         #region public methods
 
-        public CircularButton()
+        public SimpleButton()
         {
             //just in case those value aren't inserted afterwards
             OnMouseOverProperty = () => { };
@@ -62,7 +62,7 @@ namespace Assets.scripts.UnityBase
                         var layerMask = LayerMask.NameToLayer("AddedUI");
                         if (clickedComponent.layer == layerMask)
                         {
-                            var button = clickedComponent.GetComponent<CircularButton>();
+                            var button = clickedComponent.GetComponent<SimpleButton>();
                             button.ClickableAction();
                             return;
                         }
