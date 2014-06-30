@@ -57,6 +57,7 @@
      <Compile Include="Assets\scripts\InterSceneCommunication\GlobalState.cs" />
      <Compile Include="Assets\scripts\InterSceneCommunication\StrategicMapInformation.cs" />
      <Compile Include="Assets\scripts\InterSceneCommunication\TacticalBattleInformation.cs" />
+     <Compile Include="Assets\scripts\InventoryScreen\InventoryScreenScript.cs" />
      <Compile Include="Assets\scripts\InventoryScreen\SystemSelectionBoxScript.cs" />
      <Compile Include="Assets\scripts\InventoryScreen\UnitSelectionBoxScript.cs" />
      <Compile Include="Assets\scripts\LogicBase\EntityTemplate.cs" />
@@ -81,8 +82,8 @@
      <Compile Include="Assets\scripts\TacticalBattleScene\TacticalTextureHandler.cs" />
      <Compile Include="Assets\scripts\TacticalBattleScene\pathfinding\AStar.cs" />
      <Compile Include="Assets\scripts\TacticalBattleScene\pathfinding\PathfindingInfo.cs" />
-     <Compile Include="Assets\scripts\UnityBase\CircularButton.cs" />
      <Compile Include="Assets\scripts\UnityBase\MarkerScript.cs" />
+     <Compile Include="Assets\scripts\UnityBase\SimpleButton.cs" />
      <Compile Include="Assets\scripts\UnityBase\TextureHandler.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
