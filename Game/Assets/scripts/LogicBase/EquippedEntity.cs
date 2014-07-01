@@ -7,10 +7,10 @@ namespace Assets.scripts.LogicBase
 {
     public class EquippedEntity
     {
-        public EntityTemplate Entity { get; private set; }
+        public SpecificEntity Entity { get; private set; }
         public IEnumerable<SubsystemTemplate> Subsystems { get; private set; }
 
-        public EquippedEntity(EntityTemplate entity, IEnumerable<SubsystemTemplate> subsystems)
+        public EquippedEntity(SpecificEntity entity, IEnumerable<SubsystemTemplate> subsystems)
         {
             Entity = entity;
             Subsystems = subsystems;

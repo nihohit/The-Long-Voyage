@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Assets.scripts.LogicBase
 {
+    #region SubsystemTemplate
+
+    //TODO - how many operations per round does a system have? do we allow unlimited usage?
     public class SubsystemTemplate
     {
         #region fields
@@ -72,7 +75,7 @@ namespace Assets.scripts.LogicBase
             HeatGenerated = heatGenerated;
         }
 
-        public static SubsystemTemplate Init(Int32 id)
+        public static SubsystemTemplate GetTemplate(Int32 id)
         {
             //TODO - no error handling at the moment.
             return s_knownTemplates[id];
@@ -100,4 +103,6 @@ namespace Assets.scripts.LogicBase
 
         #endregion constructor and initializer
     }
+
+    #endregion
 }

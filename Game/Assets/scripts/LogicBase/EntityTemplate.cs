@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 namespace Assets.scripts.LogicBase
 {
+    #region EntityTemplate
+
     //TODO - we can create different levels of templates for the different entities. Not sure it's needed now
     public class EntityTemplate
     {
@@ -109,6 +111,10 @@ namespace Assets.scripts.LogicBase
         #endregion static methods
     }
 
+    #endregion
+
+    #region SpecificEntity
+
     public class SpecificEntity
     {
         public EntityTemplate Template { get; private set; }
@@ -123,4 +129,6 @@ namespace Assets.scripts.LogicBase
         public SpecificEntity(EntityTemplate template) : this(template, EntityVariant.Regular)
         { }
     }
+
+    #endregion
 }

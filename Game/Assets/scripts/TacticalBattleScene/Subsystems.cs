@@ -49,7 +49,7 @@ namespace Assets.scripts.TacticalBattleScene
         #region constructors
 
         public Subsystem(Int32 id, Loyalty loyalty)
-            : this(SubsystemTemplate.Init(id), loyalty)
+            : this(SubsystemTemplate.GetTemplate(id), loyalty)
         { }
 
         public Subsystem(SubsystemTemplate template, Loyalty loyalty)
