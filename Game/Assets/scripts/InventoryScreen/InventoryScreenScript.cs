@@ -1,4 +1,5 @@
-﻿using Assets.scripts.InterSceneCommunication;
+﻿using Assets.scripts.Base;
+using Assets.scripts.InterSceneCommunication;
 using Assets.scripts.LogicBase;
 using System;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace Assets.scripts.InventoryScreen
         {
             if(GlobalState.StrategicMap == null)
             {
+                FileHandler.Init();
                 EntityTemplate.Init();
                 SubsystemTemplate.Init();
                 GlobalState.StrategicMap = new StrategicMapInformation();
@@ -41,14 +43,14 @@ namespace Assets.scripts.InventoryScreen
                     }
                 }
             }
-            UnitSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities);
-            SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems);
+            InventoryTextureHandler textureHandler = new InventoryTextureHandler();
+            EntitySelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities, textureHandler);
+            SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems, textureHandler);
         }
 
         // Update is called once per frame
         void Update()
         {
-
         }
 
         private void OnExitScene()

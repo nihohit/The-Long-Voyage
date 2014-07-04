@@ -16,12 +16,12 @@ namespace Assets.scripts.TacticalBattleScene
         private Dictionary<string, Texture2D> m_knownButtonTextures;
 
         private Dictionary<Loyalty, Color> m_affiliationColors = new Dictionary<Loyalty, Color>
-    {
+        {
         {Loyalty.Bandits, Color.red},
         {Loyalty.EnemyArmy, Color.black},
         {Loyalty.Friendly, Color.yellow},
         {Loyalty.Player, Color.blue},
-    }; //inactive or monster units should have unique visuals.
+        }; //inactive or monster units should have unique visuals.
 
         #endregion fields
 
@@ -43,7 +43,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         public void UpdateEntityTexture(TacticalEntity ent)
         {
-            var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.GetType().ToString());
+            var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.Template.Name);
             var renderer = ent.Reactor.GetComponent<SpriteRenderer>();
             var newTexture = m_knownEntityTextures.TryGetOrAdd(name, () => GetEntityTexture(ent, name, renderer));
             ReplaceTexture(renderer, newTexture, name);
@@ -67,7 +67,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         private Texture2D GetEntityTexture(TacticalEntity ent, string name, SpriteRenderer renderer)
         {
-            var oldTexture = ent.Reactor.GetComponent<SpriteRenderer>().sprite.texture;
+            var oldTexture = renderer.sprite.texture;
             Color replacementColor;
 
             //if the color isn't in the list of affiliation, we just return

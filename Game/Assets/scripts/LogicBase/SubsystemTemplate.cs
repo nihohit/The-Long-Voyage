@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.scripts.UnityBase;
+using System;
 using System.Collections.Generic;
 
 namespace Assets.scripts.LogicBase
@@ -6,7 +7,7 @@ namespace Assets.scripts.LogicBase
     #region SubsystemTemplate
 
     //TODO - how many operations per round does a system have? do we allow unlimited usage?
-    public class SubsystemTemplate
+    public class SubsystemTemplate 
     {
         #region fields
 
