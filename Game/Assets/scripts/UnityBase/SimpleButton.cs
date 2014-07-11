@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using Assets.scripts.Base;
 
 namespace Assets.scripts.UnityBase
 {
@@ -12,15 +13,6 @@ namespace Assets.scripts.UnityBase
         public virtual Action OnMouseOverProperty { get; set; }
 
         public virtual Action OnMouseExitProperty { get; set; }
-
-        public Vector3 ClickPosition
-        {
-            get
-            {
-                var mousePosition = Input.mousePosition;
-                return Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, 0));
-            }
-        }
 
         #endregion properties
 
@@ -61,9 +53,10 @@ namespace Assets.scripts.UnityBase
                 {
                     //TODO - check if the Unity bug which makes this necessary is fixed, and remove this.
                     // Store the point where the user has clicked as a Vector3
-                    
+                    var mousePosition = Input.mousePosition;
+                    var clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
                     // Retrieve all raycast hits from the click position and store them in an array called "hits"
-                    var rayHits = Physics2D.RaycastAll(ClickPosition, new Vector2(0, 0));
+                    var rayHits = Physics2D.RaycastAll(clickPosition, new Vector2(0, 0));
                     foreach (var rayHit in rayHits)
                     {
                         var clickedComponent = rayHit.collider.gameObject;

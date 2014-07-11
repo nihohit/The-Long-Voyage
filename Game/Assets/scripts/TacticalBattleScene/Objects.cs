@@ -91,6 +91,7 @@ namespace Assets.scripts.TacticalBattleScene
             Destroyed = false;
             Name = buttonName;
             var command = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Button"), position, Quaternion.identity));
+            command.name = name;
             TacticalState.TextureManager.UpdateButtonTexture(buttonName, command.GetComponent<SpriteRenderer>());
             m_button = command.GetComponent<SimpleButton>();
             m_button.ClickableAction = () =>
