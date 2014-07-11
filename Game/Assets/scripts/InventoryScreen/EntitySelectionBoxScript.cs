@@ -45,9 +45,7 @@ namespace Assets.scripts.InventoryScreen
             else
             {
                 var renderer = m_markedTexture.gameObject.GetComponent<SpriteRenderer>();
-                var texture = s_textureHandler.GetEntityTexture(item);
-                renderer.sprite = Sprite.Create(texture, new Rect(0, 0, 40, 40), new Vector2(0.5f, 0.5f));
-                renderer.sprite.name = item.Template.Name;
+                s_textureHandler.UpdateEntityMarkerTexture(item, renderer);
                 m_markedTexture.Mark(transform.position);
             }
         }

@@ -7,9 +7,9 @@ using UnityEngine;
 
 namespace Assets.scripts.InventoryScreen
 {
-    public class InventoryTextureHandler : TextureHandler
+    public class InventoryTextureHandler : LoyaltyAwareTextureHandler
     {
-                #region fields
+        #region fields
 
         private Dictionary<string, Texture2D> m_knownEntityTextures;
         private Dictionary<string, Texture2D> m_knownButtonTextures;
@@ -32,9 +32,16 @@ namespace Assets.scripts.InventoryScreen
 
         #region public methods
 
-        public Texture2D GetEntityTexture(SpecificEntity ent)
+        public void UpdateEntityMarkerTexture(SpecificEntity ent, SpriteRenderer renderer)
         {
-            return m_knownEntityTextures[ent.Template.Name];
+            var texture = m_knownEntityTextures[ent.Template.Name];
+            ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player, texture), ent.Template.Name);
+        }
+
+        public Texture GetEntityTexture(SpecificEntity ent)
+        {
+            var texture = m_knownEntityTextures[ent.Template.Name];
+            return GetEntityTexture(ent.Template, Loyalty.Player, texture);
         }
 
         public Texture2D GetSystemTexture(SubsystemTemplate system)

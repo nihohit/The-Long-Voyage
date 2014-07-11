@@ -7,21 +7,12 @@ using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
 {
-    public class TacticalTextureHandler : TextureHandler
+    public class TacticalTextureHandler : LoyaltyAwareTextureHandler
     {
         #region fields
 
-        private Dictionary<string, Texture2D> m_knownEntityTextures = new Dictionary<string, Texture2D>();
         private Dictionary<string, Texture2D> m_knownEffectsTextures;
         private Dictionary<string, Texture2D> m_knownButtonTextures;
-
-        private Dictionary<Loyalty, Color> m_affiliationColors = new Dictionary<Loyalty, Color>
-        {
-        {Loyalty.Bandits, Color.red},
-        {Loyalty.EnemyArmy, Color.black},
-        {Loyalty.Friendly, Color.yellow},
-        {Loyalty.Player, Color.blue},
-        }; //inactive or monster units should have unique visuals.
 
         #endregion fields
 
@@ -45,7 +36,7 @@ namespace Assets.scripts.TacticalBattleScene
         {
             var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.Template.Name);
             var renderer = ent.Reactor.GetComponent<SpriteRenderer>();
-            var newTexture = m_knownEntityTextures.TryGetOrAdd(name, () => GetEntityTexture(ent, name, renderer));
+            var newTexture = GetEntityTexture(ent.Template, ent.Loyalty, renderer.sprite.texture);
             ReplaceTexture(renderer, newTexture, name);
         }
 
@@ -64,19 +55,6 @@ namespace Assets.scripts.TacticalBattleScene
         #endregion public methods
 
         #region private methods
-
-        private Texture2D GetEntityTexture(TacticalEntity ent, string name, SpriteRenderer renderer)
-        {
-            var oldTexture = renderer.sprite.texture;
-            Color replacementColor;
-
-            //if the color isn't in the list of affiliation, we just return
-            if (!m_affiliationColors.TryGetValue(ent.Loyalty, out replacementColor))
-            {
-                return oldTexture;
-            }
-            return CopyTexture2D(oldTexture, replacementColor, name);
-        }
 
         private void ReplaceTexture(SpriteRenderer renderer, Texture2D newTexture, string name)
         {
