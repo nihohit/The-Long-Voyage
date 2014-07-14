@@ -13,6 +13,7 @@ namespace Assets.scripts.InventoryScreen
 
         private Dictionary<string, Texture2D> m_knownEntityTextures;
         private Dictionary<string, Texture2D> m_knownButtonTextures;
+        private Texture2D m_nullTexture;
 
         #endregion fields
 
@@ -26,6 +27,7 @@ namespace Assets.scripts.InventoryScreen
             textures = Resources.LoadAll<Texture2D>("UI");
             m_knownButtonTextures = textures.ToDictionary(texture => texture.name,
                                                            texture => texture);
+            m_nullTexture = Resources.Load<Texture2D>(@"UI\Null.png");
         }
 
         #endregion constructor
@@ -38,7 +40,7 @@ namespace Assets.scripts.InventoryScreen
             ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player, texture), ent.Template.Name);
         }
 
-        public Texture GetEntityTexture(SpecificEntity ent)
+        public Texture2D GetEntityTexture(SpecificEntity ent)
         {
             var texture = m_knownEntityTextures[ent.Template.Name];
             return GetEntityTexture(ent.Template, Loyalty.Player, texture);
@@ -47,6 +49,11 @@ namespace Assets.scripts.InventoryScreen
         public Texture2D GetSystemTexture(SubsystemTemplate system)
         {
             return m_knownButtonTextures[system.Name];
+        }
+
+        public Texture2D GetNullTexture()
+        {
+            return m_nullTexture;
         }
 
         #endregion public methods

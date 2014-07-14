@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Assets.scripts.Base;
 
 namespace Assets.scripts.UnityBase
 {
-    public abstract class SelectionBox<T> : SimpleButton
+    public abstract class SelectionBox<T> : SimpleButton where T: class
     {
         private T m_selectedItem;
         protected static List<T> s_selectedOptions;
@@ -18,6 +19,16 @@ namespace Assets.scripts.UnityBase
             get { return m_selectedItem; }
             private set
             {
+                if(value != null)
+                {
+                    Assert.AssertConditionMet(s_selectedOptions.Remove(value), "{0} was selected but isn't in {1}".FormatWith(value, s_selectedOptions));
+                }
+                if(m_selectedItem != null)
+                {
+                    Assert.AssertConditionMet(!s_selectedOptions.Contains(m_selectedItem), "Deselected {0} already in selection options".FormatWith(m_selectedItem));
+                    s_selectedOptions.Add(m_selectedItem);
+                }
+                
                 m_selectedItem = value;
                 ClickedOn = false;
                 UpdateVisuals(m_selectedItem);
@@ -68,14 +79,10 @@ namespace Assets.scripts.UnityBase
             {
                 var cameraTop = Camera.main.transform.position.y + Camera.main.pixelHeight;
                 var currentPosition = new Vector3(m_mouseClickPoint.x, cameraTop - m_mouseClickPoint.y, m_mouseClickPoint.z);
-                foreach(var item in s_selectedOptions)
+                currentPosition = CreateGuiButton(null, currentPosition);
+                foreach(var item in s_selectedOptions.Select(ent => ent).Materialize())
                 {
-                    var rect = ToRectangle(item);
-                    if(GUI.Button(new Rect(currentPosition.x, currentPosition.y, rect.height, rect.width), GetContent(item)))
-                    {
-                        SelectedItem = item;
-                    }
-                    currentPosition = new Vector3(currentPosition.x, currentPosition.y + rect.height, 0);
+                    currentPosition = CreateGuiButton(item, currentPosition);
                 }
                 GUI.Label(new Rect(Input.mousePosition.x + 20, cameraTop - Input.mousePosition.y, 100, 40), GUI.tooltip);
             }
@@ -84,6 +91,16 @@ namespace Assets.scripts.UnityBase
         public static void Init(IEnumerable<T> items)
         {
             s_selectedOptions = new List<T>(items);
+        }
+
+        private Vector3 CreateGuiButton(T item, Vector3 currentPosition)
+        {
+            var rect = ToRectangle(item);
+            if (GUI.Button(new Rect(currentPosition.x, currentPosition.y, rect.height, rect.width), GetContent(item)))
+            {
+                SelectedItem = item;
+            }
+            return new Vector3(currentPosition.x, currentPosition.y + rect.height, 0);
         }
 
         protected abstract Rect ToRectangle(T item);

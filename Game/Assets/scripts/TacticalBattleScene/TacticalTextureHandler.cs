@@ -53,15 +53,5 @@ namespace Assets.scripts.TacticalBattleScene
         }
 
         #endregion public methods
-
-        #region private methods
-
-        private void ReplaceTexture(SpriteRenderer renderer, Texture2D newTexture, string name)
-        {
-            renderer.sprite = Sprite.Create(newTexture, renderer.sprite.rect, new Vector2(0.5f, 0.5f));
-            renderer.sprite.name = name;
-        }
-
-        #endregion private methods
     }
 }

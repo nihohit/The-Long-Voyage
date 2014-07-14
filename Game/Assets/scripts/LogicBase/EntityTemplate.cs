@@ -53,19 +53,19 @@ namespace Assets.scripts.LogicBase
 
         //for inanimate entities
         private EntityTemplate(string name, int health, VisualProperties visualProperties) :
-            this(name, health, visualProperties, 0, 0, 0, 0, 0, 0, 0, 0)
+            this(name, health, visualProperties, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         { }
 
         //for unmoving entities
         private EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
             int radarRange, int sightRange, double maxEnergy, double maxHeat, double maxShields,
-            double heatLossRate, double shieldRechargeRate) :
-            this(name, health, visualProperties, armor, radarRange, sightRange, maxEnergy, maxHeat, maxShields, heatLossRate, shieldRechargeRate, MovementType.Unmoving, 0)
+            double heatLossRate, double shieldRechargeRate, int systemSlots) :
+            this(name, health, visualProperties, armor, radarRange, sightRange, maxEnergy, maxHeat, maxShields, heatLossRate, shieldRechargeRate, systemSlots, MovementType.Unmoving, 0)
         { }
 
         private EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
             int radarRange, int sightRange, double maxEnergy, double maxHeat, double maxShields,
-            double heatLossRate, double shieldRechargeRate, MovementType movementType, double maximumSpeed)
+            double heatLossRate, double shieldRechargeRate, int systemSlots, MovementType movementType, double maximumSpeed)
         {
             Name = name;
             Health = health;
@@ -80,6 +80,7 @@ namespace Assets.scripts.LogicBase
             ShieldRechargeRate = shieldRechargeRate;
             MovementMethod = movementType;
             MaxSpeed = maximumSpeed;
+            SystemSlots = systemSlots;
         }
 
         #endregion constructors
@@ -99,7 +100,7 @@ namespace Assets.scripts.LogicBase
             {
                 s_knownTemplates.Add(1, new EntityTemplate("Mech", 5,
                     VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
-                    0, 20, 10, 2, 5, 3, 1, 1, MovementType.Walker, 4));
+                    0, 20, 10, 2, 5, 3, 1, 1, 4, MovementType.Walker, 4));
                 s_knownTemplates.Add(2, new EntityTemplate("Dense trees",
                     FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight));
                 s_knownTemplates.Add(3, new EntityTemplate("Sparse trees",
