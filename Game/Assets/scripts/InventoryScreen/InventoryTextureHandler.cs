@@ -40,6 +40,12 @@ namespace Assets.scripts.InventoryScreen
             ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player, texture), ent.Template.Name);
         }
 
+        public void UpdateSystemMarkerTexture(SubsystemTemplate item, SpriteRenderer renderer)
+        {
+            var texture = m_knownButtonTextures[item.Name];
+            ReplaceTexture(renderer, texture, item.Name);
+        }
+
         public Texture2D GetEntityTexture(SpecificEntity ent)
         {
             var texture = m_knownEntityTextures[ent.Template.Name];

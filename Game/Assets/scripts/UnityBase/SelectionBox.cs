@@ -14,10 +14,10 @@ namespace Assets.scripts.UnityBase
         private bool m_mouseHover;
         private Vector3 m_mouseClickPoint;
 
-        protected T SelectedItem
+        public T SelectedItem
         {
             get { return m_selectedItem; }
-            private set
+            set
             {
                 if(value != null)
                 {
@@ -25,40 +25,19 @@ namespace Assets.scripts.UnityBase
                 }
                 if(m_selectedItem != null)
                 {
-                    Assert.AssertConditionMet(!s_selectedOptions.Contains(m_selectedItem), "Deselected {0} already in selection options".FormatWith(m_selectedItem));
                     s_selectedOptions.Add(m_selectedItem);
                 }
                 
                 m_selectedItem = value;
-                ClickedOn = false;
+                m_clickedOn = false;
                 UpdateVisuals(m_selectedItem);
-            }
-        }
-
-        private bool ClickedOn
-        {
-            get { return m_clickedOn; }
-            set
-            {
-                m_clickedOn = value;
-                if(m_clickedOn)
-                {
-                    ClickableAction = () => { };
-                }
-                else
-                {
-                    ClickableAction = () =>
-                    {
-                        ClickedOn = true;
-                        m_mouseClickPoint = Input.mousePosition;
-                    };
-                }
             }
         }
 
         public virtual void Start()
         {
-            ClickedOn = false;
+            m_clickedOn = false;
+            ClickableAction = ClickedOn;
             OnMouseExitProperty = () => m_mouseHover = false;
             OnMouseOverProperty = () => m_mouseHover = true;
         }
@@ -69,18 +48,18 @@ namespace Assets.scripts.UnityBase
             //if the mouse is pressed and not on me, remove selection
             if(Input.GetMouseButtonDown(0) && !m_mouseHover)
             {
-                ClickedOn = false;
+                m_clickedOn = false;
             }
         }
 
         void OnGUI()
         {
-            if(ClickedOn)
+            if (m_clickedOn)
             {
                 var cameraTop = Camera.main.transform.position.y + Camera.main.pixelHeight;
                 var currentPosition = new Vector3(m_mouseClickPoint.x, cameraTop - m_mouseClickPoint.y, m_mouseClickPoint.z);
                 currentPosition = CreateGuiButton(null, currentPosition);
-                foreach(var item in s_selectedOptions.Select(ent => ent).Materialize())
+                foreach(var item in s_selectedOptions.Select(ent => ent).Distinct().Materialize())
                 {
                     currentPosition = CreateGuiButton(item, currentPosition);
                 }
@@ -101,6 +80,15 @@ namespace Assets.scripts.UnityBase
                 SelectedItem = item;
             }
             return new Vector3(currentPosition.x, currentPosition.y + rect.height, 0);
+        }
+
+        private void ClickedOn()
+        {
+            if (!m_clickedOn)
+            {
+                m_clickedOn = true;
+                m_mouseClickPoint = Input.mousePosition;
+            }
         }
 
         protected abstract Rect ToRectangle(T item);

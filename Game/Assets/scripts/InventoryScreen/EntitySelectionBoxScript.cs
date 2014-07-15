@@ -24,13 +24,14 @@ namespace Assets.scripts.InventoryScreen
         public override void Start()
         {
             base.Start();
+            ClickableAction = CheckIfClickIsOnUI(ClickableAction);
             m_markedTexture = ((GameObject)Instantiate(Resources.Load("Marker"), Vector3.zero, Quaternion.identity)).GetComponent<MarkerScript>();
             m_markedTexture.Unmark();
         }
 
         protected override Rect ToRectangle(SpecificEntity item)
         {
-            return new Rect(0, 0, 40, 40);
+            return new Rect(0, 0, 50, 50);
         }
 
         protected override GUIContent GetContent(SpecificEntity item)
@@ -46,6 +47,7 @@ namespace Assets.scripts.InventoryScreen
         {
             if(m_systems != null)
             {
+                m_systems.ForEach(system => system.SelectedItem = null);
                 m_systems.ForEach(system => UnityEngine.Object.Destroy(system.gameObject));
                 m_systems = null;
             }

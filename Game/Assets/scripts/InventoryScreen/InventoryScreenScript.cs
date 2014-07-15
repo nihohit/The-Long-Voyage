@@ -35,7 +35,7 @@ namespace Assets.scripts.InventoryScreen
                 {
                     GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
                 }
-                for(int i = 0; i < 6 ; i++)
+                for(int i = 0; i < 5 ; i++)
                 {
                     for(int j = 0; j < 3 ; j++)
                     {
