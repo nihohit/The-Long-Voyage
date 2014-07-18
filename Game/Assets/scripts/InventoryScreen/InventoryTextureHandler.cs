@@ -59,7 +59,8 @@ namespace Assets.scripts.InventoryScreen
 
         public Texture2D GetNullTexture()
         {
-            return m_nullTexture;
+            return m_knownButtonTextures["Null"];
+
         }
 
         #endregion public methods

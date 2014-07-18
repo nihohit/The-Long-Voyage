@@ -1,5 +1,6 @@
 using Assets.scripts.Base;
 using Assets.scripts.LogicBase;
+using Assets.scripts.UnityBase;
 using Assets.scripts.TacticalBattleScene.PathFinding;
 using System;
 using System.Collections.Generic;
@@ -146,7 +147,7 @@ namespace Assets.scripts.TacticalBattleScene
             Debug.Log("Destroy {0}".FormatWith(Name));
             this.Hex.Content = null;
             TacticalState.DestroyEntity(this);
-            UnityEngine.Object.Destroy(this.Reactor.gameObject);
+            this.Reactor.DestroyGameObject();
         }
 
         #endregion protected methods

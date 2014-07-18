@@ -52,7 +52,7 @@ namespace Assets.scripts.UnityBase
             return texture;
         }
 
-        protected void ReplaceTexture(SpriteRenderer renderer, Texture2D newTexture, string name)
+        public static void ReplaceTexture(SpriteRenderer renderer, Texture2D newTexture, string name)
         {
             renderer.sprite = Sprite.Create(newTexture, renderer.sprite.rect, new Vector2(0.5f, 0.5f));
             renderer.sprite.name = name;

@@ -25,18 +25,13 @@ namespace Assets.scripts.InventoryScreen
             m_markedTexture.Unmark();
         }
 
-        protected override Rect ToRectangle(SubsystemTemplate item)
-        {
-            return new Rect(0, 0, 50, 50);
-        }
-
-        protected override GUIContent GetContent(SubsystemTemplate item)
+        protected override Texture2D GetTexture(SubsystemTemplate item)
         {
             if (item == null)
             {
-                return new GUIContent(s_textureHandler.GetNullTexture(), "Empty");
+                return s_textureHandler.GetNullTexture();
             }
-            return new GUIContent(s_textureHandler.GetSystemTexture(item), item.Name);
+            return s_textureHandler.GetSystemTexture(item);
         }
 
         protected override void UpdateVisuals(SubsystemTemplate item)

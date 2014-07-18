@@ -29,18 +29,13 @@ namespace Assets.scripts.InventoryScreen
             m_markedTexture.Unmark();
         }
 
-        protected override Rect ToRectangle(SpecificEntity item)
-        {
-            return new Rect(0, 0, 50, 50);
-        }
-
-        protected override GUIContent GetContent(SpecificEntity item)
+        protected override Texture2D GetTexture(SpecificEntity item)
         {
             if(item == null)
             {
-                return new GUIContent(s_textureHandler.GetNullTexture(), "Empty");
+                return s_textureHandler.GetNullTexture();
             }
-            return new GUIContent(s_textureHandler.GetEntityTexture(item), item.Template.Name);
+            return s_textureHandler.GetEntityTexture(item);
         }
 
         protected override void UpdateVisuals(SpecificEntity item)
@@ -48,7 +43,7 @@ namespace Assets.scripts.InventoryScreen
             if(m_systems != null)
             {
                 m_systems.ForEach(system => system.SelectedItem = null);
-                m_systems.ForEach(system => UnityEngine.Object.Destroy(system.gameObject));
+                m_systems.ForEach(system => system.DestroyGameObject());
                 m_systems = null;
             }
             if(item == null)

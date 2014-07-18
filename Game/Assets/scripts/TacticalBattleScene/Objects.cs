@@ -142,7 +142,7 @@ namespace Assets.scripts.TacticalBattleScene
             if (!Destroyed)
             {
                 RemoveDisplay();
-                UnityEngine.Object.Destroy(m_button.gameObject);
+                m_button.DestroyGameObject();
                 Destroyed = true;
             }
         }

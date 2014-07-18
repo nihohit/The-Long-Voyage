@@ -84,10 +84,13 @@
      <Compile Include="Assets\scripts\TacticalBattleScene\TacticalTextureHandler.cs" />
      <Compile Include="Assets\scripts\TacticalBattleScene\pathfinding\AStar.cs" />
      <Compile Include="Assets\scripts\TacticalBattleScene\pathfinding\PathfindingInfo.cs" />
+     <Compile Include="Assets\scripts\UnityBase\ButtonCluster.cs" />
      <Compile Include="Assets\scripts\UnityBase\MarkerScript.cs" />
+     <Compile Include="Assets\scripts\UnityBase\SelectionBox (SHACHLAN-XPS12&apos;s conflicted copy 2014-07-17).cs" />
      <Compile Include="Assets\scripts\UnityBase\SelectionBox.cs" />
      <Compile Include="Assets\scripts\UnityBase\SimpleButton.cs" />
      <Compile Include="Assets\scripts\UnityBase\TextureHandler.cs" />
+     <Compile Include="Assets\scripts\UnityBase\UnityExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

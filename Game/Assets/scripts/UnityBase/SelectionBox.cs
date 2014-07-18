@@ -8,11 +8,16 @@ namespace Assets.scripts.UnityBase
 {
     public abstract class SelectionBox<T> : SimpleButton where T: class
     {
+        #region fields
+
         private T m_selectedItem;
         protected static List<T> s_selectedOptions;
-        private bool m_clickedOn;
         private bool m_mouseHover;
-        private Vector3 m_mouseClickPoint;
+        private ButtonCluster m_buttons;
+
+        #endregion
+
+        #region properties
 
         public T SelectedItem
         {
@@ -29,14 +34,17 @@ namespace Assets.scripts.UnityBase
                 }
                 
                 m_selectedItem = value;
-                m_clickedOn = false;
+                RemoveButtons();
                 UpdateVisuals(m_selectedItem);
             }
         }
 
+        #endregion
+
+        #region public methods
+
         public virtual void Start()
         {
-            m_clickedOn = false;
             ClickableAction = ClickedOn;
             OnMouseExitProperty = () => m_mouseHover = false;
             OnMouseOverProperty = () => m_mouseHover = true;
@@ -48,22 +56,7 @@ namespace Assets.scripts.UnityBase
             //if the mouse is pressed and not on me, remove selection
             if(Input.GetMouseButtonDown(0) && !m_mouseHover)
             {
-                m_clickedOn = false;
-            }
-        }
-
-        void OnGUI()
-        {
-            if (m_clickedOn)
-            {
-                var cameraTop = Camera.main.transform.position.y + Camera.main.pixelHeight;
-                var currentPosition = new Vector3(m_mouseClickPoint.x, cameraTop - m_mouseClickPoint.y, m_mouseClickPoint.z);
-                currentPosition = CreateGuiButton(null, currentPosition);
-                foreach(var item in s_selectedOptions.Select(ent => ent).Distinct().Materialize())
-                {
-                    currentPosition = CreateGuiButton(item, currentPosition);
-                }
-                GUI.Label(new Rect(Input.mousePosition.x + 20, cameraTop - Input.mousePosition.y, 100, 40), GUI.tooltip);
+                RemoveButtons();
             }
         }
 
@@ -72,27 +65,48 @@ namespace Assets.scripts.UnityBase
             s_selectedOptions = new List<T>(items);
         }
 
-        private Vector3 CreateGuiButton(T item, Vector3 currentPosition)
-        {
-            var rect = ToRectangle(item);
-            if (GUI.Button(new Rect(currentPosition.x, currentPosition.y, rect.height, rect.width), GetContent(item)))
-            {
-                SelectedItem = item;
-            }
-            return new Vector3(currentPosition.x, currentPosition.y + rect.height, 0);
-        }
+        #endregion
 
         private void ClickedOn()
         {
-            if (!m_clickedOn)
+            RemoveButtons();
+            m_buttons = new ButtonCluster(CreateButtons().Materialize());
+        }
+
+        private IEnumerable<SimpleButton> CreateButtons()
+        {
+            var mousePosition = Input.mousePosition;
+            var currentPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
+            SimpleButton button;
+            currentPosition = CreateButton(null, currentPosition, out button);
+            yield return button;
+            foreach (var item in s_selectedOptions.Select(ent => ent).Distinct().Materialize())
             {
-                m_clickedOn = true;
-                m_mouseClickPoint = Input.mousePosition;
+                currentPosition = CreateButton(item, currentPosition, out button);
+                yield return button;
             }
         }
 
-        protected abstract Rect ToRectangle(T item);
-        protected abstract GUIContent GetContent(T item);
+        private Vector3 CreateButton(T item, Vector3 currentPosition, out SimpleButton button)
+        {
+            var buttonObject = ((GameObject)Instantiate(Resources.Load("Button"), currentPosition, Quaternion.identity)).GetComponent<MarkerScript>();
+            button = buttonObject.GetComponent<SimpleButton>();
+            buttonObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            TextureHandler.ReplaceTexture(buttonObject.GetComponent<SpriteRenderer>(), GetTexture(item), "selection button");
+            button.ClickableAction = () =>  SelectedItem = item;
+            return new Vector3(currentPosition.x, currentPosition.y - 0.2f * buttonObject.GetComponent<CircleCollider2D>().radius, 0);
+        }
+
+        private void RemoveButtons()
+        {
+            if(m_buttons != null)
+            {
+                m_buttons.DestroyCluster();
+                m_buttons = null;
+            }
+        }
+
+        protected abstract Texture2D GetTexture(T item);
         protected abstract void UpdateVisuals(T item);
     }
 }
