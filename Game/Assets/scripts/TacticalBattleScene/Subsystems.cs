@@ -211,7 +211,7 @@ namespace Assets.scripts.TacticalBattleScene
     public class IncediaryGun : Subsystem
     {
         public IncediaryGun(Loyalty loyalty) :
-            base(5, loyalty)
+            base(3, loyalty)
         { }
     }
 

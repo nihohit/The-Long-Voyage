@@ -218,7 +218,10 @@ namespace Assets.scripts.TacticalBattleScene
                 state.AmountOfHexes = FileHandler.GetIntProperty(
                     "default map size",
                     FileAccessor.TerrainGeneration);
-                state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
+                if(GlobalState.StrategicMap == null)
+                    state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
+                else
+                    state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreatePlayerMechs(GlobalState.StrategicMap.State.EquippedEntities));
                 GlobalState.TacticalBattle = state;
             }
         }
@@ -236,6 +239,15 @@ namespace Assets.scripts.TacticalBattleScene
                 new HeatWaveProjector(loyalty),
                 new IncediaryGun(loyalty) })
                 ).Materialize();
+        }
+
+        private IEnumerable<ActiveEntity> CreatePlayerMechs(List<EquippedEntity> equippedEntities)
+        {
+            return equippedEntities.Select(entity => (ActiveEntity)new MovingEntity(
+                entity.Entity,
+                Loyalty.Player,
+                ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
+                entity.Subsystems.Where(template => template != null).Select(template => new Subsystem(template, Loyalty.Player)))).Materialize();
         }
 
         #endregion private methods

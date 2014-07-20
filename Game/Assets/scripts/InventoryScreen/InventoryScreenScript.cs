@@ -1,6 +1,7 @@
 ﻿using Assets.scripts.Base;
 using Assets.scripts.InterSceneCommunication;
 using Assets.scripts.LogicBase;
+using Assets.scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace Assets.scripts.InventoryScreen
         // Use this for initialization
         void Start()
         {
-            if(GlobalState.StrategicMap == null)
+            if (GlobalState.StrategicMap == null)
             {
                 FileHandler.Init();
                 EntityTemplate.Init();
@@ -31,13 +32,13 @@ namespace Assets.scripts.InventoryScreen
                 GlobalState.StrategicMap = new StrategicMapInformation();
                 GlobalState.StrategicMap.State = new PlayerState();
                 var mechTemplate = EntityTemplate.GetTemplate(1);
-                for(int i = 0; i < 4 ; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
                 }
-                for(int i = 0; i < 5 ; i++)
+                for (int i = 0; i < 5; i++)
                 {
-                    for(int j = 0; j < 3 ; j++)
+                    for (int j = 0; j < 3; j++)
                     {
                         GlobalState.StrategicMap.State.AvailableSystems.Add(SubsystemTemplate.GetTemplate(i));
                     }
@@ -46,6 +47,10 @@ namespace Assets.scripts.InventoryScreen
             InventoryTextureHandler textureHandler = new InventoryTextureHandler();
             EntitySelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities, textureHandler);
             SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems, textureHandler);
+            var buttonObject = ((GameObject)Instantiate(Resources.Load("Button"), Vector3.zero, Quaternion.identity));
+            buttonObject.transform.localScale = new Vector3(0.3f, 0.3f, 1);
+            var button = buttonObject.GetComponent<SimpleButton>();
+            button.ClickableAction = () => Application.LoadLevel("TacticalBattleScene");
         }
 
         // Update is called once per frame

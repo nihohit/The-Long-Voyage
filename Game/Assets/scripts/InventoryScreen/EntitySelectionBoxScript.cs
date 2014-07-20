@@ -29,6 +29,18 @@ namespace Assets.scripts.InventoryScreen
             m_markedTexture.Unmark();
         }
 
+        void OnDisable()
+        {
+            if (SelectedItem != null)
+            {
+                lock (GlobalState.StrategicMap)
+                {
+                    GlobalState.StrategicMap.State.EquippedEntities.Add(
+                        new EquippedEntity(SelectedItem, m_systems.Select(systemBox => systemBox.SelectedItem)));
+                }
+            }
+        }
+
         protected override Texture2D GetTexture(SpecificEntity item)
         {
             if(item == null)
