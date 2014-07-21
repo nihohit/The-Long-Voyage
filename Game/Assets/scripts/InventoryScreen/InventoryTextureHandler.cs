@@ -13,7 +13,6 @@ namespace Assets.scripts.InventoryScreen
 
         private Dictionary<string, Texture2D> m_knownEntityTextures;
         private Dictionary<string, Texture2D> m_knownButtonTextures;
-        private Texture2D m_nullTexture;
 
         #endregion fields
 
@@ -27,7 +26,6 @@ namespace Assets.scripts.InventoryScreen
             textures = Resources.LoadAll<Texture2D>("UI");
             m_knownButtonTextures = textures.ToDictionary(texture => texture.name,
                                                            texture => texture);
-            m_nullTexture = Resources.Load<Texture2D>(@"UI\Null.png");
         }
 
         #endregion constructor

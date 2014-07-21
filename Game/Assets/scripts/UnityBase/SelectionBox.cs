@@ -14,6 +14,7 @@ namespace Assets.scripts.UnityBase
         protected static List<T> s_selectedOptions;
         private bool m_mouseHover;
         private ButtonCluster m_buttons;
+        private int m_frameCounter;
 
         #endregion
 
@@ -53,10 +54,18 @@ namespace Assets.scripts.UnityBase
         // Update is called once per frame
         public void Update()
         {
-            //if the mouse is pressed and not on me, remove selection
-            if(Input.GetMouseButtonDown(0) && !m_mouseHover)
+            if (m_frameCounter > 0)
             {
-                RemoveButtons();
+                m_frameCounter--;
+            }
+            else
+            {
+                //if the mouse is pressed and not on me, remove selection
+                if (Input.GetMouseButtonDown(0) && !m_mouseHover)
+                {
+                    Debug.Log("removing buttons");
+                    RemoveButtons();
+                }
             }
         }
 
@@ -71,6 +80,7 @@ namespace Assets.scripts.UnityBase
         {
             RemoveButtons();
             m_buttons = new ButtonCluster(CreateButtons().Materialize());
+            m_frameCounter = 30;
         }
 
         private IEnumerable<SimpleButton> CreateButtons()
@@ -89,7 +99,7 @@ namespace Assets.scripts.UnityBase
 
         private Vector3 CreateButton(T item, Vector3 currentPosition, out SimpleButton button)
         {
-            var buttonObject = ((GameObject)Instantiate(Resources.Load("Button"), currentPosition, Quaternion.identity)).GetComponent<MarkerScript>();
+            var buttonObject = ((GameObject)Instantiate(Resources.Load("Button"), currentPosition, Quaternion.identity));
             button = buttonObject.GetComponent<SimpleButton>();
             buttonObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             TextureHandler.ReplaceTexture(buttonObject.GetComponent<SpriteRenderer>(), GetTexture(item), "selection button");
