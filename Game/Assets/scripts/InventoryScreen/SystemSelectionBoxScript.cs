@@ -18,9 +18,9 @@ namespace Assets.scripts.InventoryScreen
             s_textureHandler = textureHandler;
         }
 
-        public override void Start()
+        public override void Awake()
         {
-            base.Start();
+            base.Awake();
             m_markedTexture = ((GameObject)Instantiate(Resources.Load("Marker"), Vector3.zero, Quaternion.identity)).GetComponent<MarkerScript>();
             m_markedTexture.Unmark();
         }

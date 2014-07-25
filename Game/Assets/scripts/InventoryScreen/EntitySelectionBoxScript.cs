@@ -14,6 +14,7 @@ namespace Assets.scripts.InventoryScreen
         private static InventoryTextureHandler s_textureHandler;
         private MarkerScript m_markedTexture;
         private IEnumerable<SystemSelectionBoxScript> m_systems;
+        private static bool s_equippedEntitiesWaiting = false;
 
         public static void Init(IEnumerable<SpecificEntity> entities, InventoryTextureHandler textureHandler)
         {
@@ -21,12 +22,44 @@ namespace Assets.scripts.InventoryScreen
             s_textureHandler = textureHandler;
         }
 
-        public override void Start()
+        public override void Awake()
         {
-            base.Start();
+            base.Awake();
             ClickableAction = CheckIfClickIsOnUI(ClickableAction);
             m_markedTexture = ((GameObject)Instantiate(Resources.Load("Marker"), Vector3.zero, Quaternion.identity)).GetComponent<MarkerScript>();
             m_markedTexture.Unmark();
+        }
+
+        public override void Update()
+        {
+            if (s_equippedEntitiesWaiting)
+            {
+                TryGetEntity();
+            }
+            base.Update();
+        }
+
+        private void TryGetEntity()
+        {
+            //locking a shared object
+            lock(s_textureHandler)
+            {
+                var firstEntity = GlobalState.StrategicMap.State.EquippedEntities.FirstOrDefault();
+                if (firstEntity == null)
+                {
+                    s_equippedEntitiesWaiting = false;
+                    return;
+                }
+
+                GlobalState.StrategicMap.State.EquippedEntities.Remove(firstEntity);
+                SelectedItem = firstEntity.Entity;
+                var systemsArray = firstEntity.Subsystems.ToArray();
+                var selectionBoxesArray = m_systems.ToArray();
+                for(int i = 0 ; i < systemsArray.Length ; i++)
+                {
+                    selectionBoxesArray[i].SelectedItem = systemsArray[i];
+                }
+            }
         }
 
         void OnDisable()
@@ -110,6 +143,11 @@ namespace Assets.scripts.InventoryScreen
             var leftMostEdge = center.x - scaledSize.x / 4;
             var upperMostEdge = center.y + scaledSize.y / 4;
             return new Vector3(leftMostEdge, upperMostEdge, 0);
+        }
+
+        internal static void TryAcquireEntities()
+        {
+            s_equippedEntitiesWaiting = true;
         }
     }
 }

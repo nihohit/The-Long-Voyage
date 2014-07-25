@@ -25,10 +25,7 @@ namespace Assets.scripts.UnityBase
             get { return m_selectedItem; }
             set
             {
-                if(value != null)
-                {
-                    Assert.AssertConditionMet(s_selectedOptions.Remove(value), "{0} was selected but isn't in {1}".FormatWith(value, s_selectedOptions));
-                }
+                s_selectedOptions.Remove(value);
                 if(m_selectedItem != null)
                 {
                     s_selectedOptions.Add(m_selectedItem);
@@ -39,20 +36,20 @@ namespace Assets.scripts.UnityBase
                 UpdateVisuals(m_selectedItem);
             }
         }
-
+                             
         #endregion
 
         #region public methods
 
-        public virtual void Start()
+        public virtual void Awake()
         {
             ClickableAction = ClickedOn;
             OnMouseExitProperty = () => m_mouseHover = false;
-            OnMouseOverProperty = () => m_mouseHover = true;
+            OnMouseOverProperty = () => m_mouseHover = true;                                                                                                                           
         }
 
         // Update is called once per frame
-        public void Update()
+        public virtual void Update()
         {
             if (m_frameCounter > 0)
             {
@@ -63,7 +60,6 @@ namespace Assets.scripts.UnityBase
                 //if the mouse is pressed and not on me, remove selection
                 if (Input.GetMouseButtonDown(0) && !m_mouseHover)
                 {
-                    Debug.Log("removing buttons");
                     RemoveButtons();
                 }
             }
@@ -80,7 +76,7 @@ namespace Assets.scripts.UnityBase
         {
             RemoveButtons();
             m_buttons = new ButtonCluster(CreateButtons().Materialize());
-            m_frameCounter = 30;
+            m_frameCounter = 5;
         }
 
         private IEnumerable<SimpleButton> CreateButtons()

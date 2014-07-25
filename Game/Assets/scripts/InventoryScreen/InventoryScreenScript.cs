@@ -43,10 +43,19 @@ namespace Assets.scripts.InventoryScreen
                         GlobalState.StrategicMap.State.AvailableSystems.Add(SubsystemTemplate.GetTemplate(i));
                     }
                 }
+                InventoryTextureHandler textureHandler = new InventoryTextureHandler();
+                EntitySelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities, textureHandler);
+                SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems, textureHandler);
             }
-            InventoryTextureHandler textureHandler = new InventoryTextureHandler();
-            EntitySelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities, textureHandler);
-            SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems, textureHandler);
+            else
+            {
+                var battleResult = GlobalState.BattleSummary;
+                GlobalState.StrategicMap.State.AvailableEntities.AddRange(battleResult.SalvagedEntities);
+                GlobalState.StrategicMap.State.AvailableSystems.AddRange(battleResult.SalvagedSystems);
+                GlobalState.StrategicMap.State.EquippedEntities.Clear();
+                GlobalState.StrategicMap.State.EquippedEntities.AddRange(battleResult.SurvivingEntities);
+                EntitySelectionBoxScript.TryAcquireEntities();
+            }
             var buttonObject = ((GameObject)Instantiate(Resources.Load("Button"), Vector3.zero, Quaternion.identity));
             buttonObject.transform.localScale = new Vector3(0.3f, 0.3f, 1);
             var button = buttonObject.GetComponent<SimpleButton>();
@@ -56,11 +65,6 @@ namespace Assets.scripts.InventoryScreen
         // Update is called once per frame
         void Update()
         {
-        }
-
-        private void OnExitScene()
-        {
-            //TODO - wrap all the entities into equipped entities and clear all relevant lists. 
         }
     }
 }

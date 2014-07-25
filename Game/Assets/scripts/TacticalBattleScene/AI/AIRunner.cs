@@ -109,7 +109,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
         private void EvaluateActions(IEnumerable<ActiveEntity> controlledEntities)
         {
-            Debug.Log("Evaluating actions");
+            //Debug.Log("Evaluating actions");
             controlledEntities.ForEach(ent => ent.ResetActions());
             var loyalty = controlledEntities.First().Loyalty;
             var entitiesSeen = Enumerable.Empty<TacticalEntity>();
@@ -192,7 +192,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
                             return !actingEntity.Destroyed() && !target.Destroyed();
                         };
                         evaluatedAction.AchievedGoal = target.Destroyed;
-                        Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
+                        //Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
                     }
                 }
                 else if (movementAction != null)
@@ -236,7 +236,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
                         evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.Template.MovementMethod, (Hex hex) => 0));
                 }
             }
-            Debug.Log("Hex {0} valued as {1}".FormatWith(evaluatedHex, result));
+            //Debug.Log("Hex {0} valued as {1}".FormatWith(evaluatedHex, result));
             return result;
         }
 
