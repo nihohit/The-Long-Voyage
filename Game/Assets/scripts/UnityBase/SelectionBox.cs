@@ -83,24 +83,30 @@ namespace Assets.scripts.UnityBase
         {
             var mousePosition = Input.mousePosition;
             var currentPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
+            //HACK - a more elegant solution, which will maintain the order of systems no matter where clicked, is in order
+            var buttonsGoingDown = currentPosition.y > Camera.main.transform.position.y;
             SimpleButton button;
-            currentPosition = CreateButton(null, currentPosition, out button);
+            currentPosition = CreateButton(null, currentPosition, out button, buttonsGoingDown);
             yield return button;
             foreach (var item in s_selectedOptions.Select(ent => ent).Distinct().Materialize())
             {
-                currentPosition = CreateButton(item, currentPosition, out button);
+                currentPosition = CreateButton(item, currentPosition, out button, buttonsGoingDown);
                 yield return button;
             }
         }
 
-        private Vector3 CreateButton(T item, Vector3 currentPosition, out SimpleButton button)
+        private Vector3 CreateButton(T item, Vector3 currentPosition, out SimpleButton button, bool buttonsGoingDown)
         {
             var buttonObject = ((GameObject)Instantiate(Resources.Load("Button"), currentPosition, Quaternion.identity));
             button = buttonObject.GetComponent<SimpleButton>();
             buttonObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             TextureHandler.ReplaceTexture(buttonObject.GetComponent<SpriteRenderer>(), GetTexture(item), "selection button");
             button.ClickableAction = () =>  SelectedItem = item;
-            return new Vector3(currentPosition.x, currentPosition.y - 0.2f * buttonObject.GetComponent<CircleCollider2D>().radius, 0);
+            if (buttonsGoingDown)
+            { 
+                return new Vector3(currentPosition.x, currentPosition.y - 0.2f * buttonObject.GetComponent<CircleCollider2D>().radius, 0);
+            }
+            return new Vector3(currentPosition.x, currentPosition.y + 0.2f * buttonObject.GetComponent<CircleCollider2D>().radius, 0);
         }
 
         private void RemoveButtons()
