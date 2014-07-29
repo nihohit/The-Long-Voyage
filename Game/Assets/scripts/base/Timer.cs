@@ -4,6 +4,9 @@ using System.Diagnostics;
 
 namespace Assets.scripts.Base
 {
+    /// <summary>
+    /// A static class that holds all the timers running throughout the program.
+    /// </summary>
     public static class Timer
     {
         private static readonly IDictionary<String, IDictionary<String, Stopwatch>> s_timers = new Dictionary<String, IDictionary<String, Stopwatch>>();

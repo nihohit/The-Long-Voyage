@@ -1,13 +1,15 @@
-﻿using Assets.scripts.UnityBase;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Assets.scripts.LogicBase
 {
     #region SubsystemTemplate
 
+    /// <summary>
+    /// Immutable templates for usable systems, and a static factory intializer.
+    /// </summary>
     //TODO - how many operations per round does a system have? do we allow unlimited usage?
-    public class SubsystemTemplate 
+    public class SubsystemTemplate
     {
         #region fields
 
@@ -21,14 +23,18 @@ namespace Assets.scripts.LogicBase
 
         public int MinRange { get; private set; }
 
+        // How the system reaches hexes
         public DeliveryMethod DeliveryMethod { get; private set; }
 
+        // The effect of the system
         public EffectType Effect { get; private set; }
 
+        // The stranegth of the system's effect
         public double EffectStrength { get; private set; }
 
         public string Name { get; private set; }
 
+        // What entities can the system target
         public TargetingType PossibleTargets { get; private set; }
 
         public double EnergyCost { get; private set; }
@@ -76,6 +82,7 @@ namespace Assets.scripts.LogicBase
             HeatGenerated = heatGenerated;
         }
 
+        // Get a template by its Id.
         public static SubsystemTemplate GetTemplate(Int32 id)
         {
             //TODO - no error handling at the moment.
@@ -105,5 +112,5 @@ namespace Assets.scripts.LogicBase
         #endregion constructor and initializer
     }
 
-    #endregion
+    #endregion SubsystemTemplate
 }

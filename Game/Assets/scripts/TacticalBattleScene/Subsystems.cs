@@ -167,7 +167,7 @@ namespace Assets.scripts.TacticalBattleScene
                     return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, m_conditionForTargeting, true, layerName);
 
                 default:
-                    throw new UnknownTypeException(Template.DeliveryMethod);
+                    throw new UnknownValueException(Template.DeliveryMethod);
             }
         }
 

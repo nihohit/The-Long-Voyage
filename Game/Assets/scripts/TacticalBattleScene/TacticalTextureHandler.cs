@@ -1,12 +1,14 @@
 using Assets.scripts.Base;
 using Assets.scripts.LogicBase;
-using Assets.scripts.UnityBase;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
 {
+    /// <summary>
+    /// Handles texture loading & replacing in the tactical battle screen
+    /// </summary>
     public class TacticalTextureHandler : LoyaltyAwareTextureHandler
     {
         #region fields

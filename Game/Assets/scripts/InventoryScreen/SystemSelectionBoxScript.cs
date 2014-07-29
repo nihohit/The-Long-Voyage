@@ -1,23 +1,25 @@
-﻿using UnityEngine;
-using System.Collections;
-using Assets.scripts.LogicBase;
+﻿using Assets.scripts.LogicBase;
 using Assets.scripts.UnityBase;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets.scripts.InventoryScreen
 {
-    
+    /// <summary>
+    /// A selection box for entities' subsystems
+    /// </summary>
     public class SystemSelectionBoxScript : SelectionBox<SubsystemTemplate>
     {
         private MarkerScript m_markedTexture;
         private static InventoryTextureHandler s_textureHandler;
 
-        public static void Init(IEnumerable<SubsystemTemplate> systems, InventoryTextureHandler textureHandler)
+        public static void Init(List<SubsystemTemplate> systems, InventoryTextureHandler textureHandler)
         {
             Init(systems);
             s_textureHandler = textureHandler;
         }
 
+        // this is called when the game object is created
         public override void Awake()
         {
             base.Awake();
@@ -49,5 +51,4 @@ namespace Assets.scripts.InventoryScreen
             }
         }
     }
-    
 }

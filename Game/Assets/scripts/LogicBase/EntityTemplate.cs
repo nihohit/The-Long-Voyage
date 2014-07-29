@@ -1,5 +1,4 @@
 ﻿using Assets.scripts.Base;
-using Assets.scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 
@@ -7,7 +6,11 @@ namespace Assets.scripts.LogicBase
 {
     #region EntityTemplate
 
-    //TODO - we can create different levels of templates for the different entities. Not sure it's needed now
+    /// <summary>
+    /// Immutable representation of an entity of a certain type, and a static factory constructor.
+    /// </summary>
+    //TODO - we can create different levels (regular/active/moving) of templates for the different entities. Not sure it's needed now
+    //TODO - if we'll want entities with fixed systems, we'll need to add their templates here and merge them in the entity constructor
     public class EntityTemplate
     {
         #region fields
@@ -18,7 +21,6 @@ namespace Assets.scripts.LogicBase
 
         #region properties
 
-        //TODO - if we'll want entities with fixed systems, we'll need to add their templates here and merge them in the entity constructor
         public double Health { get; private set; }
 
         public VisualProperties Visuals { get; private set; }
@@ -93,7 +95,7 @@ namespace Assets.scripts.LogicBase
             return s_knownTemplates[type];
         }
 
-        //TODO - this method should be removed after we have initialization from XML
+        //TODO - this method should be removed after we have initialization from files
         public static void Init()
         {
             if (s_knownTemplates.Count == 0)
@@ -102,24 +104,28 @@ namespace Assets.scripts.LogicBase
                     VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
                     0, 20, 10, 2, 5, 3, 1, 1, 4, MovementType.Walker, 4));
                 s_knownTemplates.Add(2, new EntityTemplate("Dense trees",
-                    FileHandler.GetIntProperty("Dense trees health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight));
+                    SimpleConfigurationHandler.GetIntProperty("Dense trees health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight));
                 s_knownTemplates.Add(3, new EntityTemplate("Sparse trees",
-                    FileHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), VisualProperties.AppearsOnSight));
+                   SimpleConfigurationHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), VisualProperties.AppearsOnSight));
                 s_knownTemplates.Add(4, new EntityTemplate("Building",
-                    FileHandler.GetIntProperty("Building health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight | VisualProperties.AppearsOnRadar));
+                   SimpleConfigurationHandler.GetIntProperty("Building health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight | VisualProperties.AppearsOnRadar));
             }
         }
 
         #endregion static methods
     }
 
-    #endregion
+    #endregion EntityTemplate
 
     #region SpecificEntity
 
+    /// <summary>
+    /// Defines a specific entity by its template a modifying vairant.
+    /// </summary>
     public class SpecificEntity
     {
         public EntityTemplate Template { get; private set; }
+
         public EntityVariant Variant { get; private set; }
 
         public SpecificEntity(EntityTemplate template, EntityVariant variant)
@@ -128,9 +134,10 @@ namespace Assets.scripts.LogicBase
             Variant = variant;
         }
 
-        public SpecificEntity(EntityTemplate template) : this(template, EntityVariant.Regular)
+        public SpecificEntity(EntityTemplate template)
+            : this(template, EntityVariant.Regular)
         { }
     }
 
-    #endregion
+    #endregion SpecificEntity
 }

@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Assets.scripts.Base;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Assets.scripts.UnityBase
 {
+    /// <summary>
+    /// Used when a group of buttons need to be operated on simultaneously.
+    /// </summary>
     public class ButtonCluster
     {
         private readonly IEnumerable<SimpleButton> m_buttons;
@@ -11,7 +13,7 @@ namespace Assets.scripts.UnityBase
         public ButtonCluster(IEnumerable<SimpleButton> buttons)
         {
             m_buttons = buttons;
-            foreach(var button in m_buttons)
+            foreach (var button in m_buttons)
             {
                 var currentTask = button.ClickableAction;
                 button.ClickableAction = () =>
@@ -22,12 +24,10 @@ namespace Assets.scripts.UnityBase
             }
         }
 
+        // destroy all the buttons in the dluster.
         public void DestroyCluster()
-        { 
-            foreach(var button in m_buttons)
-            {
-                button.DestroyGameObject();
-            }
+        {
+            m_buttons.ForEach(button => button.DestroyGameObject());
         }
     }
 }

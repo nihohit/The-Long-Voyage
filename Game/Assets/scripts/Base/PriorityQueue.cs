@@ -2,7 +2,7 @@
 
 namespace Assets.scripts.Base
 {
-    #region Interfaces
+    #region IPriorityQueue
 
     internal interface IPriorityQueue<T>
     {
@@ -21,7 +21,9 @@ namespace Assets.scripts.Base
         #endregion Methods
     }
 
-    #endregion Interfaces
+    #endregion IPriorityQueue
+
+    #region PriorityQueue
 
     internal class PriorityQueue<T> : IPriorityQueue<T>
     {
@@ -208,4 +210,6 @@ namespace Assets.scripts.Base
 
         #endregion Methods
     }
+
+    #endregion PriorityQueue
 }

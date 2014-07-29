@@ -1,18 +1,21 @@
 ﻿using System;
 using UnityEngine;
-using Assets.scripts.Base;
 
 namespace Assets.scripts.UnityBase
 {
+    /// <summary>
+    /// Button class that wraps button-relevant events with Action properties.
+    /// Simplifies the creation of clickable objects in play.
+    /// </summary>
     public class SimpleButton : MarkerScript
     {
         #region properties
 
         public Action ClickableAction { get; set; }
 
-        public virtual Action OnMouseOverProperty { get; set; }
+        public virtual Action OnMouseOverAction { get; set; }
 
-        public virtual Action OnMouseExitProperty { get; set; }
+        public virtual Action OnMouseExitAction { get; set; }
 
         #endregion properties
 
@@ -21,8 +24,8 @@ namespace Assets.scripts.UnityBase
         public SimpleButton()
         {
             //just in case those value aren't inserted afterwards
-            OnMouseOverProperty = () => { };
-            OnMouseExitProperty = () => { };
+            OnMouseOverAction = () => { };
+            OnMouseExitAction = () => { };
             ClickableAction = () => { };
         }
 
@@ -47,6 +50,9 @@ namespace Assets.scripts.UnityBase
 
         #region private and protected methods
 
+        // This method is necessary due to a known Unity bug - sometimes a click is received
+        // By a collider in a lower layer. This function sets a default check,
+        // to see if there's a higher layer collider the click was aimed for.
         protected Action CheckIfClickIsOnUI(Action action)
         {
             return () =>
@@ -76,14 +82,14 @@ namespace Assets.scripts.UnityBase
         {
             if (enabled)
             {
-                OnMouseOverProperty();
+                OnMouseOverAction();
             }
         }
 
         private void OnMouseExit()
         {
             if (enabled)
-                OnMouseExitProperty();
+                OnMouseExitAction();
         }
 
         private void OnMouseDown()

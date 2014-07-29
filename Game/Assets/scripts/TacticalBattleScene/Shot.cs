@@ -2,6 +2,9 @@
 
 namespace Assets.scripts.TacticalBattleScene
 {
+    /// <summary>
+    ///  Script wrapper for shots moving across the screen
+    /// </summary>
     public class Shot : MonoBehaviour
     {
         private bool m_started = false;

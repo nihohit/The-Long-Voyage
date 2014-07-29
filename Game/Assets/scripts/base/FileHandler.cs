@@ -5,7 +5,10 @@ namespace Assets.scripts.Base
 {
     public enum FileAccessor { Units, TerrainGeneration, General }
 
-    public static class FileHandler
+    /// <summary>
+    /// This class handles simple key:value predefined configuration files, for known primitives.
+    /// </summary>
+    public static class SimpleConfigurationHandler
     {
         #region static dictionaries
 

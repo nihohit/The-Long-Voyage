@@ -4,13 +4,12 @@ using Assets.scripts.TacticalBattleScene.PathFinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene.AI
 {
     #region interfaces
 
-    //this delegate is used
+    // used to estimate if some result passed some kind of condition
     public delegate bool ResultEvaluator();
 
     public interface IActionEvaluator
@@ -27,6 +26,10 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
     #region EvaluatedAction
 
+    /// <summary>
+    /// An action with an evaluation of its cost, and ways to evaluate if it can run and if it achieved its goal.
+    /// When an action achieved its goals all actions of that entity are re-evaluated, so that no action which tries to achieve its goal will run.
+    /// </summary>
     public class EvaluatedAction : IComparable<EvaluatedAction>
     {
         private ResultEvaluator m_necessaryConditions;
@@ -63,6 +66,10 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
     #region AIRunner
 
+    /// <summary>
+    /// A basic runner for a group of individual AI entities which share vision, but not tactics.
+    /// Always chooses the most evaluated action out of all the possible ones for all entities.
+    /// </summary>
     public class AIRunner : IAIRunner
     {
         #region private fields
@@ -85,6 +92,10 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
         #endregion constructor
 
+        /// <summary>
+        /// repeatedly choose most valuable action.
+        /// </summary>
+        /// <param name="controlledEntities"></param>
         public void Act(IEnumerable<ActiveEntity> controlledEntities)
         {
             EvaluateActions(controlledEntities);
@@ -107,6 +118,10 @@ namespace Assets.scripts.TacticalBattleScene.AI
             }
         }
 
+        /// <summary>
+        /// combines all seen entities, and send them to all cotrolled entities to evaluate their actions.
+        /// </summary>
+        /// <param name="controlledEntities"></param>
         private void EvaluateActions(IEnumerable<ActiveEntity> controlledEntities)
         {
             //Debug.Log("Evaluating actions");
@@ -128,8 +143,8 @@ namespace Assets.scripts.TacticalBattleScene.AI
     #region SimpleEvaluator
 
     /**there's a hidden assumption here that no AI of this type will have
- * a system which affects empty hexes. Since this is supposed to be
- * only for the simplest of AIs, this assumption should hold. */
+    * a system which affects empty hexes. Since this is supposed to be
+    * only for the simplest of AIs, this assumption should hold. */
 
     public class SimpleEvaluator : IActionEvaluator
     {
@@ -150,10 +165,11 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
         #region IActionEvaluator implementation
 
-        /**evaluates a system action based on the importance of its target,
-     * and movement commands based on nearness to potential targets.
-     * If no potential targets are in sight, randomly roam. */
-
+        ///
+        /// evaluates a system action based on the importance of its target,
+        /// and movement commands based on nearness to potential targets.
+        /// If no potential targets are in sight, randomly roam.
+        ///
         public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<TacticalEntity> entitiesSeenByTeam)
         {
             //initiate relevant information
@@ -212,6 +228,8 @@ namespace Assets.scripts.TacticalBattleScene.AI
 
         #endregion IActionEvaluator implementation
 
+        // evaluates a hex based on the value of the systems that can be used from it on targets,
+        // or proximity to targets.
         private double EvaluateHexValue(Hex evaluatedHex, IEnumerable<TacticalEntity> potentialTargets, MovingEntity movingEntity, int minRange, int maxRange)
         {
             var result = 0.0;
@@ -240,6 +258,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
             return result;
         }
 
+        // evaluate the value of a system on a specific target
         private double EvaluateSystemEffect(SubsystemTemplate system, TacticalEntity target)
         {
             return (m_entityEvaluator.EvaluateValue(target) + system.EffectStrength) / (system.EnergyCost + system.HeatGenerated);

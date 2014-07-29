@@ -2,14 +2,20 @@
 
 namespace Assets.scripts.Base
 {
+    /// <summary>
+    /// Thrown when a switch receives an illegal value
+    /// </summary>
     [Serializable]
-    public class UnknownTypeException : Exception
+    public class UnknownValueException : Exception
     {
-        public UnknownTypeException(object obj) :
+        public UnknownValueException(object obj) :
             base("Type {0} wasn't defined.".FormatWith(obj.ToString()))
         { }
     }
 
+    /// <summary>
+    /// Thrown when an assert is fails
+    /// </summary>
     [Serializable]
     public class AssertedException : Exception
     {

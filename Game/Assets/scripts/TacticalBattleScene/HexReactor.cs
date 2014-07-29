@@ -7,27 +7,45 @@ using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
 {
+    /// <summary>
+    /// A script wrapper for hexes, to interact with Unity.
+    /// Contains all the relevant markers which might cover it.
+    /// </summary>
     public class HexReactor : SimpleButton
     {
         #region private fields
 
+        // ensures that the mouse over action will still be activated when displaying commands on the hex.
         private Action m_setMouseOverAction;
+
+        // markers
         private MarkerScript m_movementPathMarker;
+
         private MarkerScript m_fogOfWarMarker;
         private MarkerScript m_radarBlipMarker;
         private MarkerScript m_targetMarker;
+
+        // Only a single hex reactor can be selected at any time
         private static MarkerScript s_selected;
+
+        // Only a single hex is hovered over at a single time
+        private static HexReactor m_currentHoveredOverHex;
+
+        // The actions that each entity can operate on this hex
         private Dictionary<TacticalEntity, List<OperateSystemAction>> m_orders = new Dictionary<TacticalEntity, List<OperateSystemAction>>();
-        private int m_displayCommands;
-        private static HexReactor m_currentHoveredHex;
+
+        // amount of commands currently on display
+        private int m_displayCommandsAmount;
 
         #endregion private fields
 
         #region properties
 
+        // The hex the reactor is wrapping
         public Hex MarkedHex { get; set; }
 
-        public override Action OnMouseOverProperty
+        // ensures that the mouse over action will still be activated when displaying commands on the hex.
+        public override Action OnMouseOverAction
         {
             get
             {
@@ -48,6 +66,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region public methods
 
+        // constructor
         public HexReactor()
         {
             base.ClickableAction = CheckIfClickIsOnUI(() => TacticalState.SelectedHex = this);
@@ -95,6 +114,13 @@ namespace Assets.scripts.TacticalBattleScene
             m_radarBlipMarker = AddAndDisplayMarker(m_radarBlipMarker, "RadarBlip");
         }
 
+        public void RemoveTargetMarker()
+        {
+            RemoveMarker(m_targetMarker);
+        }
+
+        // checks if the currently selected entity targets this hex
+        // if so, removes the targeting marker.
         public void RemoveTargetMarker(OperateSystemAction action)
         {
             if (TacticalState.SelectedHex == null)
@@ -112,17 +138,12 @@ namespace Assets.scripts.TacticalBattleScene
             if (Entity != null && m_orders.TryGetValue(Entity, out actions))
             {
                 actions.Remove(action);
-                m_displayCommands = actions.Count;
+                m_displayCommandsAmount = actions.Count;
                 if (actions.Count == 0)
                 {
                     RemoveMarker(m_targetMarker);
                 }
             }
-        }
-
-        public void RemoveTargetMarker()
-        {
-            RemoveMarker(m_targetMarker);
         }
 
         public void DisplayTargetMarker()
@@ -138,18 +159,15 @@ namespace Assets.scripts.TacticalBattleScene
             s_selected.Unmark();
         }
 
-        private void Start()
-        {
-            DisplayFogOfWarMarker();
-        }
-
+        // Select this hex, and if there's an active, selectable entity in it, display all of its possible actions
         public void Select()
         {
             //Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex));
             s_selected.Mark(this.transform.position);
-            ActionCheck().ForEach(action => action.DisplayButton());
+            ActionCheck().ForEach(action => action.DisplayAction());
         }
 
+        // Unselect the hex, and remove all action markers
         public void Unselect()
         {
             //Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
@@ -167,6 +185,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         public void AddCommands(TacticalEntity Entity, List<OperateSystemAction> list)
         {
+            // assert that all existing orders are destroyed
             Assert.AssertConditionMet(!m_orders.ContainsKey(Entity) || m_orders[Entity].None(order => !order.Destroyed), "Existing orders weren't destroyed");
             m_orders[Entity] = list;
         }
@@ -184,62 +203,26 @@ namespace Assets.scripts.TacticalBattleScene
 
         public void DisplayCommands(bool forceUpdate)
         {
-            if (!forceUpdate && m_currentHoveredHex == this) return;
+            // Don't do anything if this is already the current hovered over and there's no need to update
+            if (!forceUpdate && m_currentHoveredOverHex == this) return;
 
-            if (m_currentHoveredHex != null)
+            // remove the display from the other hovered over hex and set this as the hovered over hex
+            if (m_currentHoveredOverHex != null)
             {
-                m_currentHoveredHex.RemoveCommands();
+                m_currentHoveredOverHex.RemoveCommands();
             }
-            m_currentHoveredHex = this;
+            m_currentHoveredOverHex = this;
 
+            // If a hex is selected
             if (TacticalState.SelectedHex != null && m_orders.Any())
             {
                 List<OperateSystemAction> actions = null;
                 var Entity = TacticalState.SelectedHex.MarkedHex.Content as TacticalEntity;
+
+                // if there are any orders to display, display them
                 if (Entity != null && m_orders.TryGetValue(Entity, out actions))
                 {
-                    var activeCommands = actions.Where(command => !command.Destroyed).Materialize();
-                    var commandCount = activeCommands.Count();
-                    if (m_displayCommands != commandCount)
-                    {
-                        m_displayCommands = commandCount;
-                        Vector2 displayOffset = default(Vector2);
-                        var size = ((CircleCollider2D)this.collider2D).radius;
-
-                        int i = 0;
-                        foreach (var action in activeCommands)
-                        {
-                            i++;
-                            switch (i)
-                            {
-                                case (0):
-                                    displayOffset = new Vector2(-(size * 2 / 3), 0);
-                                    break;
-
-                                case (1):
-                                    displayOffset = new Vector2(-(size / 2), (size * 2 / 3));
-                                    break;
-
-                                case (2):
-                                    displayOffset = new Vector2((size / 2), (size * 2 / 3));
-                                    break;
-
-                                case (3):
-                                    displayOffset = new Vector2(size * 2 / 3, 0);
-                                    break;
-
-                                case (4):
-                                    displayOffset = new Vector2(size / 2, -(size * 2 / 3));
-                                    break;
-
-                                case (5):
-                                    displayOffset = new Vector2(-(size / 2), -(size * 2 / 3));
-                                    break;
-                            }
-
-                            action.DisplayButton((Vector2)this.transform.position + displayOffset);
-                        }
-                    }
+                    DisplayCommands(actions);
                 }
             }
         }
@@ -252,7 +235,7 @@ namespace Assets.scripts.TacticalBattleScene
                 var Entity = TacticalState.SelectedHex.MarkedHex.Content as TacticalEntity;
                 if (Entity != null && m_orders.TryGetValue(Entity, out actions))
                 {
-                    m_displayCommands = 0;
+                    m_displayCommandsAmount = 0;
                     foreach (var action in actions.Where(command => !command.Destroyed))
                     {
                         action.RemoveDisplay();
@@ -264,6 +247,58 @@ namespace Assets.scripts.TacticalBattleScene
         #endregion public methods
 
         #region private methods
+
+        private void Start()
+        {
+            DisplayFogOfWarMarker();
+        }
+
+        // display commands in a circle around the targeted hex
+        private void DisplayCommands(IEnumerable<OperateSystemAction> actions)
+        {
+            var activeCommands = actions.Where(command => !command.Destroyed).Materialize();
+            var commandCount = activeCommands.Count();
+            if (m_displayCommandsAmount != commandCount)
+            {
+                m_displayCommandsAmount = commandCount;
+                Vector2 displayOffset = default(Vector2);
+                var size = ((CircleCollider2D)this.collider2D).radius;
+
+                int i = 0;
+                foreach (var action in activeCommands)
+                {
+                    i++;
+                    switch (i)
+                    {
+                        case (0):
+                            displayOffset = new Vector2(-(size * 2 / 3), 0);
+                            break;
+
+                        case (1):
+                            displayOffset = new Vector2(-(size / 2), (size * 2 / 3));
+                            break;
+
+                        case (2):
+                            displayOffset = new Vector2((size / 2), (size * 2 / 3));
+                            break;
+
+                        case (3):
+                            displayOffset = new Vector2(size * 2 / 3, 0);
+                            break;
+
+                        case (4):
+                            displayOffset = new Vector2(size / 2, -(size * 2 / 3));
+                            break;
+
+                        case (5):
+                            displayOffset = new Vector2(-(size / 2), -(size * 2 / 3));
+                            break;
+                    }
+
+                    action.DisplayAction((Vector2)this.transform.position + displayOffset);
+                }
+            }
+        }
 
         //returns null if can't return actions, otherwise returns all available actions
         private IEnumerable<PotentialAction> ActionCheck()

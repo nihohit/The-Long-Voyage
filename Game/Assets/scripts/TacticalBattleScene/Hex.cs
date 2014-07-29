@@ -3,11 +3,13 @@ using Assets.scripts.LogicBase;
 using Assets.scripts.UnityBase;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
 {
+    /// <summary>
+    /// A map hex
+    /// </summary>
     public class Hex
     {
         #region private fields
@@ -36,6 +38,8 @@ namespace Assets.scripts.TacticalBattleScene
 
         public TraversalConditions Conditions { get; set; }
 
+        // what entity stands in the hex.
+        // when the content updates, this logic updates moving reactors around and updating sight & actions for the moved entity
         public TacticalEntity Content
         {
             get
@@ -49,6 +53,7 @@ namespace Assets.scripts.TacticalBattleScene
                     //using reference comparisons to account for null
                     if (value != m_content)
                     {
+                        // if an entity moves into the hex
                         if (value != null)
                         {
                             Assert.IsNull(m_content,
@@ -71,7 +76,7 @@ namespace Assets.scripts.TacticalBattleScene
                                 active.SetSeenHexes();
                             }
                         }
-                        //if hex recieves null value as content
+                        //if entity moved out of hex
                         else
                         {
                             if (m_content != null)
@@ -96,6 +101,9 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
+        // the amount of entities that have seen this hex.
+        // if it is positive then the hex should be clear. otherwise it should contain fog of war and,
+        // if the entity in the hex is detected by radar, radar blips.
         private int SeenAmount
         {
             get { return m_seen; }
@@ -121,6 +129,7 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
+        // the amount of entities that have detected the entity in this hex
         private int DetectedAmount
         {
             get { return m_detected; }
@@ -158,6 +167,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region public methods
 
+        // return all hexes neighbouring current hex
         public IEnumerable<Hex> GetNeighbours()
         {
             var result = new List<Hex>();
@@ -183,7 +193,11 @@ namespace Assets.scripts.TacticalBattleScene
             return RaycastAndResolve<EntityReactor>(minRange, maxRange, addToListCheck, rayCastAll, (hex) => false, layerName, (ent) => ent.Entity.Hex);
         }
 
-        public IEnumerable<Hex> RaycastAndResolve<T>(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, HexCheck breakCheck, string layerName, Func<T, Hex> hexExtractor) where T : MonoBehaviour
+        // ray cast in a certain direction, and over a certain layer.
+        // raycasting is sending a ray until it reaches a collider.
+        // if rayCastAll is set, then the ray won't stop on the first collider it meets.
+        public IEnumerable<Hex> RaycastAndResolve<T>(int minRange, int maxRange, HexCheck addToListCheck,
+            bool rayCastAll, HexCheck breakCheck, string layerName, Func<T, Hex> hexExtractor) where T : MonoBehaviour
         {
             Assert.NotNull(Content, "Operating out of empty hex {0}".FormatWith(this));
 
@@ -198,6 +212,7 @@ namespace Assets.scripts.TacticalBattleScene
             {
                 if (rayCastAll)
                 {
+                    // return all colliders that the ray passes through
                     var rayHits = Physics2D.RaycastAll(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
                     foreach (var rayHit in rayHits)
                     {
@@ -216,6 +231,7 @@ namespace Assets.scripts.TacticalBattleScene
                 }
                 else
                 {
+                    // return the first active collider in the ray's way
                     var rayHit = Physics2D.Raycast(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
                     if (rayHit.collider != null)
                     {
@@ -234,6 +250,7 @@ namespace Assets.scripts.TacticalBattleScene
             return results;
         }
 
+        // checks if the target hex is in effect range from this hex. Used by the AI to evaluate far away hexes
         public bool CanAffect(Hex targetHex, DeliveryMethod deliveryMethod, int minRange, int maxRange, string layerName)
         {
             var distance = this.Distance(targetHex);
@@ -248,7 +265,7 @@ namespace Assets.scripts.TacticalBattleScene
             }
             var layerMask = 1 << LayerMask.NameToLayer(layerName);
             var angle = this.Position.GetAngleBetweenTwoPoints(targetHex.Position);
-            var radianAngle = angle.ToRadians();
+            var radianAngle = angle.DegreesToRadians();
             var directionVector = new Vector2(Mathf.Sin(radianAngle), Mathf.Cos(radianAngle));
             var rayHit = Physics2D.Raycast(Position, directionVector, Reactor.renderer.bounds.size.x * distance, layerMask);
 

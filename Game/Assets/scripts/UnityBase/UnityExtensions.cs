@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.scripts.UnityBase
 {
+    /// <summary>
+    /// Extension class for unity engine objects
+    /// </summary>
     public static class UnityExtensions
     {
         public static float GetAngleBetweenTwoPoints(this Vector2 from, Vector2 to)
@@ -28,6 +29,11 @@ namespace Assets.scripts.UnityBase
         public static void DestroyGameObject(this MonoBehaviour unityObject)
         {
             UnityEngine.Object.Destroy(unityObject.gameObject);
+        }
+
+        public static double Distance(this Vector3 origin, Vector3 target)
+        {
+            return Math.Sqrt(Math.Pow(origin.x - target.x, 2) + Math.Pow(origin.y - target.y, 2) + Math.Pow(origin.z - target.z, 2));
         }
     }
 }

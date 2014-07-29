@@ -1,7 +1,7 @@
 using Assets.scripts.Base;
 using Assets.scripts.LogicBase;
-using Assets.scripts.UnityBase;
 using Assets.scripts.TacticalBattleScene.PathFinding;
+using Assets.scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,9 @@ namespace Assets.scripts.TacticalBattleScene
 {
     #region Entity
 
+    /// <summary>
+    /// The basic information all entities share
+    /// </summary>
     public abstract class TacticalEntity
     {
         #region private fields
@@ -60,6 +63,8 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region public methods
 
+        // Change the entity's state. Usually called when a subsystem operates on the entity.
+        // TODO - currently only damages the unit
         public void Affect(double strength, EffectType effectType)
         {
             Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(Name, strength, effectType));
@@ -110,6 +115,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region protected methods
 
+        // after damage passes through armor & shields, it reduces health
         protected virtual void InternalDamage(double damage, EffectType damageType)
         {
             switch (damageType)
@@ -124,6 +130,7 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
+        // reduce damage by the armor level, wehn relevant.
         protected virtual double ExternalDamage(double strength, EffectType damageType)
         {
             switch (damageType)
@@ -138,10 +145,12 @@ namespace Assets.scripts.TacticalBattleScene
                     return strength;
 
                 default:
-                    throw new UnknownTypeException(damageType);
+                    throw new UnknownValueException(damageType);
             }
         }
 
+        // destroy the entity
+        // TODO - log the reason it was destroyed
         protected virtual void Destroy()
         {
             Debug.Log("Destroy {0}".FormatWith(Name));
@@ -157,6 +166,9 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region inanimate entities
 
+    /// <summary>
+    /// Entities which represent natural pieces of terrain, and aren't active - just obstructions.
+    /// </summary>
     public class TerrainEntity : TacticalEntity
     {
         private Hex m_hex;
@@ -193,6 +205,10 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region ActiveEntity
 
+    /// <summary>
+    /// Active entities have subsystems that they can operate, the ability to see & detect other entities,
+    /// and several additional properties which are affected by those systems and abilities.
+    /// </summary>
     public class ActiveEntity : TacticalEntity
     {
         #region constructor
@@ -216,8 +232,11 @@ namespace Assets.scripts.TacticalBattleScene
 
         private IEnumerable<PotentialAction> m_actions;
 
+        // an entity's energy capacity can be temporarily diminished, for example by EMP weapons.
         private double m_tempMaxEnergy;
 
+        // checks whether a mech shutdown in the last turn. If a mech shuts down two turns in a row it is destroyed
+        // TODO - do we want to keep this?
         private bool m_wasShutDown = false;
 
         #endregion private fields
@@ -250,6 +269,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region public methods
 
+        // destroy all actions
         public void ResetActions()
         {
             //Debug.Log("{0} is resetting actions".FormatWith(Name));
@@ -263,6 +283,9 @@ namespace Assets.scripts.TacticalBattleScene
             m_actions = null;
         }
 
+        // update all hexes seen by this entity
+        // Unsee al seen hexes which are no longer seen, undetect all detected hexes which are no longer detected,
+        // and mark as seen & detected newly seen & detected hexes.
         public void SetSeenHexes()
         {
             var whatTheEntitySeesNow = FindSeenHexes();
@@ -310,6 +333,7 @@ namespace Assets.scripts.TacticalBattleScene
             m_detectedHexes = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
         }
 
+        // reset seeing status
         public void ResetSeenHexes()
         {
             SeenHexes = null;
@@ -317,6 +341,7 @@ namespace Assets.scripts.TacticalBattleScene
             SetSeenHexes();
         }
 
+        // all preparations an entity does at the beginning of its turn
         public virtual bool StartTurn()
         {
             Debug.Log(FullState());
@@ -324,13 +349,17 @@ namespace Assets.scripts.TacticalBattleScene
             ResetSeenHexes();
             CurrentEnergy = m_tempMaxEnergy;
             CurrentHeat = Math.Max(CurrentHeat - Template.HeatLossRate, 0);
+
+            // an entity shutsdown if its temp max energy is negative, or it overheats
             if (m_tempMaxEnergy <= 0 || CurrentHeat >= Template.MaxHeat)
             {
+                // reset state & mark as shutdown for the turn
                 if (CurrentHeat >= Template.MaxHeat) CurrentHeat = 0;
                 m_tempMaxEnergy = Template.MaxEnergy;
                 m_wasShutDown = true;
                 return false;
             }
+
             m_wasShutDown = false;
             m_tempMaxEnergy = Template.MaxEnergy;
             Shield = Math.Min(Template.MaxShields, Shield + Template.ShieldRechargeRate);
@@ -372,6 +401,7 @@ namespace Assets.scripts.TacticalBattleScene
             return results;
         }
 
+        // internal damage to an active entity can cause heat, reduce energy levels & damage subsystems.
         protected override void InternalDamage(double damage, EffectType damageType)
         {
             var heatDamage = 0.0;
@@ -409,6 +439,7 @@ namespace Assets.scripts.TacticalBattleScene
             base.InternalDamage(physicalDamage, EffectType.PhysicalDamage);
         }
 
+        // find all potential targets for all operational subsystems
         protected virtual IEnumerable<PotentialAction> ComputeActions()
         {
             Debug.Log("{0} is computing actions".FormatWith(FullState()));
@@ -429,6 +460,8 @@ namespace Assets.scripts.TacticalBattleScene
             return results.Select(subsytemAction => (PotentialAction)subsytemAction);
         }
 
+        // external damage to an active entity is mitigated by its shields.
+        // different damage types are differently effective against shields
         protected override double ExternalDamage(double strength, EffectType effectType)
         {
             var result = strength;
@@ -469,6 +502,9 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region MovingEntity
 
+    /// <summary>
+    /// an entity that can move
+    /// </summary>
     public class MovingEntity : ActiveEntity
     {
         #region properties
@@ -489,6 +525,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region overrides
 
+        // actions are also all potential movement targets
         protected override IEnumerable<PotentialAction> ComputeActions()
         {
             var baseActions = base.ComputeActions();
@@ -496,6 +533,7 @@ namespace Assets.scripts.TacticalBattleScene
             return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
         }
 
+        // compute moves at start of turn
         public override bool StartTurn()
         {
             if (base.StartTurn())

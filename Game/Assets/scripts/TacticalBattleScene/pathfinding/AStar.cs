@@ -10,6 +10,9 @@ namespace Assets.scripts.TacticalBattleScene.PathFinding
 
     internal delegate bool StopCondition(Hex hex);
 
+    /// <summary>
+    /// The implementation of the AStar algorithm
+    /// </summary>
     internal static class AStar
     {
         private static readonly Dictionary<HexPair, BackwardsAstarNode> s_knownPaths = new Dictionary<HexPair, BackwardsAstarNode>();

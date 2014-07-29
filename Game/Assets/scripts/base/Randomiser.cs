@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace Assets.scripts.Base
 {
+    /// <summary>
+    /// Initializes a single Random object for the whole program, in order to overcome flaws in Random implementation.
+    /// </summary>
     public static class Randomiser
     {
         private static readonly Random s_staticRandom = new Random();
@@ -28,18 +31,21 @@ namespace Assets.scripts.Base
             return s_staticRandom.NextDouble();
         }
 
+        //See if random sample comes lower than the given chance
         public static bool ProbabilityCheck(double chance)
         {
             Assert.EqualOrLesser(chance, 1, "we can't have a probablity higher than 1");
             return (NextDouble() <= chance);
         }
 
+        //choose a single value out of a collection
         public static T ChooseValue<T>(IEnumerable<T> group)
         {
             Assert.NotNullOrEmpty(group, "group");
             return group.ElementAt(Next(group.Count()));
         }
 
+        //choose several values out of a collection
         public static IEnumerable<T> ChooseValues<T>(IEnumerable<T> group, int amount)
         {
             Assert.NotNullOrEmpty(group, "group");

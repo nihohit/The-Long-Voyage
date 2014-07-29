@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace Assets.scripts.Base
 {
+    /// <summary>
+    /// These are all the code sanity checks we use in order to assert the internal state of the code
+    /// </summary>
     public static class Assert
     {
         public static void NotEqual(int first, int second, string additionalMessage)
@@ -45,6 +48,7 @@ namespace Assets.scripts.Base
             AssertConditionMet(num < top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage));
         }
 
+        //to be put where a correct run shouldn't reach
         public static void UnreachableCode(string message)
         {
             AssertConditionMet(false, "unreachable code: {0}".FormatWith(message));
@@ -105,6 +109,7 @@ namespace Assets.scripts.Base
             AssertConditionMet(a.Equals(b), "{0} isn't equal to {1}. {2}".FormatWith(a, b, additionalMessage));
         }
 
+        //the core assert check
         public static void AssertConditionMet(bool condition, string message)
         {
             if (!condition)

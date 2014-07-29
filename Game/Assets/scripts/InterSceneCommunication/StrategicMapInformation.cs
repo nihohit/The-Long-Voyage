@@ -1,6 +1,8 @@
-﻿
-namespace Assets.scripts.InterSceneCommunication
+﻿namespace Assets.scripts.InterSceneCommunication
 {
+    /// <summary>
+    /// Information relevant to the strategic gameplay, to be passed from one encounter to the next.
+    /// </summary>
     public class StrategicMapInformation
     {
         public PlayerState State { get; set; }

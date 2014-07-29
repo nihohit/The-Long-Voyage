@@ -1,12 +1,13 @@
-﻿using Assets.scripts.UnityBase;
-using System;
+﻿using Assets.scripts.Base;
+using Assets.scripts.UnityBase;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using Assets.scripts.Base;
 
 namespace Assets.scripts.LogicBase
 {
+    /// <summary>
+    /// Colors entities' textures, based on their loyalty
+    /// </summary>
     public class LoyaltyAwareTextureHandler : TextureHandler
     {
         private Dictionary<string, Texture2D> m_knownEntityTextures = new Dictionary<string, Texture2D>();

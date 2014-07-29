@@ -7,11 +7,16 @@ using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
 {
+    /// <summary>
+    /// The main script for the tactical battle scene
+    /// </summary>
     public class TacticalBattleScript : MonoBehaviour
     {
         #region public members
 
+        // TODO - get rid of these
         public GameObject greenHex;
+
         public GameObject woodHex;
         public Camera mainCamera;
 
@@ -22,6 +27,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region MonoBehaviour overrides
 
+        // runs on every frame
         private void Update()
         {
             //the first time that update is called, start the battle.
@@ -32,6 +38,7 @@ namespace Assets.scripts.TacticalBattleScene
                 TacticalState.StartTurn();
             }
 
+            // update camera position based on input. The axis are defined in the Unity editor
             if (Camera.current != null)
             {
                 float xAxisValue = Input.GetAxis("Horizontal");
@@ -39,32 +46,15 @@ namespace Assets.scripts.TacticalBattleScene
                 float zAxisValue = Input.GetAxisRaw("Zoom");
                 Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
             }
+
+            // if right mouse button is pressed
             if (Input.GetMouseButton(1))
             {
-                if (Input.GetKey(KeyCode.LeftShift))
+                if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content != null)
                 {
-                    if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content == null)
-                    {
-                        //TODO - this is just a temporary measure, to create mechs
-                        var loyalty = TacticalState.CurrentTurn;
-                        var mech = new MovingEntity(new SpecificEntity(EntityTemplate.GetTemplate(0)),
-                            loyalty,
-                            ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
-                            new Subsystem[] { new Laser(loyalty), new MissileLauncher(loyalty), new EmpLauncher(loyalty), new HeatWaveProjector(loyalty), new IncediaryGun(loyalty) });
-                        TacticalState.SelectedHex.MarkedHex.Content = mech;
-                        TacticalState.AddEntity(mech);
-                        Debug.Log("created {0} at {1}".FormatWith(mech, TacticalState.SelectedHex));
-                    }
-                    TacticalState.SelectedHex = null;
+                    Debug.Log(TacticalState.SelectedHex.MarkedHex.Content);
                 }
-                else
-                {
-                    if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content != null)
-                    {
-                        Debug.Log(TacticalState.SelectedHex.MarkedHex.Content);
-                    }
-                    TacticalState.SelectedHex = null;
-                }
+                TacticalState.SelectedHex = null;
             }
         }
 
@@ -73,14 +63,18 @@ namespace Assets.scripts.TacticalBattleScene
         {
             InitClasses();
 
+            // create new hexes from a given entry point and of a given size
             var hexes = new List<Hex>();
             var entryPoint = Vector3.zero;
             var hexSize = greenHex.renderer.bounds.size;
+
+            // reset the global state's tactical battle information
             var state = GlobalState.TacticalBattle;
             GlobalState.TacticalBattle = null;
 
             var target = 2 * state.AmountOfHexes - 1;
 
+            // create all hexes in a hexagon shape - this creates the top half
             //the math became a bit complicated when trying to account for correct coordinates.
             for (int i = -state.AmountOfHexes + 1; i <= 0; i++)
             {
@@ -95,9 +89,11 @@ namespace Assets.scripts.TacticalBattleScene
                 }
             }
 
+            // center the camera at the center of the hexagon
             mainCamera.transform.position = new Vector3(entryPoint.x + ((state.AmountOfHexes - 1) * hexSize.x), entryPoint.y, entryPoint.z - 70);
             mainCamera.transform.Rotate(new Vector3(180, 180, 180));
 
+            // create the bottom half of the hexagon
             for (int i = 1; i < target - state.AmountOfHexes + 1; i++)
             {
                 entryPoint = new Vector3(entryPoint.x + (hexSize.x / 2), entryPoint.y + (hexSize.x * Mathf.Sqrt(3) / 2), entryPoint.z);
@@ -111,22 +107,24 @@ namespace Assets.scripts.TacticalBattleScene
                 }
             }
 
+            // inititate the tactical state
             TacticalState.Init(state.EntitiesInBattle, hexes);
 
+            // position the entities
             //HACK - to be removed. in charge of positioning the first entities
             var chosenHexes = m_emptyHexes.ChooseRandomValues(state.EntitiesInBattle.Count()).OrderBy(x => Randomiser.Next());
             chosenHexes.ForEach(hex => hex.Content = state.EntitiesInBattle.First(ent => ent.Hex == null));
         }
+
+        #endregion MonoBehaviour overrides
+
+        #region private methods
 
         private void InitClasses()
         {
             TacticalState.BattleStarted = false;
             InitiateGlobalState();
         }
-
-        #endregion MonoBehaviour overrides
-
-        #region private methods
 
         private HexReactor CreateGrassHex(Vector3 nextPosition, Vector2 hexCoordinates)
         {
@@ -198,27 +196,23 @@ namespace Assets.scripts.TacticalBattleScene
             CreateRandomHex(Vector3.zero, hexCoordinates);
         }
 
-        private float GetDistance(Vector3 origin, Vector3 target)
-        {
-            return Mathf.Sqrt(Mathf.Pow(origin.x - target.x, 2f) + Mathf.Pow(origin.y - target.y, 2f) + Mathf.Pow(origin.z - target.z, 2f));
-        }
-
+        // initiate all relevant classes and create a new global state if there's no current one
         private void InitiateGlobalState()
         {
             //TODO - replace with exception throwing when we remove the direct access to level generation
-            FileHandler.Init();
+            SimpleConfigurationHandler.Init();
             HexReactor.Init();
             SubsystemTemplate.Init();
             EntityTemplate.Init();
             Hex.Init();
-            
+
             if (GlobalState.TacticalBattle == null)
             {
                 var state = new TacticalBattleInformation();
-                state.AmountOfHexes = FileHandler.GetIntProperty(
+                state.AmountOfHexes = SimpleConfigurationHandler.GetIntProperty(
                     "default map size",
                     FileAccessor.TerrainGeneration);
-                if(GlobalState.StrategicMap == null)
+                if (GlobalState.StrategicMap == null)
                     state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
                 else
                     state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreatePlayerMechs(GlobalState.StrategicMap.State.EquippedEntities));
@@ -226,6 +220,7 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
+        // create a collection of mechs
         private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
         {
             return Enumerable.Range(0, number).Select(num => (ActiveEntity)new MovingEntity(
@@ -241,6 +236,7 @@ namespace Assets.scripts.TacticalBattleScene
                 ).Materialize();
         }
 
+        // create the player controlled mechs from their definition in the global state
         private IEnumerable<ActiveEntity> CreatePlayerMechs(List<EquippedEntity> equippedEntities)
         {
             return equippedEntities.Select(entity => (ActiveEntity)new MovingEntity(

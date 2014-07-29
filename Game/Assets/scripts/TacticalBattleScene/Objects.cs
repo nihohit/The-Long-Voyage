@@ -51,13 +51,12 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region PotentialAction
 
-    /*
- * Potential action represents a certain action, commited by a certain Entity.
- * When ordered to it can create a button that when pressed activates it,
- * it can remove the button from the display and it should destroy the button when destroyed.
- * The button should receive the item's commit method as it's response when pressed.
- */
-
+    ///
+    /// Potential action represents a certain action, commited by a certain Entity.
+    /// When ordered to it can create a button that when pressed activates it,
+    /// it can remove the button from the display and it should destroy the button when destroyed.
+    /// The button should receive the item's commit method as it's response when pressed.
+    ///
     public abstract class PotentialAction
     {
         #region fields
@@ -90,7 +89,9 @@ namespace Assets.scripts.TacticalBattleScene
             m_active = false;
             Destroyed = false;
             Name = buttonName;
-            var command = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("Button"), position, Quaternion.identity));
+
+            // create a new button for the action, set it to appear when the mouse is over the hex and to trigger the action when clicked
+            var command = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("CircularButton"), position, Quaternion.identity));
             command.name = name;
             TacticalState.TextureManager.UpdateButtonTexture(buttonName, command.GetComponent<SpriteRenderer>());
             m_button = command.GetComponent<SimpleButton>();
@@ -99,9 +100,10 @@ namespace Assets.scripts.TacticalBattleScene
                 m_active = true;
                 Commit();
             };
-            m_button.OnMouseOverProperty = () => targetedHex.Reactor.OnMouseOverProperty();
-            m_button.OnMouseExitProperty = () => targetedHex.Reactor.OnMouseExitProperty();
+            m_button.OnMouseOverAction = () => targetedHex.Reactor.OnMouseOverAction();
+            m_button.OnMouseExitAction = () => targetedHex.Reactor.OnMouseExitAction();
             m_button.Unmark();
+
             m_name = name;
             ActingEntity = entity;
             TargetedHex = targetedHex;
@@ -111,7 +113,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region public methods
 
-        public virtual void DisplayButton(Vector3 position)
+        public virtual void DisplayAction(Vector3 position)
         {
             //if the condition for this command still stands, display it. otherwise destroy it
             if (!Destroyed && NecessaryConditions())
@@ -124,9 +126,9 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
-        public virtual void DisplayButton()
+        public virtual void DisplayAction()
         {
-            DisplayButton(m_button.transform.position);
+            DisplayAction(m_button.transform.position);
         }
 
         public virtual void RemoveDisplay()
@@ -181,10 +183,15 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region MovementAction
 
+    /// <summary>
+    /// A potential movement action, into another hex.
+    /// TODO - currently doesn't cost any energy
+    /// </summary>
     public class MovementAction : PotentialAction
     {
         #region private members
 
+        // the path the entity moves through
         private readonly IEnumerable<Hex> m_path;
 
         //TODO - does walking consume only movement points, or also energy (and if we implement that, produce heat)?
@@ -202,8 +209,8 @@ namespace Assets.scripts.TacticalBattleScene
             base(entity, "movementMarker", path.Last().Position, lastHex, "movement to {0}".FormatWith(path.Last().Coordinates))
         {
             m_path = path;
-            m_button.OnMouseOverProperty = DisplayPath;
-            m_button.OnMouseExitProperty = RemovePath;
+            m_button.OnMouseOverAction = DisplayPath;
+            m_button.OnMouseExitAction = RemovePath;
             m_cost = cost;
             m_button.transform.localScale = new Vector3(m_button.transform.localScale.x * 2, m_button.transform.localScale.y * 2, m_button.transform.localScale.z);
             m_button.gameObject.GetComponent<SpriteRenderer>().sortingOrder = 0;
@@ -241,22 +248,22 @@ namespace Assets.scripts.TacticalBattleScene
         public override void RemoveDisplay()
         {
             base.RemoveDisplay();
-            TargetedHex.Reactor.OnMouseOverProperty = () => { };
-            TargetedHex.Reactor.OnMouseExitProperty = () => { };
+            TargetedHex.Reactor.OnMouseOverAction = () => { };
+            TargetedHex.Reactor.OnMouseExitAction = () => { };
             RemovePath();
         }
 
-        public override void DisplayButton()
+        public override void DisplayAction()
         {
-            base.DisplayButton();
-            TargetedHex.Reactor.OnMouseOverProperty = DisplayPath;
-            TargetedHex.Reactor.OnMouseExitProperty = RemovePath;
+            base.DisplayAction();
+            TargetedHex.Reactor.OnMouseOverAction = DisplayPath;
+            TargetedHex.Reactor.OnMouseExitAction = RemovePath;
         }
 
         public override void Destroy()
         {
-            TargetedHex.Reactor.OnMouseOverProperty = () => { };
-            TargetedHex.Reactor.OnMouseExitProperty = () => { };
+            TargetedHex.Reactor.OnMouseOverAction = () => { };
+            TargetedHex.Reactor.OnMouseExitAction = () => { };
             RemovePath();
             base.Destroy();
         }
@@ -296,6 +303,9 @@ namespace Assets.scripts.TacticalBattleScene
 
     #region OperateSystemAction
 
+    /// <summary>
+    /// Operating a system on a specific hex action.
+    /// </summary>
     public class OperateSystemAction : PotentialAction
     {
         private readonly Action m_action;
@@ -337,7 +347,7 @@ namespace Assets.scripts.TacticalBattleScene
         }
 
         //TODO - is there a more elegant way to prevent them from displaying?
-        public override void DisplayButton()
+        public override void DisplayAction()
         {
             if (!Destroyed)
             {

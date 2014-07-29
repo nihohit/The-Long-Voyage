@@ -1,12 +1,13 @@
 ﻿using Assets.scripts.LogicBase;
-using Assets.scripts.UnityBase;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace Assets.scripts.InventoryScreen
 {
+    /// <summary>
+    /// Texture handler for the inventory screen
+    /// </summary>
     public class InventoryTextureHandler : LoyaltyAwareTextureHandler
     {
         #region fields
@@ -22,7 +23,7 @@ namespace Assets.scripts.InventoryScreen
         {
             var textures = Resources.LoadAll<Texture2D>("Entities");
             m_knownEntityTextures = textures.ToDictionary(texture => texture.name,
-                                                           texture => texture);
+                                                          texture => texture);
             textures = Resources.LoadAll<Texture2D>("UI");
             m_knownButtonTextures = textures.ToDictionary(texture => texture.name,
                                                            texture => texture);
@@ -58,7 +59,6 @@ namespace Assets.scripts.InventoryScreen
         public Texture2D GetNullTexture()
         {
             return m_knownButtonTextures["Null"];
-
         }
 
         #endregion public methods

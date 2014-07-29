@@ -15,6 +15,9 @@ namespace Assets.scripts.TacticalBattleScene.PathFinding
 
     #region AstarNode
 
+    /// <summary>
+    /// A node in the emergent AStar graph, with different value properties
+    /// </summary>
     internal class AstarNode : IComparable<AstarNode>
     {
         private readonly int m_gTotalValue; //the value of the size-portion, for clearance

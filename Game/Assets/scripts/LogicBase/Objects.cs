@@ -14,6 +14,7 @@ namespace Assets.scripts.LogicBase
         BlocksSight = 4,
     }
 
+    // defines what kind of entities can a system target
     [Flags]
     public enum TargetingType
     {
@@ -23,14 +24,16 @@ namespace Assets.scripts.LogicBase
         AllHexes = 4
     }
 
+    // Variants of mech designs
     public enum EntityVariant
     { Regular }
 
     // the way a system reaches its targets
     public enum DeliveryMethod { Direct, Unobstructed }
 
+    // The possible effects of a system
     public enum EffectType { EmpDamage, HeatDamage, IncendiaryDamage, PhysicalDamage, FlameHex }
 
-    //to be filled with all different sides
+    //to be filled with all different factions
     public enum Loyalty { Player, EnemyArmy, Monsters, Bandits, Inactive, Friendly }
 }

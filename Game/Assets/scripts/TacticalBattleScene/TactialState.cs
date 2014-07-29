@@ -1,13 +1,17 @@
 using Assets.scripts.Base;
+using Assets.scripts.InterSceneCommunication;
 using Assets.scripts.LogicBase;
 using Assets.scripts.TacticalBattleScene.AI;
-using Assets.scripts.InterSceneCommunication;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
 {
+    /// <summary>
+    /// A static class containing the information of the current battle.
+    /// Mostly tracks what happens with the active entities
+    /// </summary>
     public static class TacticalState
     {
         #region fields
@@ -38,6 +42,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         public static TacticalTextureHandler TextureManager;
 
+        // when a hex is selected, mark it as such, and remove the mark from the previously selected hex
         public static HexReactor SelectedHex
         {
             get
@@ -65,6 +70,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region public methods
 
+        // to be called when entities are created
         public static void AddRadarVisibleEntity(TacticalEntity ent)
         {
             Assert.AssertConditionMet((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0, "Added entity isn't radar visible");
@@ -85,6 +91,7 @@ namespace Assets.scripts.TacticalBattleScene
             ResetAllActions();
         }
 
+        // initiate a new battle with the relevant information on all active entities
         public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes)
         {
             TextureManager = new TacticalTextureHandler();
@@ -102,20 +109,30 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
+        // called at the start of each turn
         public static void StartTurn()
         {
+            // reset the actions of all entities that could act in the last turn
             var thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn);
             thisTurnActiveEntities.ForEach(ent => ent.ResetActions());
+
+            // pass the turn to the next group
             s_currentTurn = s_currentTurn.Next;
             if (s_currentTurn == null)
             {
                 s_currentTurn = s_turnOrder.First;
             }
+
+            // reset sight on all hexes
             s_hexes.ForEach(hex => hex.ResetSight());
             Debug.Log("Starting {0}'s turn.".FormatWith(CurrentTurn));
+
+            // start the turn to all of this turn's group's active entities
             thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn);
             thisTurnActiveEntities.ForEach(ent => ent.StartTurn());
             SelectedHex = null;
+
+            // if it's not the player's turn, let the computer act and automatically pass the turn
             if (CurrentTurn != Loyalty.Player)
             {
                 s_nonPlayerTeams[CurrentTurn].Act(thisTurnActiveEntities);
@@ -123,22 +140,10 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
+        // called when all entities need to reevaluate their actions - for example, when something on the map changes.
         public static void ResetAllActions()
         {
             s_activeEntities.ForEach(ent => ent.ResetActions());
-            SelectedHex = SelectedHex;
-        }
-
-        //TODO - remove once we don't have active creation of entities
-        public static void AddEntity(TacticalEntity ent)
-        {
-            var active = ent as ActiveEntity;
-            if (active != null)
-            {
-                s_activeEntities.Add(active);
-                TextureManager.UpdateEntityTexture(ent);
-            }
-            //To refresh the potential actions appearing on screen.
             SelectedHex = SelectedHex;
         }
 
@@ -146,6 +151,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         #region private method
 
+        // remove an entity from the relevant lists and check if the battle ended
         private static void DestroyEntity(ActiveEntity ent)
         {
             s_activeEntities.Remove(ent);
@@ -180,28 +186,31 @@ namespace Assets.scripts.TacticalBattleScene
             Application.LoadLevel("InventoryScene");
         }
 
-        //returns all player controlled active entities, with all of their undestroyed equipment 
-        static IEnumerable<EquippedEntity> GetSurvivingEntities()
+        //returns all player controlled active entities, with all of their undestroyed equipment
+        private static IEnumerable<EquippedEntity> GetSurvivingEntities()
         {
             return s_activeEntities.Where(ent => ent.Loyalty == Loyalty.Player)
-            //TODO - handle variants
+                //TODO - handle variants
                 .Select(ent => new EquippedEntity(new SpecificEntity(ent.Template),
                                                   ent.Systems.Where(system => system.OperationalCondition != SystemCondition.Destroyed)
                                                   .Select(system => system.Template)));
         }
 
         //return a random sample of destroyed entities as salvage
-        static IEnumerable<SpecificEntity> GetSalvagedEntities()
+        private static IEnumerable<SpecificEntity> GetSalvagedEntities()
         {
+            Debug.Log("{0} entities were destroyed".FormatWith(s_destroyedEntities.Count));
             //TODO - the way they were destroyed should affect the chance of salvage
             //TODO - handle variants
             return s_destroyedEntities.Where(ent => Randomiser.ProbabilityCheck(0.5))
-                .Select(ent => new SpecificEntity(ent.Template)); 
+                .Select(ent => new SpecificEntity(ent.Template));
         }
 
         //return a random sample of undestroyed equipment from destroyed entities as salvage
-        static IEnumerable<SubsystemTemplate> GetSalvagedEquipment()
+        private static IEnumerable<SubsystemTemplate> GetSalvagedEquipment()
         {
+            Debug.Log("{0} systems are salvageable".FormatWith(s_destroyedEntities.SelectMany(ent => ent.Systems)
+                .Where(system => system.OperationalCondition != SystemCondition.Destroyed).Count()));
             return s_destroyedEntities.SelectMany(ent => ent.Systems)
                 .Where(system => system.OperationalCondition != SystemCondition.Destroyed)
                 .Where(system => Randomiser.ProbabilityCheck(0.5)).Select(system => system.Template);

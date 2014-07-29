@@ -1,6 +1,5 @@
 ﻿using Assets.scripts.Base;
 using Assets.scripts.InterSceneCommunication;
-using Assets.scripts.LogicBase;
 using System;
 using UnityEngine;
 
@@ -14,9 +13,9 @@ namespace Assets.scripts.MainScreenScene
 
         private void Start()
         {
-            FileHandler.Init();
-            minHexSlider = FileHandler.GetIntProperty("min number of hexes", FileAccessor.General);
-            maxHexSlider = FileHandler.GetIntProperty("max number of hexes", FileAccessor.General);
+            SimpleConfigurationHandler.Init();
+            minHexSlider = SimpleConfigurationHandler.GetIntProperty("min number of hexes", FileAccessor.General);
+            maxHexSlider = SimpleConfigurationHandler.GetIntProperty("max number of hexes", FileAccessor.General);
             sliderValue = (minHexSlider + maxHexSlider) / 3;
             screenWidth = Screen.width;
             screenHeight = Screen.height;

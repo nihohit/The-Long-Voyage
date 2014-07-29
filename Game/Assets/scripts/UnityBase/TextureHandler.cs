@@ -2,6 +2,9 @@
 
 namespace Assets.scripts.UnityBase
 {
+    /// <summary>
+    /// Abstract class for texture replacement and changes in textures
+    /// </summary>
     public abstract class TextureHandler
     {
         //the default switching color is white
