@@ -8,9 +8,9 @@ namespace Assets.scripts.UnityBase
     /// </summary>
     public class ButtonCluster
     {
-        private readonly IEnumerable<SimpleButton> m_buttons;
+        private readonly IEnumerable<IUnityButton> m_buttons;
 
-        public ButtonCluster(IEnumerable<SimpleButton> buttons)
+        public ButtonCluster(IEnumerable<IUnityButton> buttons)
         {
             m_buttons = buttons;
             foreach (var button in m_buttons)

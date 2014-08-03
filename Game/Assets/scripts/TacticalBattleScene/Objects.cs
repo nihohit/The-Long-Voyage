@@ -61,7 +61,7 @@ namespace Assets.scripts.TacticalBattleScene
     {
         #region fields
 
-        protected readonly SimpleButton m_button;
+        protected readonly IUnityButton m_button;
 
         //TODO - remove after testing if no longer needed
         private readonly string m_name;
@@ -128,7 +128,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         public virtual void DisplayAction()
         {
-            DisplayAction(m_button.transform.position);
+            DisplayAction(m_button.Position);
         }
 
         public virtual void RemoveDisplay()
@@ -212,8 +212,8 @@ namespace Assets.scripts.TacticalBattleScene
             m_button.OnMouseOverAction = DisplayPath;
             m_button.OnMouseExitAction = RemovePath;
             m_cost = cost;
-            m_button.transform.localScale = new Vector3(m_button.transform.localScale.x * 2, m_button.transform.localScale.y * 2, m_button.transform.localScale.z);
-            m_button.gameObject.GetComponent<SpriteRenderer>().sortingOrder = 0;
+            m_button.Scale = new Vector3(m_button.Scale.x * 2, m_button.Scale.y * 2, m_button.Scale.z);
+            m_button.Renderer.sortingOrder = 0;
         }
 
         public MovementAction(MovementAction action, Hex hex, double cost) :
@@ -326,7 +326,7 @@ namespace Assets.scripts.TacticalBattleScene
             var from = ActingEntity.Reactor.transform.position;
             var to = TargetedHex.Reactor.transform.position;
             var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>(); ;
-            m_button.gameObject.GetComponent<SpriteRenderer>().sortingOrder = 1;
+            m_button.Renderer.sortingOrder = 1;
             shot.Init(to, from, Name);
             m_action();
             TargetedHex.Reactor.DisplayCommands(true);

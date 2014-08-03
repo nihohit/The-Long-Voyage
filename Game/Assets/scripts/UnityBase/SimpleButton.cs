@@ -1,4 +1,5 @@
 ﻿using System;
+using Assets.scripts.Base;
 using UnityEngine;
 
 namespace Assets.scripts.UnityBase
@@ -7,7 +8,7 @@ namespace Assets.scripts.UnityBase
     /// Button class that wraps button-relevant events with Action properties.
     /// Simplifies the creation of clickable objects in play.
     /// </summary>
-    public class SimpleButton : MarkerScript
+    public class SimpleButton : MarkerScript, IUnityButton
     {
         #region properties
 
@@ -19,7 +20,7 @@ namespace Assets.scripts.UnityBase
 
         #endregion properties
 
-        #region public methods
+        #region constructor
 
         public SimpleButton()
         {
@@ -28,6 +29,10 @@ namespace Assets.scripts.UnityBase
             OnMouseExitAction = () => { };
             ClickableAction = () => { };
         }
+
+        #endregion
+
+        #region overrides
 
         public override void Mark()
         {

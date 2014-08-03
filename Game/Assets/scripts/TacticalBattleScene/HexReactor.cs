@@ -19,11 +19,10 @@ namespace Assets.scripts.TacticalBattleScene
         private Action m_setMouseOverAction;
 
         // markers
-        private MarkerScript m_movementPathMarker;
-
-        private MarkerScript m_fogOfWarMarker;
-        private MarkerScript m_radarBlipMarker;
-        private MarkerScript m_targetMarker;
+        private IUnityMarker m_movementPathMarker;
+        private IUnityMarker m_fogOfWarMarker;
+        private IUnityMarker m_radarBlipMarker;
+        private IUnityMarker m_targetMarker;
 
         // Only a single hex reactor can be selected at any time
         private static MarkerScript s_selected;
@@ -312,7 +311,7 @@ namespace Assets.scripts.TacticalBattleScene
             return Entity.Actions.Materialize();
         }
 
-        private void RemoveMarker(MarkerScript marker)
+        private void RemoveMarker(IUnityMarker marker)
         {
             if (marker != null)
             {
@@ -320,12 +319,11 @@ namespace Assets.scripts.TacticalBattleScene
             }
         }
 
-        private MarkerScript AddAndDisplayMarker(MarkerScript marker, string markerName)
+        private IUnityMarker AddAndDisplayMarker(IUnityMarker marker, string markerName)
         {
             if (marker == null)
             {
                 marker = ((GameObject)Instantiate(Resources.Load(markerName), Vector3.zero, Quaternion.identity)).GetComponent<MarkerScript>();
-                marker.internalRenderer = marker.GetComponent<SpriteRenderer>();
             }
             marker.Mark(transform.position);
             return marker;

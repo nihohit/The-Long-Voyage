@@ -10,7 +10,7 @@ namespace Assets.scripts.InventoryScreen
     /// </summary>
     public class SystemSelectionBoxScript : SelectionBox<SubsystemTemplate>
     {
-        private MarkerScript m_markedTexture;
+        private IUnityMarker m_markedTexture;
         private static InventoryTextureHandler s_textureHandler;
 
         public static void Init(List<SubsystemTemplate> systems, InventoryTextureHandler textureHandler)
@@ -44,10 +44,10 @@ namespace Assets.scripts.InventoryScreen
             }
             else
             {
-                var renderer = m_markedTexture.gameObject.GetComponent<SpriteRenderer>();
+                var renderer = m_markedTexture.Renderer;
                 s_textureHandler.UpdateSystemMarkerTexture(item, renderer);
                 m_markedTexture.Mark(transform.position);
-                m_markedTexture.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                m_markedTexture.Scale = new Vector3(0.1f, 0.1f, 0.1f);
             }
         }
     }

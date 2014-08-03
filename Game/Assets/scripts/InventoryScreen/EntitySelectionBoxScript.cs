@@ -1,9 +1,9 @@
-﻿using Assets.scripts.Base;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Assets.scripts.Base;
 using Assets.scripts.InterSceneCommunication;
 using Assets.scripts.LogicBase;
 using Assets.scripts.UnityBase;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.scripts.InventoryScreen
@@ -15,16 +15,31 @@ namespace Assets.scripts.InventoryScreen
     /// </summary>
     public class EntitySelectionBoxScript : SelectionBox<SpecificEntity>
     {
+        #region fields
+
         private static InventoryTextureHandler s_textureHandler;
-        private MarkerScript m_markedTexture;
+        private IUnityMarker m_markedTexture;
         private IEnumerable<SystemSelectionBoxScript> m_systems;
         private static bool s_equippedEntitiesWaiting = false;
+
+        #endregion 
+        
+        #region public methods
 
         public static void Init(List<SpecificEntity> entities, InventoryTextureHandler textureHandler)
         {
             Init(entities);
             s_textureHandler = textureHandler;
         }
+
+        public static void TryAcquireEntities()
+        {
+            s_equippedEntitiesWaiting = true;
+        }
+
+        #endregion
+
+        #region private methods
 
         public override void Awake()
         {
@@ -101,10 +116,10 @@ namespace Assets.scripts.InventoryScreen
             }
             else
             {
-                var renderer = m_markedTexture.gameObject.GetComponent<SpriteRenderer>();
+                var renderer = m_markedTexture.Renderer;
                 s_textureHandler.UpdateEntityMarkerTexture(item, renderer);
                 m_markedTexture.Mark(UpperLeftCornerLocation());
-                m_markedTexture.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                m_markedTexture.Scale = new Vector3(0.2f, 0.2f, 0.2f);
                 m_systems = CreateSystemSelectionBoxes(item.Template.SystemSlots).Materialize();
             }
         }
@@ -152,9 +167,6 @@ namespace Assets.scripts.InventoryScreen
             return new Vector3(leftMostEdge, upperMostEdge, 0);
         }
 
-        internal static void TryAcquireEntities()
-        {
-            s_equippedEntitiesWaiting = true;
-        }
+        #endregion
     }
 }

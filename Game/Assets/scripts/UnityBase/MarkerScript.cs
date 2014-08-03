@@ -5,27 +5,44 @@ namespace Assets.scripts.UnityBase
     /// <summary>
     /// A script meant to handle movement and display of sprites.
     /// </summary>
-    public class MarkerScript : MonoBehaviour
+    public class MarkerScript : MonoBehaviour, IUnityMarker
     {
-        public SpriteRenderer internalRenderer;
+        public Vector3 Position 
+        { 
+            get { return transform.position; }
+            set { transform.position = value; } 
+        }
+
+        public Vector3 Scale
+        {
+            get { return transform.localScale; }
+            set { transform.localScale = value; }
+        }
+
+        public SpriteRenderer Renderer { get { return gameObject.GetComponent<SpriteRenderer>(); } }
 
         // Displays the sprite at the given location.
         public virtual void Mark(Vector3 position)
         {
             this.enabled = true;
-            internalRenderer.enabled = true;
-            internalRenderer.transform.position = position;
+            Renderer.enabled = true;
+            Position = position;
         }
 
         public virtual void Mark()
         {
-            Mark(this.transform.position);
+            Mark(Position);
         }
 
         public virtual void Unmark()
         {
-            internalRenderer.enabled = false;
+            Renderer.enabled = false;
             this.enabled = false;
+        }
+
+        public void DestroyGameObject()
+        {
+            UnityEngine.Object.Destroy(gameObject);
         }
     }
 }

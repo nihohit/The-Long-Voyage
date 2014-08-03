@@ -39,3 +39,5 @@ Game/Library/CurrentLayout.dwlt
 Game/ProjectSettings/
 Game/Assembly-CSharp.csproj
 Game/Library/CurrentLayout.dwlt
+Game/*.csproj
+Game/UnityVS.*

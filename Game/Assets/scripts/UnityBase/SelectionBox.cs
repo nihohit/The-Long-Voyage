@@ -95,29 +95,32 @@ namespace Assets.scripts.UnityBase
             m_frameCounter = 5;
         }
 
-        private IEnumerable<SimpleButton> CreateButtons()
+        private IEnumerable<IUnityButton> CreateButtons()
         {
             var mousePosition = Input.mousePosition;
             var currentPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
-            //HACK - a more elegant solution, which will maintain the order of systems no matter where clicked, is in order
-            var buttonsGoingDown = currentPosition.y > Camera.main.transform.position.y;
-            SimpleButton button;
-            currentPosition = CreateButton(null, currentPosition, out button, buttonsGoingDown);
+            var buttomPartOfScreen = currentPosition.y > Camera.main.transform.position.y;
+
+            IUnityButton button;
+            currentPosition = CreateButton(null, currentPosition, out button, buttomPartOfScreen);
             yield return button;
-            foreach (var item in s_selectableOptions.Select(ent => ent).Distinct().Materialize())
+
+            var choices = s_selectableOptions.Select(ent => ent).Distinct();
+            // reverse the list if in the bottom part of the screen
+            foreach (var item in buttomPartOfScreen ? choices.Reverse() : choices)
             {
-                currentPosition = CreateButton(item, currentPosition, out button, buttonsGoingDown);
+                currentPosition = CreateButton(item, currentPosition, out button, buttomPartOfScreen);
                 yield return button;
             }
         }
 
         // initializes a button, place it in its location, and return the updated location for the next button
-        private Vector3 CreateButton(T item, Vector3 currentPosition, out SimpleButton button, bool buttonsGoingDown)
+        private Vector3 CreateButton(T item, Vector3 currentPosition, out IUnityButton button, bool buttonsGoingDown)
         {
             var buttonObject = ((GameObject)Instantiate(Resources.Load("CircularButton"), currentPosition, Quaternion.identity));
             button = buttonObject.GetComponent<SimpleButton>();
-            buttonObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
-            TextureHandler.ReplaceTexture(buttonObject.GetComponent<SpriteRenderer>(), GetTexture(item), "selection button");
+            button.Scale = new Vector3(0.1f, 0.1f, 0.1f);
+            TextureHandler.ReplaceTexture(button.Renderer, GetTexture(item), "selection button");
             button.ClickableAction = () => SelectedItem = item;
             if (buttonsGoingDown)
             {
