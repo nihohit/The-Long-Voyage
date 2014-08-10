@@ -64,5 +64,18 @@ namespace Assets.scripts.Base
             }
             return list;
         }
+
+        public static IEnumerable<T> Shuffle<T>(IEnumerable<T> group)
+        {
+            var buffer = group.ToList();
+
+            for (int i = 0; i < buffer.Count; i++)
+            {
+                int j = s_staticRandom.Next(i, buffer.Count);
+                yield return buffer[j];
+
+                buffer[j] = buffer[i];
+            }
+        }
     }
 }

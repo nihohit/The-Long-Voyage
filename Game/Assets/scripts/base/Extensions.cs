@@ -87,6 +87,7 @@ namespace Assets.scripts.Base
         //this function ensures that a given enumeration materializes
         public static IEnumerable<T> Materialize<T>(this IEnumerable<T> enumerable)
         {
+            Assert.NotNull(enumerable, "enumerable");
             if (enumerable is ICollection<T>) return enumerable;
             return enumerable.ToList();
         }
@@ -104,22 +105,32 @@ namespace Assets.scripts.Base
 
         public static bool None<T>(this IEnumerable<T> enumerable, Func<T, bool> op)
         {
+            Assert.NotNull(enumerable, "enumerable");
             return !enumerable.Any(op);
         }
 
         public static bool None<T>(this IEnumerable<T> enumerable)
         {
+            Assert.NotNull(enumerable, "enumerable");
             return !enumerable.Any();
         }
 
         public static T ChooseRandomValue<T>(this IEnumerable<T> group)
         {
+            Assert.NotNull(group, "group");
             return Randomiser.ChooseValue(group);
         }
 
         public static IEnumerable<T> ChooseRandomValues<T>(this IEnumerable<T> group, int amount)
         {
+            Assert.NotNull(group, "group");
             return Randomiser.ChooseValues(group, amount);
+        }
+
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> group)
+        {
+            Assert.NotNull(group, "group");
+            return Randomiser.Shuffle(group);
         }
 
         #endregion IEnumerable

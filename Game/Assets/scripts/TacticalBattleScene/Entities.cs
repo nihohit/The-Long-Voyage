@@ -530,7 +530,7 @@ namespace Assets.scripts.TacticalBattleScene
         {
             var baseActions = base.ComputeActions();
             var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, Template.MovementMethod);
-            return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement));
+            return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement).Shuffle());
         }
 
         // compute moves at start of turn
