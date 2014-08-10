@@ -16,6 +16,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
     public interface IActionEvaluator
     {
         IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<TacticalEntity> entitiesSeenByTeam);
+        void Clear();
     }
 
     public interface IAIRunner
@@ -99,6 +100,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
         /// <param name="controlledEntities"></param>
         public void Act(IEnumerable<ActiveEntity> controlledEntities)
         {
+            m_actionEvaluator.Clear();
             EvaluateActions(controlledEntities);
             while (m_prioritizedActions.Peek() != null)
             {
@@ -244,6 +246,11 @@ namespace Assets.scripts.TacticalBattleScene.AI
             }
         }
 
+        public void Clear()
+        {
+            m_entityEvaluator.Clear();
+        }
+
         #endregion IActionEvaluator implementation
 
         // evaluates a hex based on the value of the systems that can be used from it on targets,
@@ -291,6 +298,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
     {
         double EvaluateValue(TacticalEntity entity);
         void UpdateValue(TacticalEntity entity);
+        void Clear();
     }
 
     public class SimpleEntityEvaluator : IEntityEvaluator
@@ -305,6 +313,11 @@ namespace Assets.scripts.TacticalBattleScene.AI
         public void UpdateValue(TacticalEntity entity)
         {
             m_entitiesValue.Remove(entity);
+        }
+
+        public void Clear()
+        {
+            m_entitiesValue.Clear();
         }
 
         private double EvaluateActiveEntity(ActiveEntity activeEntity)
