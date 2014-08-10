@@ -97,6 +97,7 @@ namespace Assets.scripts.TacticalBattleScene
             TextureManager = new TacticalTextureHandler();
             BattleStarted = false;
             s_activeEntities = new HashSet<ActiveEntity>(entities);
+            s_radarableEntity.Clear();
             entities.ForEach(ent => TextureManager.UpdateEntityTexture(ent));
             var loaylties = entities.Select(ent => ent.Loyalty).Distinct();
             SetTurnOrder(loaylties);
