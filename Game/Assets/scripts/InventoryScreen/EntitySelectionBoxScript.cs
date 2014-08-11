@@ -13,12 +13,10 @@ namespace Assets.scripts.InventoryScreen
     /// Also is automatically populated if there are chosen equipped entities,
     /// and populates the equipped entities list when leaving the inventory scene.
     /// </summary>
-    public class EntitySelectionBoxScript : SelectionBox<SpecificEntity>
+    public class EntitySelectionBoxScript : DropDownSelectionBox<SpecificEntity>
     {
         #region fields
 
-        private static InventoryTextureHandler s_textureHandler;
-        private IUnityMarker m_markedTexture;
         private IEnumerable<SystemSelectionBoxScript> m_systems;
         private static bool s_equippedEntitiesWaiting = false;
 
@@ -99,7 +97,7 @@ namespace Assets.scripts.InventoryScreen
             {
                 return s_textureHandler.GetNullTexture();
             }
-            return s_textureHandler.GetEntityTexture(item);
+            return s_textureHandler.GetTexture(item);
         }
 
         protected override void UpdateVisuals(SpecificEntity item)
@@ -117,7 +115,7 @@ namespace Assets.scripts.InventoryScreen
             else
             {
                 var renderer = m_markedTexture.Renderer;
-                s_textureHandler.UpdateEntityMarkerTexture(item, renderer);
+                s_textureHandler.UpdateMarkerTexture(item, renderer);
                 m_markedTexture.Mark(UpperLeftCornerLocation());
                 m_markedTexture.Scale = new Vector3(0.2f, 0.2f, 0.2f);
                 m_systems = CreateSystemSelectionBoxes(item.Template.SystemSlots).Materialize();

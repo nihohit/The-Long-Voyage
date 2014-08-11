@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Assets.scripts.UnityBase;
 
 namespace Assets.scripts.InventoryScreen
 {
     /// <summary>
     /// Texture handler for the inventory screen
     /// </summary>
-    public class InventoryTextureHandler : LoyaltyAwareTextureHandler
+    public class InventoryTextureHandler : LoyaltyAwareTextureHandler, ITextureHandler<SpecificEntity>, ITextureHandler<SubsystemTemplate>
     {
         #region fields
 
@@ -33,25 +34,25 @@ namespace Assets.scripts.InventoryScreen
 
         #region public methods
 
-        public void UpdateEntityMarkerTexture(SpecificEntity ent, SpriteRenderer renderer)
+        public void UpdateMarkerTexture(SpecificEntity ent, SpriteRenderer renderer)
         {
             var texture = m_knownEntityTextures[ent.Template.Name];
             ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player, texture), ent.Template.Name);
         }
 
-        public void UpdateSystemMarkerTexture(SubsystemTemplate item, SpriteRenderer renderer)
+        public void UpdateMarkerTexture(SubsystemTemplate item, SpriteRenderer renderer)
         {
             var texture = m_knownButtonTextures[item.Name];
             ReplaceTexture(renderer, texture, item.Name);
         }
 
-        public Texture2D GetEntityTexture(SpecificEntity ent)
+        public Texture2D GetTexture(SpecificEntity ent)
         {
             var texture = m_knownEntityTextures[ent.Template.Name];
             return GetEntityTexture(ent.Template, Loyalty.Player, texture);
         }
 
-        public Texture2D GetSystemTexture(SubsystemTemplate system)
+        public Texture2D GetTexture(SubsystemTemplate system)
         {
             return m_knownButtonTextures[system.Name];
         }

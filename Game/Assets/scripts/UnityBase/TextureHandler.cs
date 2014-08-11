@@ -2,6 +2,21 @@
 
 namespace Assets.scripts.UnityBase
 {
+    #region ITextureHandler
+
+    public interface ITextureHandler<T>
+    {
+        void UpdateMarkerTexture(T item, SpriteRenderer renderer);
+
+        Texture2D GetTexture(T ent);
+
+        Texture2D GetNullTexture();
+    }
+
+    #endregion
+
+    #region TextureHandler
+
     /// <summary>
     /// Abstract class for texture replacement and changes in textures
     /// </summary>
@@ -101,4 +116,6 @@ namespace Assets.scripts.UnityBase
             return texture;
         }
     }
+
+    #endregion
 }

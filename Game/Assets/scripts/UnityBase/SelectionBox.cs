@@ -1,10 +1,12 @@
-﻿using Assets.scripts.Base;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Assets.scripts.Base;
 using UnityEngine;
 
 namespace Assets.scripts.UnityBase
 {
+    #region SelectionBox
+
     /// <summary>
     /// A clickable box that offers a selection of possible items when clicked, and saves the chosen item.
     /// </summary>
@@ -15,6 +17,55 @@ namespace Assets.scripts.UnityBase
 
         // the selected item
         private T m_selectedItem;
+
+        protected IUnityMarker m_markedTexture;
+
+        protected static ITextureHandler<T> s_textureHandler;
+
+        #endregion fields
+
+        #region properties
+
+        // when an item is selected, all displayed options must be removed and the box's visual need to be updated.
+        public virtual T SelectedItem
+        {
+            get { return m_selectedItem; }
+            set
+            {
+                m_selectedItem = value;
+                UpdateVisuals(m_selectedItem);
+            }
+        }
+
+        #endregion properties
+
+        #region private methods
+
+        protected virtual void UpdateVisuals(T item)
+        {
+            if (item == null)
+            {
+                m_markedTexture.Unmark();
+            }
+            else
+            {
+                var renderer = m_markedTexture.Renderer;
+                s_textureHandler.UpdateMarkerTexture(item, renderer);
+                m_markedTexture.Mark(transform.position);
+                m_markedTexture.Scale = new Vector3(0.1f, 0.1f, 0.1f);
+            }
+        }
+
+        #endregion
+    }
+
+    #endregion
+
+    #region DropDownSelectionBox
+
+    public abstract class DropDownSelectionBox<T> : SelectionBox<T> where T : class
+    {
+        #region fields
 
         // a list of all available items
         protected static List<T> s_selectableOptions;
@@ -33,20 +84,15 @@ namespace Assets.scripts.UnityBase
         #region properties
 
         // when an item is selected, all displayed options must be removed and the box's visual need to be updated.
-        public T SelectedItem
+        public override T SelectedItem
         {
-            get { return m_selectedItem; }
+            get { return base.SelectedItem; }
             set
             {
                 s_selectableOptions.Remove(value);
-                if (m_selectedItem != null)
-                {
-                    s_selectableOptions.Add(m_selectedItem);
-                }
 
-                m_selectedItem = value;
+                base.SelectedItem = value;
                 RemoveButtons();
-                UpdateVisuals(m_selectedItem);
             }
         }
 
@@ -144,8 +190,8 @@ namespace Assets.scripts.UnityBase
 
         protected abstract Texture2D GetTexture(T item);
 
-        protected abstract void UpdateVisuals(T item);
-
-        #endregion abstract methods
+        #endregion
     }
+
+    #endregion
 }

@@ -8,11 +8,8 @@ namespace Assets.scripts.InventoryScreen
     /// <summary>
     /// A selection box for entities' subsystems
     /// </summary>
-    public class SystemSelectionBoxScript : SelectionBox<SubsystemTemplate>
+    public class SystemSelectionBoxScript : DropDownSelectionBox<SubsystemTemplate>
     {
-        private IUnityMarker m_markedTexture;
-        private static InventoryTextureHandler s_textureHandler;
-
         public static void Init(List<SubsystemTemplate> systems, InventoryTextureHandler textureHandler)
         {
             Init(systems);
@@ -33,7 +30,7 @@ namespace Assets.scripts.InventoryScreen
             {
                 return s_textureHandler.GetNullTexture();
             }
-            return s_textureHandler.GetSystemTexture(item);
+            return s_textureHandler.GetTexture(item);
         }
 
         protected override void UpdateVisuals(SubsystemTemplate item)
@@ -45,7 +42,7 @@ namespace Assets.scripts.InventoryScreen
             else
             {
                 var renderer = m_markedTexture.Renderer;
-                s_textureHandler.UpdateSystemMarkerTexture(item, renderer);
+                s_textureHandler.UpdateMarkerTexture(item, renderer);
                 m_markedTexture.Mark(transform.position);
                 m_markedTexture.Scale = new Vector3(0.1f, 0.1f, 0.1f);
             }
