@@ -7,10 +7,10 @@ namespace Assets.scripts.UnityBase
     /// </summary>
     public class MarkerScript : MonoBehaviour, IUnityMarker
     {
-        public Vector3 Position 
-        { 
+        public Vector3 Position
+        {
             get { return transform.position; }
-            set { transform.position = value; } 
+            set { transform.position = value; }
         }
 
         public Vector3 Scale

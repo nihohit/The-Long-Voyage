@@ -1,6 +1,6 @@
-﻿using Assets.scripts.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Assets.scripts.Base;
 
 namespace Assets.scripts.LogicBase
 {

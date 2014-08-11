@@ -1,6 +1,6 @@
-﻿using Assets.scripts.LogicBase;
+﻿using System.Collections.Generic;
+using Assets.scripts.LogicBase;
 using Assets.scripts.UnityBase;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.scripts.InventoryScreen

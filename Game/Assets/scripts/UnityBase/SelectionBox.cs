@@ -56,10 +56,10 @@ namespace Assets.scripts.UnityBase
             }
         }
 
-        #endregion
+        #endregion private methods
     }
 
-    #endregion
+    #endregion SelectionBox
 
     #region DropDownSelectionBox
 
@@ -190,8 +190,8 @@ namespace Assets.scripts.UnityBase
 
         protected abstract Texture2D GetTexture(T item);
 
-        #endregion
+        #endregion abstract methods
     }
 
-    #endregion
+    #endregion DropDownSelectionBox
 }

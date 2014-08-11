@@ -1,5 +1,5 @@
-﻿using Assets.scripts.TacticalBattleScene;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Assets.scripts.TacticalBattleScene;
 
 namespace Assets.scripts.InterSceneCommunication
 {

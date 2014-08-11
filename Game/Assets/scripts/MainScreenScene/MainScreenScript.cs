@@ -1,6 +1,6 @@
-﻿using Assets.scripts.Base;
+﻿using System;
+using Assets.scripts.Base;
 using Assets.scripts.InterSceneCommunication;
-using System;
 using UnityEngine;
 
 namespace Assets.scripts.MainScreenScene

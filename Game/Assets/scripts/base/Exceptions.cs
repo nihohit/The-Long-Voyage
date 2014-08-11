@@ -25,7 +25,7 @@ namespace Assets.scripts.Base
     }
 
     /// <summary>
-    /// Thrown when an area of code which shouldn't be accessed is. 
+    /// Thrown when an area of code which shouldn't be accessed is.
     /// </summary>
     [Serializable]
     public class UnreachableCodeException : Exception

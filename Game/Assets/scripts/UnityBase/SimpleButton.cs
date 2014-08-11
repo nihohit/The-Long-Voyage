@@ -1,5 +1,4 @@
 ﻿using System;
-using Assets.scripts.Base;
 using UnityEngine;
 
 namespace Assets.scripts.UnityBase
@@ -30,7 +29,7 @@ namespace Assets.scripts.UnityBase
             ClickableAction = () => { };
         }
 
-        #endregion
+        #endregion constructor
 
         #region overrides
 
@@ -51,7 +50,7 @@ namespace Assets.scripts.UnityBase
             this.GetComponent<Collider2D>().enabled = false;
         }
 
-        #endregion public methods
+        #endregion overrides
 
         #region private and protected methods
 

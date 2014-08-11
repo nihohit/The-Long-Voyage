@@ -1,6 +1,6 @@
-﻿using Assets.scripts.LogicBase;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Assets.scripts.LogicBase;
 using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene.PathFinding

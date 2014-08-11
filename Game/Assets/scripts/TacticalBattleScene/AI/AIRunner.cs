@@ -1,9 +1,9 @@
-using Assets.scripts.Base;
-using Assets.scripts.LogicBase;
-using Assets.scripts.TacticalBattleScene.PathFinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.scripts.Base;
+using Assets.scripts.LogicBase;
+using Assets.scripts.TacticalBattleScene.PathFinding;
 using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene.AI
@@ -16,6 +16,7 @@ namespace Assets.scripts.TacticalBattleScene.AI
     public interface IActionEvaluator
     {
         IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<TacticalEntity> entitiesSeenByTeam);
+
         void Clear();
     }
 
@@ -219,7 +220,6 @@ namespace Assets.scripts.TacticalBattleScene.AI
                         //Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
                     }
                 }
-
                 else if (movementAction != null)
                 {
                     var targetHex = movementAction.TargetedHex;
@@ -297,7 +297,9 @@ namespace Assets.scripts.TacticalBattleScene.AI
     public interface IEntityEvaluator
     {
         double EvaluateValue(TacticalEntity entity);
+
         void UpdateValue(TacticalEntity entity);
+
         void Clear();
     }
 

@@ -1,5 +1,5 @@
-﻿using Assets.scripts.LogicBase;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Assets.scripts.LogicBase;
 
 namespace Assets.scripts.InterSceneCommunication
 {

@@ -1,8 +1,8 @@
-﻿using Assets.scripts.Base;
+﻿using System;
+using System.Collections.Generic;
+using Assets.scripts.Base;
 using Assets.scripts.LogicBase;
 using Assets.scripts.UnityBase;
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene

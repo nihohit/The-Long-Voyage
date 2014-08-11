@@ -20,8 +20,8 @@ namespace Assets.scripts.InventoryScreen
         private IEnumerable<SystemSelectionBoxScript> m_systems;
         private static bool s_equippedEntitiesWaiting = false;
 
-        #endregion 
-        
+        #endregion fields
+
         #region public methods
 
         public static void Init(List<SpecificEntity> entities, InventoryTextureHandler textureHandler)
@@ -35,7 +35,7 @@ namespace Assets.scripts.InventoryScreen
             s_equippedEntitiesWaiting = true;
         }
 
-        #endregion
+        #endregion public methods
 
         #region private methods
 
@@ -165,6 +165,6 @@ namespace Assets.scripts.InventoryScreen
             return new Vector3(leftMostEdge, upperMostEdge, 0);
         }
 
-        #endregion
+        #endregion private methods
     }
 }

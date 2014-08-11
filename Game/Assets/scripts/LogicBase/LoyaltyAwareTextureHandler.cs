@@ -1,6 +1,6 @@
-﻿using Assets.scripts.Base;
+﻿using System.Collections.Generic;
+using Assets.scripts.Base;
 using Assets.scripts.UnityBase;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.scripts.LogicBase

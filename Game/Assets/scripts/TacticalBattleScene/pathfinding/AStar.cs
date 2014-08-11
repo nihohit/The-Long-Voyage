@@ -1,8 +1,8 @@
-﻿using Assets.scripts.Base;
-using Assets.scripts.LogicBase;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.scripts.Base;
+using Assets.scripts.LogicBase;
 
 namespace Assets.scripts.TacticalBattleScene.PathFinding
 {

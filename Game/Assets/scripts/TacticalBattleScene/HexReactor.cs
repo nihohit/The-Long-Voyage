@@ -1,8 +1,8 @@
-using Assets.scripts.Base;
-using Assets.scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.scripts.Base;
+using Assets.scripts.UnityBase;
 using UnityEngine;
 
 namespace Assets.scripts.TacticalBattleScene
@@ -20,6 +20,7 @@ namespace Assets.scripts.TacticalBattleScene
 
         // markers
         private IUnityMarker m_movementPathMarker;
+
         private IUnityMarker m_fogOfWarMarker;
         private IUnityMarker m_radarBlipMarker;
         private IUnityMarker m_targetMarker;
