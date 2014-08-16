@@ -70,8 +70,8 @@ namespace Assets.scripts.UnityBase
         // a list of all available items
         protected static List<T> s_selectableOptions;
 
-        // marks whether the mouse is still over the item.
-        private bool m_mouseHover;
+        // marks whether the last mouse click registered on the button
+        private bool m_clickedOn;
 
         // The displayed items
         private ButtonCluster m_buttons;
@@ -90,7 +90,10 @@ namespace Assets.scripts.UnityBase
             set
             {
                 s_selectableOptions.Remove(value);
-
+                if (base.SelectedItem != null)
+                {
+                    s_selectableOptions.Add(base.SelectedItem);
+                }
                 base.SelectedItem = value;
                 RemoveButtons();
             }
@@ -103,8 +106,6 @@ namespace Assets.scripts.UnityBase
         public virtual void Awake()
         {
             ClickableAction = ClickedOn;
-            OnMouseExitAction = () => m_mouseHover = false;
-            OnMouseOverAction = () => m_mouseHover = true;
         }
 
         // Update is called once per frame
@@ -117,11 +118,12 @@ namespace Assets.scripts.UnityBase
             else
             {
                 //if the mouse is pressed and not on me, remove selection
-                if (Input.GetMouseButtonDown(0) && !m_mouseHover)
+                if (Input.GetMouseButtonDown(0) && !m_clickedOn)
                 {
                     RemoveButtons();
                 }
             }
+            m_clickedOn = false;
         }
 
         // sets all possible selection options
@@ -136,6 +138,7 @@ namespace Assets.scripts.UnityBase
 
         private void ClickedOn()
         {
+            m_clickedOn = true;
             RemoveButtons();
             m_buttons = new ButtonCluster(CreateButtons().Materialize());
             m_frameCounter = 5;
@@ -151,7 +154,7 @@ namespace Assets.scripts.UnityBase
             currentPosition = CreateButton(null, currentPosition, out button, buttomPartOfScreen);
             yield return button;
 
-            var choices = s_selectableOptions.Select(ent => ent).Distinct();
+            var choices = s_selectableOptions.Distinct();
             // reverse the list if in the bottom part of the screen
             foreach (var item in buttomPartOfScreen ? choices.Reverse() : choices)
             {
