@@ -25,7 +25,7 @@ namespace Assets.scripts.TacticalBattleScene
         //HACK - to be deleted.
         private List<Hex> m_emptyHexes = new List<Hex>();
 
-        private int screenSpeed = 10;
+        private int screenSpeed;
 
         #region MonoBehaviour overrides
 
@@ -64,6 +64,7 @@ namespace Assets.scripts.TacticalBattleScene
         private void Start()
         {
             InitClasses();
+            screenSpeed = SimpleConfigurationHandler.GetIntProperty("screen movement speed", FileAccessor.General);
 
             // create new hexes from a given entry point and of a given size
             var hexes = new List<Hex>();
@@ -125,6 +126,7 @@ namespace Assets.scripts.TacticalBattleScene
         private void InitClasses()
         {
             TacticalState.BattleStarted = false;
+            SimpleConfigurationHandler.Init();
             InitiateGlobalState();
         }
 
