@@ -41,3 +41,5 @@ Game/Assembly-CSharp.csproj
 Game/Library/CurrentLayout.dwlt
 Game/*.csproj
 Game/UnityVS.*
+Game/Assets/UnityVS/Editor/*.dll
+Game/Library/CurrentLayout.dwlt
