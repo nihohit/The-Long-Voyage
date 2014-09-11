@@ -25,6 +25,8 @@ namespace Assets.Scripts.TacticalBattleScene
         //HACK - to be deleted.
         private List<Hex> m_emptyHexes = new List<Hex>();
 
+        private int screenSpeed;
+
         #region MonoBehaviour overrides
 
         // runs on every frame
@@ -41,8 +43,8 @@ namespace Assets.Scripts.TacticalBattleScene
             // update camera position based on input. The axis are defined in the Unity editor
             if (Camera.current != null)
             {
-                float xAxisValue = Input.GetAxis("Horizontal");
-                float yAxisValue = Input.GetAxis("Vertical");
+                float xAxisValue = Input.GetAxis("Horizontal")* screenSpeed;
+                float yAxisValue = Input.GetAxis("Vertical")* screenSpeed;
                 float zAxisValue = Input.GetAxisRaw("Zoom");
                 Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
             }
@@ -62,6 +64,7 @@ namespace Assets.Scripts.TacticalBattleScene
         private void Start()
         {
             InitClasses();
+            screenSpeed = SimpleConfigurationHandler.GetIntProperty("screen movement speed", FileAccessor.General);
 
             // create new hexes from a given entry point and of a given size
             var hexes = new List<Hex>();
@@ -123,6 +126,7 @@ namespace Assets.Scripts.TacticalBattleScene
         private void InitClasses()
         {
             TacticalState.BattleStarted = false;
+            SimpleConfigurationHandler.Init();
             InitiateGlobalState();
         }
 
