@@ -1,10 +1,10 @@
-﻿using Assets.scripts.Base;
-using Assets.scripts.InterSceneCommunication;
-using Assets.scripts.LogicBase;
-using Assets.scripts.UnityBase;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.InterSceneCommunication;
+using Assets.Scripts.LogicBase;
+using Assets.Scripts.UnityBase;
 using UnityEngine;
 
-namespace Assets.scripts.InventoryScreen
+namespace Assets.Scripts.InventoryScreen
 {
     /*
      * inventory screen specifications -

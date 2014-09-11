@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Assets.scripts.LogicBase;
+﻿using Assets.Scripts.LogicBase;
+using System.Collections.Generic;
 
-namespace Assets.scripts.InterSceneCommunication
+namespace Assets.Scripts.InterSceneCommunication
 {
     /// <summary>
     /// represents the state of player-controlled forces on the strategic gameplay

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Assets.scripts.TacticalBattleScene;
+﻿using Assets.Scripts.TacticalBattleScene;
+using System.Collections.Generic;
 
-namespace Assets.scripts.InterSceneCommunication
+namespace Assets.Scripts.InterSceneCommunication
 {
     /// <summary>
     /// Information relevant for the beginning of a tactical battle.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Assets.scripts.LogicBase
+namespace Assets.Scripts.LogicBase
 {
     //the logic behind the numbering is that the addition of this enumerator and MovementType gives the following result - if the value is between 0-5, no movement penalty. above 4 - slow, above 6 - impossible
     public enum MovementType { Crawler = 3, Walker = 2, Hover = 1, Flyer = 0, Unmoving = Int32.MaxValue }

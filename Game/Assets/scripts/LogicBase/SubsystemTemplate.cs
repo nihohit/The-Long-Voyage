@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Assets.Scripts.Base;
 
-namespace Assets.scripts.LogicBase
+namespace Assets.Scripts.LogicBase
 {
     #region SubsystemTemplate
 
@@ -86,7 +87,7 @@ namespace Assets.scripts.LogicBase
         public static SubsystemTemplate GetTemplate(Int32 id)
         {
             //TODO - no error handling at the moment.
-            return s_knownTemplates[id];
+            return s_knownTemplates.Get(id, "equipment templates");
         }
 
         //TODO - this method should be removed after we have initialization from XML

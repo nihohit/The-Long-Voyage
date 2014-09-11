@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Assets.Scripts.LogicBase;
+using System;
 using System.Collections.Generic;
-using Assets.scripts.LogicBase;
 using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene.PathFinding
+namespace Assets.Scripts.TacticalBattleScene.PathFinding
 {
     #region delegates
 

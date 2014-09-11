@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.LogicBase;
 
-namespace Assets.scripts.TacticalBattleScene.PathFinding
+namespace Assets.Scripts.TacticalBattleScene.PathFinding
 {
     #region AStar
 

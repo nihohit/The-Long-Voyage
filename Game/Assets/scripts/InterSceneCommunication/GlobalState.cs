@@ -1,4 +1,4 @@
-﻿namespace Assets.scripts.InterSceneCommunication
+﻿namespace Assets.Scripts.InterSceneCommunication
 {
     /// <summary>
     /// A static class, accessible from anywhere in the code, containing all cross-scene information.

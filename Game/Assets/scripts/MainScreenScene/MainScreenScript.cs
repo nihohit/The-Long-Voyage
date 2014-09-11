@@ -1,9 +1,9 @@
-﻿using System;
-using Assets.scripts.Base;
-using Assets.scripts.InterSceneCommunication;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.InterSceneCommunication;
+using System;
 using UnityEngine;
 
-namespace Assets.scripts.MainScreenScene
+namespace Assets.Scripts.MainScreenScene
 {
     public class MainScreenScript : MonoBehaviour
     {

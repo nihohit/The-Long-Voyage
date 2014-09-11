@@ -1,12 +1,12 @@
+using Assets.Scripts.Base;
+using Assets.Scripts.InterSceneCommunication;
+using Assets.Scripts.LogicBase;
+using Assets.Scripts.TacticalBattleScene.AI;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.InterSceneCommunication;
-using Assets.scripts.LogicBase;
-using Assets.scripts.TacticalBattleScene.AI;
 using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene
+namespace Assets.Scripts.TacticalBattleScene
 {
     /// <summary>
     /// A static class containing the information of the current battle.

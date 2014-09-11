@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     /// <summary>
     /// A static class that holds all the timers running throughout the program.
@@ -28,7 +28,7 @@ namespace Assets.scripts.Base
 #if DEBUG
             lock (s_timers)
             {
-                s_timers[name][operation].Stop();
+                s_timers.Get(name, "Timers dictionary").Get(operation, name).Stop();
             }
 #endif
         }
@@ -46,7 +46,7 @@ namespace Assets.scripts.Base
 
         public static TimeSpan GetTime(string name, string operation)
         {
-            return s_timers[name][operation].Elapsed;
+            return s_timers.Get(name, "Timers dictionary").Get(operation, name).Elapsed;
         }
     }
 }

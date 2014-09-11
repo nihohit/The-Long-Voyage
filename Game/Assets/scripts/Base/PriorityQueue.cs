@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     #region IPriorityQueue
 

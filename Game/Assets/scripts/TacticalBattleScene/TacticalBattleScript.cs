@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.InterSceneCommunication;
+using Assets.Scripts.LogicBase;
+using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.InterSceneCommunication;
-using Assets.scripts.LogicBase;
 using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene
+namespace Assets.Scripts.TacticalBattleScene
 {
     /// <summary>
     /// The main script for the tactical battle scene

@@ -1,12 +1,12 @@
+using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.LogicBase;
-using Assets.scripts.UnityBase;
 using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene
+namespace Assets.Scripts.TacticalBattleScene
 {
     #region enums
 

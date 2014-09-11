@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene
+namespace Assets.Scripts.TacticalBattleScene
 {
     /// <summary>
     ///  Script wrapper for shots moving across the screen

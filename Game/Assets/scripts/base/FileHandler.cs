@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     public enum FileAccessor { Units, TerrainGeneration, General }
 
@@ -28,17 +28,22 @@ namespace Assets.scripts.Base
 
         public static UInt16 GetUintProperty(string str, FileAccessor access)
         {
-            return Convert.ToUInt16(s_navigator[access.ToString()][str]);
+            return Convert.ToUInt16(GetStringProperty(str, access));
+        }
+
+        public static object GetStringProperty(string str, FileAccessor access)
+        {
+            return s_navigator.Get(access.ToString(), "File Handler navigator").Get(str, "{0} dictionary".FormatWith(access));
         }
 
         public static Int32 GetIntProperty(string str, FileAccessor access)
         {
-            return Convert.ToInt32(s_navigator[access.ToString()][str]);
+            return Convert.ToInt32(GetStringProperty(str, access));
         }
 
         public static float GetFloatProperty(string str, FileAccessor access)
         {
-            return Convert.ToSingle(s_navigator[access.ToString()][str]);
+            return Convert.ToSingle(GetStringProperty(str, access));
         }
 
         #endregion public methods

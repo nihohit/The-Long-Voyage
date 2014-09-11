@@ -1,4 +1,4 @@
-﻿namespace Assets.scripts.LogicBase
+﻿namespace Assets.Scripts.LogicBase
 {
     /// <summary>
     /// Immutable characteristics of a pilot

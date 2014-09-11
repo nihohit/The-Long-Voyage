@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using Assets.Scripts.UnityBase;
+using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.LogicBase;
-using Assets.scripts.UnityBase;
 using UnityEngine;
 
-namespace Assets.scripts.InventoryScreen
+namespace Assets.Scripts.InventoryScreen
 {
     /// <summary>
     /// Texture handler for the inventory screen
@@ -36,30 +37,30 @@ namespace Assets.scripts.InventoryScreen
 
         public void UpdateMarkerTexture(SpecificEntity ent, SpriteRenderer renderer)
         {
-            var texture = m_knownEntityTextures[ent.Template.Name];
+            var texture = m_knownEntityTextures.Get(ent.Template.Name, "entity textures");
             ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player, texture), ent.Template.Name);
         }
 
         public void UpdateMarkerTexture(SubsystemTemplate item, SpriteRenderer renderer)
         {
-            var texture = m_knownButtonTextures[item.Name];
+            var texture = m_knownButtonTextures.Get(item.Name, "button textures");
             ReplaceTexture(renderer, texture, item.Name);
         }
 
         public Texture2D GetTexture(SpecificEntity ent)
         {
-            var texture = m_knownEntityTextures[ent.Template.Name];
+            var texture = m_knownEntityTextures.Get(ent.Template.Name, "entity textures");
             return GetEntityTexture(ent.Template, Loyalty.Player, texture);
         }
 
         public Texture2D GetTexture(SubsystemTemplate system)
         {
-            return m_knownButtonTextures[system.Name];
+            return m_knownButtonTextures.Get(system.Name, "button textures");
         }
 
         public Texture2D GetNullTexture()
         {
-            return m_knownButtonTextures["Null"];
+            return m_knownButtonTextures.Get("Null");
         }
 
         #endregion public methods

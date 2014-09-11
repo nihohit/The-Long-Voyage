@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Assets.Scripts.Base;
+using System;
 using System.Collections.Generic;
-using Assets.scripts.Base;
 
-namespace Assets.scripts.LogicBase
+namespace Assets.Scripts.LogicBase
 {
     #region EntityTemplate
 
@@ -92,7 +92,7 @@ namespace Assets.scripts.LogicBase
         public static EntityTemplate GetTemplate(Int32 type)
         {
             //TODO - no error handling at the moment.
-            return s_knownTemplates[type];
+            return s_knownTemplates.Get(type, "entity templates");
         }
 
         //TODO - this method should be removed after we have initialization from files

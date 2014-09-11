@@ -1,4 +1,4 @@
-﻿namespace Assets.scripts.InterSceneCommunication
+﻿namespace Assets.Scripts.InterSceneCommunication
 {
     /// <summary>
     /// Information relevant to the strategic gameplay, to be passed from one encounter to the next.

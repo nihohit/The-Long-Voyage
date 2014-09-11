@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     public interface IIdentifiable
     {
@@ -45,6 +46,11 @@ namespace Assets.scripts.Base
             return (float)Math.PI * degrees / 180;
         }
 
+        public static bool HasFlag(this Enum value, Enum flag)
+        {
+            return (Convert.ToInt64(value) & Convert.ToInt64(flag)) > 0;
+        }
+
         #region timing
 
         public static void StartTiming(this IIdentifiable timer, string operation)
@@ -84,10 +90,15 @@ namespace Assets.scripts.Base
             return new HashSet<T>(source);
         }
 
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> group)
+        {
+            Assert.NotNull(group, "group");
+            return Randomiser.Shuffle(group);
+        }
+
         //this function ensures that a given enumeration materializes
         public static IEnumerable<T> Materialize<T>(this IEnumerable<T> enumerable)
         {
-            Assert.NotNull(enumerable, "enumerable");
             if (enumerable is ICollection<T>) return enumerable;
             return enumerable.ToList();
         }
@@ -127,10 +138,29 @@ namespace Assets.scripts.Base
             return Randomiser.ChooseValues(group, amount);
         }
 
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> group)
+        public static TVal Get<TKey, TVal>(this IDictionary<TKey, TVal> dict, TKey key, string dictionaryName = "")
         {
-            Assert.NotNull(group, "group");
-            return Randomiser.Shuffle(group);
+            Assert.DictionaryContains(dict, key, dictionaryName);
+            return dict[key];
+        }
+
+        // Converts an IEnumerator to IEnumerable
+        public static IEnumerable<object> ToEnumerable(this IEnumerator enumerator)
+        {
+            while (enumerator.MoveNext())
+            {
+                yield return enumerator.Current;
+            }
+        }
+
+        // Join two enumerators into a new one
+        public static IEnumerator Join(this IEnumerator enumerator, IEnumerator other)
+        {
+            if (other != null)
+            {
+                return enumerator.ToEnumerable().Union(other.ToEnumerable()).GetEnumerator();
+            }
+            return enumerator;
         }
 
         #endregion IEnumerable
@@ -163,5 +193,21 @@ namespace Assets.scripts.Base
                 return hash;
             }
         }
+    }
+
+    public class EmptyEnumerator : IEnumerator
+    {
+        public object Current
+        {
+            get { throw new UnreachableCodeException(); }
+        }
+
+        public bool MoveNext()
+        {
+            return false;
+        }
+
+        public void Reset()
+        { }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Assets.scripts.UnityBase
+namespace Assets.Scripts.UnityBase
 {
     /// <summary>
     /// Button class that wraps button-relevant events with Action properties.

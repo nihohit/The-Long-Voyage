@@ -1,12 +1,12 @@
+using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using Assets.Scripts.TacticalBattleScene.PathFinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.LogicBase;
-using Assets.scripts.TacticalBattleScene.PathFinding;
 using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene.AI
+namespace Assets.Scripts.TacticalBattleScene.AI
 {
     #region interfaces
 

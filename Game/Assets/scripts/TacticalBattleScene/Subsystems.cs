@@ -1,11 +1,11 @@
+using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.LogicBase;
 using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene
+namespace Assets.Scripts.TacticalBattleScene
 {
     #region Subsystem
 

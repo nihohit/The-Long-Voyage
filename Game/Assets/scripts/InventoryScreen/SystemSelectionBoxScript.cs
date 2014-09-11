@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using Assets.scripts.LogicBase;
-using Assets.scripts.UnityBase;
+﻿using Assets.Scripts.LogicBase;
+using Assets.Scripts.UnityBase;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.scripts.InventoryScreen
+namespace Assets.Scripts.InventoryScreen
 {
     /// <summary>
     /// A selection box for entities' subsystems

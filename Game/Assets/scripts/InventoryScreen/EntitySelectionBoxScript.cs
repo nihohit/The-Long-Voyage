@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.InterSceneCommunication;
+using Assets.Scripts.LogicBase;
+using Assets.Scripts.UnityBase;
+using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.InterSceneCommunication;
-using Assets.scripts.LogicBase;
-using Assets.scripts.UnityBase;
 using UnityEngine;
 
-namespace Assets.scripts.InventoryScreen
+namespace Assets.Scripts.InventoryScreen
 {
     /// <summary>
     /// A selection box for entities, that creates selection boxes for systems when an entity is created.

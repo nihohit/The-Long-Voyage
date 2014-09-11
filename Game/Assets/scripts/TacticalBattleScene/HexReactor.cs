@@ -1,11 +1,11 @@
+using Assets.Scripts.Base;
+using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.UnityBase;
 using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene
+namespace Assets.Scripts.TacticalBattleScene
 {
     /// <summary>
     /// A script wrapper for hexes, to interact with Unity.
@@ -119,8 +119,7 @@ namespace Assets.scripts.TacticalBattleScene
             RemoveMarker(m_targetMarker);
         }
 
-        // checks if the currently selected entity targets this hex
-        // if so, removes the targeting marker.
+        // after an action is destroyed, check if there are actions still targetting this hex.
         public void RemoveTargetMarker(OperateSystemAction action)
         {
             if (TacticalState.SelectedHex == null)
@@ -128,12 +127,14 @@ namespace Assets.scripts.TacticalBattleScene
                 RemoveMarker(m_targetMarker);
                 return;
             }
+
             var Entity = TacticalState.SelectedHex.MarkedHex.Content as TacticalEntity;
             if (Entity == null)
             {
                 RemoveMarker(m_targetMarker);
                 return;
             }
+
             List<OperateSystemAction> actions = null;
             if (Entity != null && m_orders.TryGetValue(Entity, out actions))
             {

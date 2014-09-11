@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Assets.scripts.UnityBase
+namespace Assets.Scripts.UnityBase
 {
     public interface IUnityMarker
     {
@@ -18,12 +18,16 @@ namespace Assets.scripts.UnityBase
         Vector3 Scale { get; set; }
 
         SpriteRenderer Renderer { get; }
+
+        bool Visible { get; set; }
     }
 
     public interface IUnityButton : IUnityMarker
     {
         Action ClickableAction { get; set; }
+
         Action OnMouseOverAction { get; set; }
+
         Action OnMouseExitAction { get; set; }
     }
 }

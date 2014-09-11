@@ -1,6 +1,6 @@
-﻿using Assets.scripts.UnityBase;
+﻿using Assets.Scripts.UnityBase;
 
-namespace Assets.scripts.TacticalBattleScene
+namespace Assets.Scripts.TacticalBattleScene
 {
     #region EntityReactor
 

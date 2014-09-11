@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using Assets.scripts.Base;
-using Assets.scripts.UnityBase;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.UnityBase;
+using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.scripts.LogicBase
+namespace Assets.Scripts.LogicBase
 {
     /// <summary>
     /// Colors entities' textures, based on their loyalty

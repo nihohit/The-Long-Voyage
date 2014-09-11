@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Assets.scripts.LogicBase
+namespace Assets.Scripts.LogicBase
 {
     /// <summary>
     /// defines the full template for an entity, including all defining variables.

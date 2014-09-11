@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     /// <summary>
     /// Initializes a single Random object for the whole program, in order to overcome flaws in Random implementation.
@@ -29,6 +29,11 @@ namespace Assets.scripts.Base
         public static double NextDouble()
         {
             return s_staticRandom.NextDouble();
+        }
+
+        public static double NextDouble(double min, double max)
+        {
+            return min + s_staticRandom.NextDouble() * (max - min);
         }
 
         //See if random sample comes lower than the given chance

@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.LogicBase;
 using UnityEngine;
 
-namespace Assets.scripts.InterSceneCommunication
+namespace Assets.Scripts.InterSceneCommunication
 {
     /// <summary>
     /// The results of a battle, regarding end of battle reeport and effect on strategic game

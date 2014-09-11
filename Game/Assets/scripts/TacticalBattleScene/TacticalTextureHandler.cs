@@ -1,10 +1,10 @@
+using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.scripts.Base;
-using Assets.scripts.LogicBase;
 using UnityEngine;
 
-namespace Assets.scripts.TacticalBattleScene
+namespace Assets.Scripts.TacticalBattleScene
 {
     /// <summary>
     /// Handles texture loading & replacing in the tactical battle screen
@@ -44,13 +44,13 @@ namespace Assets.scripts.TacticalBattleScene
 
         public void UpdateEffectTexture(string effectName, SpriteRenderer renderer)
         {
-            var newTexture = m_knownEffectsTextures[effectName];
+            var newTexture = m_knownEffectsTextures.Get(effectName, "effects textures");
             ReplaceTexture(renderer, newTexture, effectName);
         }
 
         public void UpdateButtonTexture(string buttonName, SpriteRenderer renderer)
         {
-            var newTexture = m_knownButtonTextures[buttonName];
+            var newTexture = m_knownButtonTextures.Get(buttonName, "button textures");
             ReplaceTexture(renderer, newTexture, buttonName);
         }
 

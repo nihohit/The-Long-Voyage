@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace Assets.scripts.Base
+namespace Assets.Scripts.Base
 {
     /// <summary>
     /// Thrown when a switch receives an illegal value
     /// </summary>
     [Serializable]
-    public class UnknownValueException : Exception
+    public class UnknownValueException : ArgumentException
     {
         public UnknownValueException(object obj) :
             base("Type {0} wasn't defined.".FormatWith(obj.ToString()))
@@ -32,6 +32,28 @@ namespace Assets.scripts.Base
     {
         public UnreachableCodeException() :
             base("Unreachable code")
+        { }
+    }
+
+    /// <summary>
+    /// Thrown when looking for a certain value in JSON deserializer
+    /// </summary>
+    [Serializable]
+    public class ValueNotFoundException : ArgumentException
+    {
+        public ValueNotFoundException(string propertyName, Type type) :
+            base("Property {0} not found while deserializing type {1}".FormatWith(propertyName, type.Name))
+        { }
+    }
+
+    /// <summary>
+    /// Thrown when looking for a certain value in JSON deserializer
+    /// </summary>
+    [Serializable]
+    public class WrongValueType : ArgumentException
+    {
+        public WrongValueType(string propertyName, Type assumedType, Type realType) :
+            base("Property {0} was not of type {1}, but {2}".FormatWith(propertyName, assumedType.Name, realType.Name))
         { }
     }
 }
