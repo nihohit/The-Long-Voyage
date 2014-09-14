@@ -1,6 +1,5 @@
 ﻿using Assets.Scripts.Base;
 using System;
-using System.Collections.Generic;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -11,14 +10,8 @@ namespace Assets.Scripts.LogicBase
     /// </summary>
     //TODO - we can create different levels (regular/active/moving) of templates for the different entities. Not sure it's needed now
     //TODO - if we'll want entities with fixed systems, we'll need to add their templates here and merge them in the entity constructor
-    public class EntityTemplate
+    public class EntityTemplate : IIdentifiable
     {
-        #region fields
-
-        private static readonly Dictionary<Int32, EntityTemplate> s_knownTemplates = new Dictionary<Int32, EntityTemplate>();
-
-        #endregion fields
-
         #region properties
 
         public double Health { get; private set; }
@@ -54,18 +47,18 @@ namespace Assets.Scripts.LogicBase
         #region constructors
 
         //for inanimate entities
-        private EntityTemplate(string name, int health, VisualProperties visualProperties) :
+        public EntityTemplate(string name, int health, VisualProperties visualProperties) :
             this(name, health, visualProperties, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         { }
 
         //for unmoving entities
-        private EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
+        public EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
             int radarRange, int sightRange, double maxEnergy, double maxHeat, double maxShields,
             double heatLossRate, double shieldRechargeRate, int systemSlots) :
             this(name, health, visualProperties, armor, radarRange, sightRange, maxEnergy, maxHeat, maxShields, heatLossRate, shieldRechargeRate, systemSlots, MovementType.Unmoving, 0)
         { }
 
-        private EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
+        public EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
             int radarRange, int sightRange, double maxEnergy, double maxHeat, double maxShields,
             double heatLossRate, double shieldRechargeRate, int systemSlots, MovementType movementType, double maximumSpeed)
         {
@@ -86,33 +79,6 @@ namespace Assets.Scripts.LogicBase
         }
 
         #endregion constructors
-
-        #region static methods
-
-        public static EntityTemplate GetTemplate(Int32 type)
-        {
-            //TODO - no error handling at the moment.
-            return s_knownTemplates.Get(type, "entity templates");
-        }
-
-        //TODO - this method should be removed after we have initialization from files
-        public static void Init()
-        {
-            if (s_knownTemplates.Count == 0)
-            {
-                s_knownTemplates.Add(1, new EntityTemplate("Mech", 5,
-                    VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight,
-                    0, 20, 10, 2, 5, 3, 1, 1, 4, MovementType.Walker, 4));
-                s_knownTemplates.Add(2, new EntityTemplate("Dense trees",
-                    SimpleConfigurationHandler.GetIntProperty("Dense trees health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight));
-                s_knownTemplates.Add(3, new EntityTemplate("Sparse trees",
-                   SimpleConfigurationHandler.GetIntProperty("Sparse trees health", FileAccessor.Units), VisualProperties.AppearsOnSight));
-                s_knownTemplates.Add(4, new EntityTemplate("Building",
-                   SimpleConfigurationHandler.GetIntProperty("Building health", FileAccessor.Units), VisualProperties.AppearsOnSight | VisualProperties.BlocksSight | VisualProperties.AppearsOnRadar));
-            }
-        }
-
-        #endregion static methods
     }
 
     #endregion EntityTemplate
@@ -140,4 +106,78 @@ namespace Assets.Scripts.LogicBase
     }
 
     #endregion SpecificEntity
+
+    #region EntityTemplateStorage
+
+    public class EntityTemplateStorage : ConfigurationStorage<EntityTemplate>
+    {
+        public EntityTemplateStorage(string fileName)
+            : base(fileName)
+        { }
+
+        protected override JSONParser<EntityTemplate> GetParser()
+        {
+            return new EntityTemplateParser();
+        }
+
+        #region EntityTemplateParser
+
+        private class EntityTemplateParser : JSONParser<EntityTemplate>
+        {
+            protected override EntityTemplate ConvertCurrentItemToObject()
+            {
+                return new EntityTemplate(
+                    TryGetValueAndFail<string>("Name"),
+                    TryGetValueAndFail<int>("Health"),
+                    TryGetValueOrSetDefaultValue<VisualProperties>("VisualProperties",
+                    VisualProperties.AppearsOnRadar | VisualProperties.AppearsOnSight),
+                    TryGetValueOrSetDefaultValue<float>("Armor", 0),
+                    TryGetValueOrSetDefaultValue<int>("RadarRange", 20),
+                    TryGetValueOrSetDefaultValue<int>("SightRange", 10),
+                    TryGetValueAndFail<float>("MaxEnergy"),
+                    TryGetValueAndFail<float>("MaxHeat"),
+                    TryGetValueAndFail<float>("MaxShields"),
+                    TryGetValueAndFail<float>("MaxHeatLoss"),
+                    TryGetValueAndFail<float>("ShieldRechargeRate"),
+                    TryGetValueOrSetDefaultValue<int>("SystemSlots", 3),
+                    TryGetValueOrSetDefaultValue<MovementType>("MovementType", MovementType.Walker),
+                    TryGetValueAndFail<float>("MaximumSpeed"));
+            }
+        }
+
+        #endregion EntityTemplateParser
+    }
+
+    #endregion EntityTemplateStorage
+
+    #region TerrainEntityTemplateStorage
+
+    public class TerrainEntityTemplateStorage : ConfigurationStorage<EntityTemplate>
+    {
+        public TerrainEntityTemplateStorage(string fileName)
+            : base(fileName)
+        { }
+
+        protected override JSONParser<EntityTemplate> GetParser()
+        {
+            return new TerrainEntityTemplateParser();
+        }
+
+        #region TerrainEntityTemplateParser
+
+        private class TerrainEntityTemplateParser : JSONParser<EntityTemplate>
+        {
+            protected override EntityTemplate ConvertCurrentItemToObject()
+            {
+                return new EntityTemplate(
+                    TryGetValueAndFail<string>("Name"),
+                    TryGetValueAndFail<int>("Health"),
+                    (VisualProperties)TryGetValueOrSetDefaultValue<int>("VisualProperties", 2));
+            }
+        }
+
+        #endregion TerrainEntityTemplateParser
+    }
+
+    #endregion TerrainEntityTemplateStorage
 }

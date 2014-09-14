@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Assets.Scripts.Base
 {
-    public enum FileAccessor { Units, TerrainGeneration, General }
+    public enum FileAccessor { TerrainGeneration, General }
 
     /// <summary>
     /// This class handles simple key:value predefined configuration files, for known primitives.

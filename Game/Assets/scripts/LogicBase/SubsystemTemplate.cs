@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -10,14 +8,8 @@ namespace Assets.Scripts.LogicBase
     /// Immutable templates for usable systems, and a static factory intializer.
     /// </summary>
     //TODO - how many operations per round does a system have? do we allow unlimited usage?
-    public class SubsystemTemplate
+    public class SubsystemTemplate : IIdentifiable
     {
-        #region fields
-
-        private static readonly Dictionary<Int32, SubsystemTemplate> s_knownTemplates = new Dictionary<Int32, SubsystemTemplate>();
-
-        #endregion fields
-
         #region properties
 
         public int MaxRange { get; private set; }
@@ -48,19 +40,7 @@ namespace Assets.Scripts.LogicBase
 
         #region constructor and initializer
 
-        private SubsystemTemplate(double energyCost,
-                                  double heatGenerated,
-                                  int minRange,
-                                  int maxRange,
-                                  DeliveryMethod deliveryMethod,
-                                  string name,
-                                  EffectType effectType,
-                                  double effectStrength,
-                                  TargetingType targetingType)
-            : this(0, energyCost, heatGenerated, minRange, maxRange, deliveryMethod, name, effectType, effectStrength, targetingType)
-        { }
-
-        private SubsystemTemplate(int ammo,
+        public SubsystemTemplate(int ammo,
                                 double energyCost,
                                 double heatGenerated,
                                 int minRange,
@@ -83,35 +63,46 @@ namespace Assets.Scripts.LogicBase
             HeatGenerated = heatGenerated;
         }
 
-        // Get a template by its Id.
-        public static SubsystemTemplate GetTemplate(Int32 id)
-        {
-            //TODO - no error handling at the moment.
-            return s_knownTemplates.Get(id, "equipment templates");
-        }
-
-        //TODO - this method should be removed after we have initialization from XML
-        public static void Init()
-        {
-            if (s_knownTemplates.Count == 0)
-            {
-                s_knownTemplates.Add(0,
-                                     new SubsystemTemplate(1, 0, 0, 2, DeliveryMethod.Direct, "Emp", EffectType.EmpDamage, 1.5f, TargetingType.Enemy));
-                s_knownTemplates.Add(1,
-                                     new SubsystemTemplate(2, 2, 0, 4, DeliveryMethod.Direct, "Laser", EffectType.PhysicalDamage, 2f, TargetingType.Enemy));
-                s_knownTemplates.Add(2,
-                                     new SubsystemTemplate(4, 1, 0, 2, 6, DeliveryMethod.Unobstructed, "Missile", EffectType.PhysicalDamage, 1f, TargetingType.Enemy));
-                s_knownTemplates.Add(3,
-                                     new SubsystemTemplate(10, 0.5, 0.5, 0, 4, DeliveryMethod.Direct, "IncediaryGun", EffectType.IncendiaryDamage, 1.5f, TargetingType.Enemy));
-                s_knownTemplates.Add(4,
-                                     new SubsystemTemplate(2, 1, 0, 3, DeliveryMethod.Direct, "HeatWave", EffectType.HeatDamage, 2f, TargetingType.Enemy));
-                s_knownTemplates.Add(5,
-                                     new SubsystemTemplate(2, 2, 2, 0, 2, DeliveryMethod.Unobstructed, "Flamer", EffectType.FlameHex, 1f, TargetingType.AllHexes));
-            }
-        }
-
         #endregion constructor and initializer
     }
 
     #endregion SubsystemTemplate
+
+    #region SubsystemTemplateStorage
+
+    public class SubsystemTemplateStorage : ConfigurationStorage<SubsystemTemplate>
+    {
+        public SubsystemTemplateStorage(string fileName)
+            : base(fileName)
+        { }
+
+        protected override JSONParser<SubsystemTemplate> GetParser()
+        {
+            return new SubsystemTemplateParser();
+        }
+
+        #region SubsystemTemplateParser
+
+        private class SubsystemTemplateParser : JSONParser<SubsystemTemplate>
+        {
+            protected override SubsystemTemplate ConvertCurrentItemToObject()
+            {
+                return new SubsystemTemplate(
+                    TryGetValueOrSetDefaultValue<int>("Ammo", 0),
+                    TryGetValueAndFail<float>("EnergyCost"),
+                    TryGetValueAndFail<float>("HeatGenerated"),
+                    TryGetValueOrSetDefaultValue<int>("MinRange", 0),
+                    TryGetValueAndFail<int>("MaxRange"),
+                    TryGetValueOrSetDefaultValue<DeliveryMethod>("DeliveryMethod", DeliveryMethod.Direct),
+                    TryGetValueAndFail<string>("Name"),
+                    TryGetValueAndFail<EffectType>("EffectType"),
+                    TryGetValueAndFail<float>("EffectStrength"),
+                    TryGetValueOrSetDefaultValue<TargetingType>("TargetingType", TargetingType.Enemy));
+            }
+        }
+
+        #endregion SubsystemTemplateParser
+    }
+
+    #endregion SubsystemTemplateStorage
 }

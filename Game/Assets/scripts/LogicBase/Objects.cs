@@ -29,10 +29,10 @@ namespace Assets.Scripts.LogicBase
     { Regular }
 
     // the way a system reaches its targets
-    public enum DeliveryMethod { Direct, Unobstructed }
+    public enum DeliveryMethod { Direct = 1, Unobstructed = 2 }
 
     // The possible effects of a system
-    public enum EffectType { EmpDamage, HeatDamage, IncendiaryDamage, PhysicalDamage, FlameHex }
+    public enum EffectType { EmpDamage = 1, HeatDamage = 2, IncendiaryDamage = 3, PhysicalDamage = 4, FlameHex = 5 }
 
     //to be filled with all different factions
     public enum Loyalty { Player, EnemyArmy, Monsters, Bandits, Inactive, Friendly }

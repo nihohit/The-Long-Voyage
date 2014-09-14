@@ -12,6 +12,8 @@ namespace Assets.Scripts.TacticalBattleScene
     /// </summary>
     public class TacticalBattleScript : MonoBehaviour
     {
+        private TerrainEntityTemplateStorage m_terrainEntities = new TerrainEntityTemplateStorage("TerrainEntities");
+
         #region public members
 
         // TODO - get rid of these
@@ -43,8 +45,8 @@ namespace Assets.Scripts.TacticalBattleScene
             // update camera position based on input. The axis are defined in the Unity editor
             if (Camera.current != null)
             {
-                float xAxisValue = Input.GetAxis("Horizontal")* screenSpeed;
-                float yAxisValue = Input.GetAxis("Vertical")* screenSpeed;
+                float xAxisValue = Input.GetAxis("Horizontal") * screenSpeed;
+                float yAxisValue = Input.GetAxis("Vertical") * screenSpeed;
                 float zAxisValue = Input.GetAxisRaw("Zoom");
                 Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
             }
@@ -139,32 +141,25 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private HexReactor CreateLightTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
         {
-            var hex = CreateWoodHex(nextPosition, hexCoordinates);
-            hex.MarkedHex.Content = new TerrainEntity(EntityTemplate.GetTemplate(3),
-                ((GameObject)Instantiate(Resources.Load("SparseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
-            return hex;
+            return CreateWoodHex(nextPosition, hexCoordinates, "SparseTrees");
         }
 
         private HexReactor CreateDenseTreesHex(Vector3 nextPosition, Vector2 hexCoordinates)
         {
-            var hex = CreateWoodHex(nextPosition, hexCoordinates);
-            hex.MarkedHex.Content = new TerrainEntity(EntityTemplate.GetTemplate(2),
-                ((GameObject)Instantiate(Resources.Load("DenseTrees"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
-            return hex;
+            return CreateWoodHex(nextPosition, hexCoordinates, "DenseTrees");
         }
 
         private HexReactor CreateBuildingHex(Vector3 nextPosition, Vector2 hexCoordinates)
         {
-            var hex = CreateWoodHex(nextPosition, hexCoordinates);
-            hex.MarkedHex.Content = new TerrainEntity(EntityTemplate.GetTemplate(4),
-                ((GameObject)Instantiate(Resources.Load("Building"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
-            return hex;
+            return CreateWoodHex(nextPosition, hexCoordinates, "Building");
         }
 
-        private HexReactor CreateWoodHex(Vector3 nextPosition, Vector2 hexCoordinates)
+        private HexReactor CreateWoodHex(Vector3 nextPosition, Vector2 hexCoordinates, string configurationName)
         {
             var reactor = CreateHex(nextPosition, hexCoordinates, woodHex);
             reactor.MarkedHex.Conditions = TraversalConditions.Broken;
+            reactor.MarkedHex.Content = new TerrainEntity(m_terrainEntities.GetConfiguration(configurationName),
+                ((GameObject)Instantiate(Resources.Load(configurationName), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
             return reactor;
         }
 
@@ -206,8 +201,7 @@ namespace Assets.Scripts.TacticalBattleScene
             //TODO - replace with exception throwing when we remove the direct access to level generation
             SimpleConfigurationHandler.Init();
             HexReactor.Init();
-            SubsystemTemplate.Init();
-            EntityTemplate.Init();
+            GlobalState.Init();
             Hex.Init();
 
             if (GlobalState.TacticalBattle == null)
@@ -227,17 +221,14 @@ namespace Assets.Scripts.TacticalBattleScene
         // create a collection of mechs
         private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
         {
+            var template = GlobalState.Configurations.EntityTemplates.GetConfiguration("StandardMech");
             return Enumerable.Range(0, number).Select(num => (ActiveEntity)new MovingEntity(
-                new SpecificEntity(EntityTemplate.GetTemplate(1)),
+                new SpecificEntity(template),
                 loyalty,
                 ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
-                new Subsystem[] {
-                new Laser(loyalty),
-                new MissileLauncher(loyalty),
-                new EmpLauncher(loyalty),
-                new HeatWaveProjector(loyalty),
-                new IncediaryGun(loyalty) })
-                ).Materialize();
+                GlobalState.Configurations.SubsystemTemplates.GetAllConfigurations().
+                    ChooseRandomValues(template.SystemSlots).Select(systemTemplate => new Subsystem(systemTemplate, loyalty))
+                )).Materialize();
         }
 
         // create the player controlled mechs from their definition in the global state

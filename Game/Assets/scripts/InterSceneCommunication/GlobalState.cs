@@ -10,5 +10,12 @@
         public static StrategicMapInformation StrategicMap { get; set; }
 
         public static EndBattleSummary BattleSummary { get; set; }
+
+        public static Configurations Configurations { get; private set; }
+
+        public static void Init()
+        {
+            Configurations = new Configurations();
+        }
     }
 }

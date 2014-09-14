@@ -2,6 +2,7 @@
 using Assets.Scripts.InterSceneCommunication;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
@@ -24,20 +25,20 @@ namespace Assets.Scripts.InventoryScreen
             if (GlobalState.StrategicMap == null)
             {
                 SimpleConfigurationHandler.Init();
-                EntityTemplate.Init();
-                SubsystemTemplate.Init();
+                GlobalState.Init();
                 GlobalState.StrategicMap = new StrategicMapInformation();
                 GlobalState.StrategicMap.State = new PlayerState();
-                var mechTemplate = EntityTemplate.GetTemplate(1);
+                var mechTemplate = GlobalState.Configurations.EntityTemplates.GetConfiguration("StandardMech");
                 for (int i = 0; i < 4; i++)
                 {
                     GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
                 }
+                var systems = GlobalState.Configurations.SubsystemTemplates.GetAllConfigurations().ToArray();
                 for (int i = 0; i < 5; i++)
                 {
                     for (int j = 0; j < 3; j++)
                     {
-                        GlobalState.StrategicMap.State.AvailableSystems.Add(SubsystemTemplate.GetTemplate(i));
+                        GlobalState.StrategicMap.State.AvailableSystems.Add(systems[i]);
                     }
                 }
                 InventoryTextureHandler textureHandler = new InventoryTextureHandler();

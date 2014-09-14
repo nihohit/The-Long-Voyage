@@ -51,32 +51,6 @@ namespace Assets.Scripts.Base
             return (Convert.ToInt64(value) & Convert.ToInt64(flag)) > 0;
         }
 
-        #region timing
-
-        public static void StartTiming(this IIdentifiable timer, string operation)
-        {
-            Timer.StartTiming(timer.Name, operation);
-        }
-
-        public static void StopTiming(this IIdentifiable timer, string operation)
-        {
-            Timer.StopTiming(timer.Name, operation);
-        }
-
-        //Time a single action in debug mode
-        public static void TimedAction(this IIdentifiable timer, string operation, Action action)
-        {
-#if DEBUG
-            Timer.StartTiming(timer.Name, operation);
-#endif
-            action();
-#if DEBUG
-            Timer.StopTiming(timer.Name, operation);
-#endif
-        }
-
-        #endregion timing
-
         #region IEnumerable
 
         //returns an enumerable with all values of an enumerator

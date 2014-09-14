@@ -1,6 +1,5 @@
 using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -47,10 +46,6 @@ namespace Assets.Scripts.TacticalBattleScene
         #endregion properties
 
         #region constructors
-
-        public Subsystem(Int32 id, Loyalty loyalty)
-            : this(SubsystemTemplate.GetTemplate(id), loyalty)
-        { }
 
         public Subsystem(SubsystemTemplate template, Loyalty loyalty)
         {
@@ -175,45 +170,4 @@ namespace Assets.Scripts.TacticalBattleScene
     }
 
     #endregion Subsystem
-
-    #region weapons
-
-    //TODO - should be replaced with XML configuration files
-
-    public class Laser : Subsystem
-    {
-        public Laser(Loyalty loyalty) :
-            base(1, loyalty)
-        { }
-    }
-
-    public class MissileLauncher : Subsystem
-    {
-        public MissileLauncher(Loyalty loyalty) :
-            base(2, loyalty)
-        { }
-    }
-
-    public class EmpLauncher : Subsystem
-    {
-        public EmpLauncher(Loyalty loyalty) :
-            base(0, loyalty)
-        { }
-    }
-
-    public class HeatWaveProjector : Subsystem
-    {
-        public HeatWaveProjector(Loyalty loyalty) :
-            base(4, loyalty)
-        { }
-    }
-
-    public class IncediaryGun : Subsystem
-    {
-        public IncediaryGun(Loyalty loyalty) :
-            base(3, loyalty)
-        { }
-    }
-
-    #endregion weapons
 }

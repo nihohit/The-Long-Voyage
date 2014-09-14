@@ -1,0 +1,55 @@
+[
+{
+	"Name":"Emp",
+	"EnergyCost" : 1.0,
+	"HeatGenerated": 0.0,
+	"MaxRange":2,
+	"EffectType":1,
+	"EffectStrength":1.5
+},
+{
+	"Name":"Laser",
+	"EnergyCost" : 2.0,
+	"HeatGenerated": 2.0,
+	"MaxRange":4,
+	"EffectType":4,
+	"EffectStrength":2.0
+},
+{
+	"Name":"Missile",
+	"Ammo":4,
+	"EnergyCost" : 1.0,
+	"HeatGenerated": 0.0,
+	"MinRange":2,
+	"MaxRange":6,
+	"DeliveryMethod":2,
+	"EffectType":4,
+	"EffectStrength":1.0
+},
+{
+	"Name":"IncediaryGun",
+	"Ammo":10,
+	"EnergyCost" : 0.5,
+	"HeatGenerated": 0.5,
+	"MaxRange":4,
+	"EffectType":3,
+	"EffectStrength":1.5
+},
+{
+	"Name":"HeatWave",
+	"EnergyCost" : 2.0,
+	"HeatGenerated": 1.0,
+	"MaxRange":3,
+	"EffectType":2,
+	"EffectStrength":3.0
+},
+{
+	"Name":"Flamer",
+	"Ammo":2,
+	"EnergyCost" : 2.0,
+	"HeatGenerated": 2.0,
+	"MaxRange":2,
+	"EffectType":5,
+	"EffectStrength":1.5
+}
+]

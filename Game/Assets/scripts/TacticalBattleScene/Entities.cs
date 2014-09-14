@@ -215,6 +215,7 @@ namespace Assets.Scripts.TacticalBattleScene
         public ActiveEntity(SpecificEntity entity, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
             base(entity, loyalty, reactor)
         {
+            Assert.EqualOrGreater(entity.Template.SystemSlots, systems.Count(), "more systems than system slots.");
             m_systems = systems;
             CurrentEnergy = Template.MaxEnergy;
             m_tempMaxEnergy = Template.MaxEnergy;

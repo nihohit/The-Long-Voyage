@@ -1,0 +1,30 @@
+[
+{
+	"Name":"StandardMech",
+	"Health":5,
+	"VisualProperties" : 3,
+	"Armor": 0.5,
+	"RadarRange":20,
+	"SightRange":10,
+	"MaxEnergy":2.0,
+	"MaxHeat":5.0,
+	"MaxShields":3.0,
+	"MaxHeatLoss":1.0,
+	"ShieldRechargeRate":1.0,
+	"SystemSlots":4,
+	"MovementType":2,
+	"MaximumSpeed":4.0
+},
+{
+	"Name":"ScoutMech",
+	"Health": 3, 
+	"MaxEnergy":3.0,
+	"MaxHeat":3.0,
+	"MaxShields":2.5,
+	"MaxHeatLoss":1.0,
+	"ShieldRechargeRate":5.0,
+	"MaximumSpeed":5.0,
+	"RadarRange":30,
+	"SightRange":15,
+}
+]
