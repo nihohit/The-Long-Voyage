@@ -29,7 +29,12 @@ namespace Assets.Scripts.InventoryScreen
                 GlobalState.StrategicMap = new StrategicMapInformation();
                 GlobalState.StrategicMap.State = new PlayerState();
                 var mechTemplate = GlobalState.Configurations.EntityTemplates.GetConfiguration("StandardMech");
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 2; i++)
+                {
+                    GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
+                }
+                mechTemplate = GlobalState.Configurations.EntityTemplates.GetConfiguration("ScoutMech");
+                for (int i = 0; i < 2; i++)
                 {
                     GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
                 }

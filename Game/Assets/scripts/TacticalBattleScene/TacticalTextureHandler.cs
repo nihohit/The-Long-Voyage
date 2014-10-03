@@ -38,7 +38,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.Template.Name);
             var renderer = ent.Reactor.GetComponent<SpriteRenderer>();
-            var newTexture = GetEntityTexture(ent.Template, ent.Loyalty, renderer.sprite.texture);
+            var newTexture = GetEntityTexture(ent.Template, ent.Loyalty);
             ReplaceTexture(renderer, newTexture, name);
         }
 

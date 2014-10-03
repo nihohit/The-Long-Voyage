@@ -221,14 +221,19 @@ namespace Assets.Scripts.TacticalBattleScene
         // create a collection of mechs
         private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
         {
-            var template = GlobalState.Configurations.EntityTemplates.GetConfiguration("StandardMech");
-            return Enumerable.Range(0, number).Select(num => (ActiveEntity)new MovingEntity(
-                new SpecificEntity(template),
-                loyalty,
-                ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
-                GlobalState.Configurations.SubsystemTemplates.GetAllConfigurations().
-                    ChooseRandomValues(template.SystemSlots).Select(systemTemplate => new Subsystem(systemTemplate, loyalty))
-                )).Materialize();
+            var entityTemplates = GlobalState.Configurations.EntityTemplates.GetAllConfigurations();
+            return Enumerable.Range(0, number).Select(num =>
+                {
+                    var template = entityTemplates.ChooseRandomValue();
+                    return (ActiveEntity)new MovingEntity(
+                   new SpecificEntity(template),
+                   loyalty,
+                   ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
+                   GlobalState.Configurations.SubsystemTemplates.GetAllConfigurations().
+                       ChooseRandomValues(template.SystemSlots).Select(systemTemplate => new Subsystem(systemTemplate, loyalty))
+
+                   );
+                }).Materialize();
         }
 
         // create the player controlled mechs from their definition in the global state

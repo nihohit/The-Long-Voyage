@@ -14,7 +14,6 @@ namespace Assets.Scripts.InventoryScreen
     {
         #region fields
 
-        private Dictionary<string, Texture2D> m_knownEntityTextures;
         private Dictionary<string, Texture2D> m_knownButtonTextures;
 
         #endregion fields
@@ -23,10 +22,7 @@ namespace Assets.Scripts.InventoryScreen
 
         public InventoryTextureHandler()
         {
-            var textures = Resources.LoadAll<Texture2D>("Entities");
-            m_knownEntityTextures = textures.ToDictionary(texture => texture.name,
-                                                          texture => texture);
-            textures = Resources.LoadAll<Texture2D>("UI");
+            var textures = Resources.LoadAll<Texture2D>("UI");
             m_knownButtonTextures = textures.ToDictionary(texture => texture.name,
                                                            texture => texture);
         }
@@ -37,8 +33,7 @@ namespace Assets.Scripts.InventoryScreen
 
         public void UpdateMarkerTexture(SpecificEntity ent, SpriteRenderer renderer)
         {
-            var texture = m_knownEntityTextures.Get(ent.Template.Name, "entity textures");
-            ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player, texture), ent.Template.Name);
+            ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player), ent.Template.Name);
         }
 
         public void UpdateMarkerTexture(SubsystemTemplate item, SpriteRenderer renderer)
@@ -49,8 +44,7 @@ namespace Assets.Scripts.InventoryScreen
 
         public Texture2D GetTexture(SpecificEntity ent)
         {
-            var texture = m_knownEntityTextures.Get(ent.Template.Name, "entity textures");
-            return GetEntityTexture(ent.Template, Loyalty.Player, texture);
+            return GetEntityTexture(ent.Template, Loyalty.Player);
         }
 
         public Texture2D GetTexture(SubsystemTemplate system)
