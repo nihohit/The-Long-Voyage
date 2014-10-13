@@ -30,8 +30,8 @@ namespace Assets.Scripts.Base
     [Serializable]
     public class UnreachableCodeException : Exception
     {
-        public UnreachableCodeException() :
-            base("Unreachable code")
+        public UnreachableCodeException(string message = "") :
+            base("Unreachable code. {0}".FormatWith(message))
         { }
     }
 

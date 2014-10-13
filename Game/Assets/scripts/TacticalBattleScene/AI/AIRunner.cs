@@ -15,7 +15,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
     public interface IActionEvaluator
     {
-        IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<TacticalEntity> entitiesSeenByTeam);
+        IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<EntityReactor> entitiesSeenByTeam);
 
         void Clear();
     }
@@ -128,10 +128,10 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         /// <param name="controlledEntities"></param>
         private void EvaluateActions(IEnumerable<ActiveEntity> controlledEntities)
         {
-            //Debug.Log("Evaluating actions");
+            Debug.Log("Evaluating actions");
             controlledEntities.ForEach(ent => ent.ResetActions());
             var loyalty = controlledEntities.First().Loyalty;
-            var entitiesSeen = Enumerable.Empty<TacticalEntity>();
+            var entitiesSeen = Enumerable.Empty<EntityReactor>();
             foreach (var ent in controlledEntities)
             {
                 entitiesSeen = entitiesSeen.Union(ent.SeenHexes.Select(hex => hex.Content).Where(entity => entity != null && entity.Loyalty != loyalty));
@@ -174,7 +174,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         /// and movement commands based on nearness to potential targets.
         /// If no potential targets are in sight, randomly roam.
         ///
-        public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<TacticalEntity> entitiesSeenByTeam)
+        public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<EntityReactor> entitiesSeenByTeam)
         {
             //initiate relevant information
             var potentialTargets = entitiesSeenByTeam.Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
@@ -204,6 +204,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
                 if (systemAction != null)
                 {
+                    //TODO - implicit assumption that all system actions are against entities.
                     var target = systemAction.TargetedHex.Content;
                     if (target.Loyalty != Loyalty.Inactive)
                     {
@@ -212,11 +213,8 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                         {
                             return !actingEntity.Destroyed() && !target.Destroyed();
                         };
-                        evaluatedAction.AchievedGoal = () =>
-                            {
-                                m_entityEvaluator.UpdateValue(target);
-                                return target.Destroyed();
-                            };
+
+                        evaluatedAction.AchievedGoal = CreateAchievedGoal(systemAction);
                         //Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
                     }
                 }
@@ -241,6 +239,10 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                     };
                     evaluatedAction.AchievedGoal = () => { return true; };
                 }
+                else
+                {
+                    throw new UnreachableCodeException("The action {0} should be of a known kind.".FormatWith(action));
+                }
 
                 yield return evaluatedAction;
             }
@@ -253,9 +255,20 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
         #endregion IActionEvaluator implementation
 
+        private ResultEvaluator CreateAchievedGoal(OperateSystemAction systemAction)
+        {
+            var target = systemAction.TargetedHex.Content;
+            return () =>
+            {
+                m_entityEvaluator.UpdateValue(target);
+                //Debug.Log("{0} achieved goal? {1} is destroyed? {2}".FormatWith(systemAction, target, target.Destroyed()));
+                return target.Destroyed();
+            };
+        }
+
         // evaluates a hex based on the value of the systems that can be used from it on targets,
         // or proximity to targets.
-        private double EvaluateHexValue(Hex evaluatedHex, IEnumerable<TacticalEntity> potentialTargets, MovingEntity movingEntity, int minRange, int maxRange)
+        private double EvaluateHexValue(HexReactor evaluatedHex, IEnumerable<EntityReactor> potentialTargets, MovingEntity movingEntity, int minRange, int maxRange)
         {
             var result = 0.0;
 
@@ -276,7 +289,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                 {
                     //TODO - time complexity could be reduced significantly by a. feeding astar some heuristic or b. replacing a star with a heuristic
                     result += m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
-                        evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.Template.MovementMethod, (Hex hex) => 0));
+                        evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.Template.MovementMethod, (HexReactor hex) => 0));
                 }
             }
             //Debug.Log("Hex {0} valued as {1}".FormatWith(evaluatedHex, result));
@@ -284,7 +297,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         }
 
         // evaluate the value of a system on a specific target
-        private double EvaluateSystemEffect(SubsystemTemplate system, TacticalEntity target)
+        private double EvaluateSystemEffect(SubsystemTemplate system, EntityReactor target)
         {
             return (m_entityEvaluator.EvaluateValue(target) + system.EffectStrength) / (system.EnergyCost + system.HeatGenerated);
         }
@@ -296,23 +309,23 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
     public interface IEntityEvaluator
     {
-        double EvaluateValue(TacticalEntity entity);
+        double EvaluateValue(EntityReactor entity);
 
-        void UpdateValue(TacticalEntity entity);
+        void UpdateValue(EntityReactor entity);
 
         void Clear();
     }
 
     public class SimpleEntityEvaluator : IEntityEvaluator
     {
-        private Dictionary<TacticalEntity, double> m_entitiesValue = new Dictionary<TacticalEntity, double>();
+        private Dictionary<EntityReactor, double> m_entitiesValue = new Dictionary<EntityReactor, double>();
 
-        public double EvaluateValue(TacticalEntity entity)
+        public double EvaluateValue(EntityReactor entity)
         {
             return (entity.Loyalty == Loyalty.Inactive) ? 0 : EvalueAndAddActiveEntity((ActiveEntity)entity);
         }
 
-        public void UpdateValue(TacticalEntity entity)
+        public void UpdateValue(EntityReactor entity)
         {
             m_entitiesValue.Remove(entity);
         }

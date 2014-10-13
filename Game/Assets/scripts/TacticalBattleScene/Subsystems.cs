@@ -100,7 +100,7 @@ namespace Assets.Scripts.TacticalBattleScene
             return m_workingCondition == SystemCondition.Operational;
         }
 
-        public IEnumerable<OperateSystemAction> ActionsInRange(ActiveEntity actingEntity, Dictionary<Hex, List<OperateSystemAction>> dict)
+        public IEnumerable<OperateSystemAction> ActionsInRange(ActiveEntity actingEntity, Dictionary<HexReactor, List<OperateSystemAction>> dict)
         {
             //if we can't operate the system, return no actions
             if (actingEntity.CurrentEnergy < Template.EnergyCost)
@@ -132,7 +132,7 @@ namespace Assets.Scripts.TacticalBattleScene
             };
         }
 
-        private OperateSystemAction CreateAction(ActiveEntity actingEntity, Hex hex, Dictionary<Hex, List<OperateSystemAction>> dict)
+        private OperateSystemAction CreateAction(ActiveEntity actingEntity, HexReactor hex, Dictionary<HexReactor, List<OperateSystemAction>> dict)
         {
             var list = dict.TryGetOrAdd(hex, () => new List<OperateSystemAction>());
             Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
@@ -144,7 +144,7 @@ namespace Assets.Scripts.TacticalBattleScene
             return operation;
         }
 
-        private IEnumerable<Hex> TargetsInRange(Hex hex)
+        private IEnumerable<HexReactor> TargetsInRange(HexReactor hex)
         {
             if (Template.MaxRange == 0)
             {

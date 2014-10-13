@@ -25,7 +25,7 @@ namespace Assets.Scripts.TacticalBattleScene
         #endregion public members
 
         //HACK - to be deleted.
-        private List<Hex> m_emptyHexes = new List<Hex>();
+        private List<HexReactor> m_emptyHexes = new List<HexReactor>();
 
         private int screenSpeed;
 
@@ -54,9 +54,9 @@ namespace Assets.Scripts.TacticalBattleScene
             // if right mouse button is pressed
             if (Input.GetMouseButton(1))
             {
-                if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.MarkedHex.Content != null)
+                if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.Content != null)
                 {
-                    Debug.Log(TacticalState.SelectedHex.MarkedHex.Content);
+                    Debug.Log(TacticalState.SelectedHex.Content);
                 }
                 TacticalState.SelectedHex = null;
             }
@@ -69,7 +69,7 @@ namespace Assets.Scripts.TacticalBattleScene
             screenSpeed = SimpleConfigurationHandler.GetIntProperty("screen movement speed", FileAccessor.General);
 
             // create new hexes from a given entry point and of a given size
-            var hexes = new List<Hex>();
+            var hexes = new List<HexReactor>();
             var entryPoint = Vector3.zero;
             var hexSize = greenHex.renderer.bounds.size;
 
@@ -90,7 +90,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 {
                     hexes.Add(CreateRandomHex(
                         new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
-                        new Vector2(entryCoordinate + j, i)).MarkedHex);
+                        new Vector2(entryCoordinate + j, i)));
                 }
             }
 
@@ -108,7 +108,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 {
                     hexes.Add(CreateRandomHex(
                         new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
-                        new Vector2(entryCoordinate + j, i)).MarkedHex);
+                        new Vector2(entryCoordinate + j, i)));
                 }
             }
 
@@ -135,7 +135,7 @@ namespace Assets.Scripts.TacticalBattleScene
         private HexReactor CreateGrassHex(Vector3 nextPosition, Vector2 hexCoordinates)
         {
             var reactor = CreateHex(nextPosition, hexCoordinates, greenHex);
-            m_emptyHexes.Add(reactor.MarkedHex);
+            m_emptyHexes.Add(reactor);
             return reactor;
         }
 
@@ -157,9 +157,10 @@ namespace Assets.Scripts.TacticalBattleScene
         private HexReactor CreateWoodHex(Vector3 nextPosition, Vector2 hexCoordinates, string configurationName)
         {
             var reactor = CreateHex(nextPosition, hexCoordinates, woodHex);
-            reactor.MarkedHex.Conditions = TraversalConditions.Broken;
-            reactor.MarkedHex.Content = new TerrainEntity(m_terrainEntities.GetConfiguration(configurationName),
-                ((GameObject)Instantiate(Resources.Load(configurationName), transform.position, Quaternion.identity)).GetComponent<EntityReactor>());
+            reactor.Conditions = TraversalConditions.Broken;
+            var terrainEntity = ((GameObject)Instantiate(Resources.Load("TerrainEntity"), transform.position, Quaternion.identity)).GetComponent<TerrainEntity>();
+            reactor.Content = terrainEntity;
+            terrainEntity.Init(m_terrainEntities.GetConfiguration(configurationName));
             return reactor;
         }
 
@@ -167,7 +168,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             var hex = (GameObject)Instantiate(prefab, nextPosition, Quaternion.identity);
             var reactor = hex.GetComponent<HexReactor>();
-            reactor.MarkedHex = new Hex(hexCoordinates, reactor);
+            reactor.Init(hexCoordinates);
             return reactor;
         }
 
@@ -202,7 +203,6 @@ namespace Assets.Scripts.TacticalBattleScene
             SimpleConfigurationHandler.Init();
             HexReactor.Init();
             GlobalState.Init();
-            Hex.Init();
 
             if (GlobalState.TacticalBattle == null)
             {
@@ -213,7 +213,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 if (GlobalState.StrategicMap == null)
                     state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
                 else
-                    state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreatePlayerMechs(GlobalState.StrategicMap.State.EquippedEntities));
+                    state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(GlobalState.StrategicMap.State.EquippedEntities, Loyalty.Player));
                 GlobalState.TacticalBattle = state;
             }
         }
@@ -222,28 +222,30 @@ namespace Assets.Scripts.TacticalBattleScene
         private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
         {
             var entityTemplates = GlobalState.Configurations.EntityTemplates.GetAllConfigurations();
-            return Enumerable.Range(0, number).Select(num =>
+            var systemTemplates = GlobalState.Configurations.SubsystemTemplates.GetAllConfigurations();
+
+            return CreateMechs(
+                Enumerable.Range(0, number).Select(num =>
                 {
                     var template = entityTemplates.ChooseRandomValue();
-                    return (ActiveEntity)new MovingEntity(
-                   new SpecificEntity(template),
-                   loyalty,
-                   ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
-                   GlobalState.Configurations.SubsystemTemplates.GetAllConfigurations().
-                       ChooseRandomValues(template.SystemSlots).Select(systemTemplate => new Subsystem(systemTemplate, loyalty))
-
-                   );
-                }).Materialize();
+                    var systems = systemTemplates.ChooseRandomValues(template.SystemSlots);
+                    return new EquippedEntity(new SpecificEntity(template), systems);
+                }),
+                loyalty);
         }
 
         // create the player controlled mechs from their definition in the global state
-        private IEnumerable<ActiveEntity> CreatePlayerMechs(List<EquippedEntity> equippedEntities)
+        private IEnumerable<ActiveEntity> CreateMechs(IEnumerable<EquippedEntity> equippedEntities, Loyalty loyalty)
         {
-            return equippedEntities.Select(entity => (ActiveEntity)new MovingEntity(
-                entity.Entity,
-                Loyalty.Player,
-                ((GameObject)Instantiate(Resources.Load("Mech"), transform.position, Quaternion.identity)).GetComponent<EntityReactor>(),
-                entity.Subsystems.Where(template => template != null).Select(template => new Subsystem(template, Loyalty.Player)))).Materialize();
+            return equippedEntities.Select(equippedEntity =>
+                {
+                    var entity = ((GameObject)Instantiate(Resources.Load("MovingEntity"), transform.position, Quaternion.identity)).GetComponent<ActiveEntity>();
+                    entity.Init(equippedEntity.InternalEntity,
+                       loyalty,
+                       equippedEntity.Subsystems.Where(template => template != null).Select(template => new Subsystem(template, loyalty)));
+
+                    return entity;
+                }).Materialize();
         }
 
         #endregion private methods

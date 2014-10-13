@@ -34,10 +34,10 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region public methods
 
-        public void UpdateEntityTexture(TacticalEntity ent)
+        public void UpdateEntityTexture(EntityReactor ent)
         {
             var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.Template.Name);
-            var renderer = ent.Reactor.GetComponent<SpriteRenderer>();
+            var renderer = ent.GetComponent<SpriteRenderer>();
             var newTexture = GetEntityTexture(ent.Template, ent.Loyalty);
             ReplaceTexture(renderer, newTexture, name);
         }

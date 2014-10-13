@@ -1,6 +1,5 @@
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
-using Assets.Scripts.TacticalBattleScene.PathFinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,214 +7,21 @@ using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
-    #region Entity
-
-    /// <summary>
-    /// The basic information all entities share
-    /// </summary>
-    public abstract class TacticalEntity
-    {
-        #region private fields
-
-        private static int s_idCounter = 0;
-
-        private readonly int m_id;
-
-        #endregion private fields
-
-        #region constructor
-
-        public TacticalEntity(SpecificEntity entity, Loyalty loyalty, EntityReactor reactor)
-        {
-            Template = entity.Template;
-            Loyalty = loyalty;
-            Health = Template.Health;
-            reactor.Entity = this;
-            this.Reactor = reactor;
-            m_id = s_idCounter++;
-            Name = "{0} {1} {2}".FormatWith(Template.Name, Loyalty, m_id);
-            if ((Template.Visuals & VisualProperties.AppearsOnRadar) != 0)
-            {
-                TacticalState.AddRadarVisibleEntity(this);
-            }
-        }
-
-        #endregion constructor
-
-        #region properties
-
-        public int ID { get { return m_id; } }
-
-        public EntityReactor Reactor { get; private set; }
-
-        public double Health { get; private set; }
-
-        public virtual Hex Hex { get; set; }
-
-        public Loyalty Loyalty { get; private set; }
-
-        public String Name { get; private set; }
-
-        public EntityTemplate Template { get; private set; }
-
-        #endregion properties
-
-        #region public methods
-
-        // Change the entity's state. Usually called when a subsystem operates on the entity.
-        // TODO - currently only damages the unit
-        public void Affect(double strength, EffectType effectType)
-        {
-            Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(Name, strength, effectType));
-            var remainingDamage = ExternalDamage(strength, effectType);
-            InternalDamage(remainingDamage, effectType);
-            Debug.Log(FullState());
-
-            if (Destroyed())
-            {
-                Destroy();
-            }
-        }
-
-        // this function returns a string value that represents the mutable state of the entity
-        public virtual string FullState()
-        {
-            return "{0}: Health {1}/{2} Hex {3}".FormatWith(Name, Health, Template.Health, Hex);
-        }
-
-        // just a simple function to make the code more readable
-        public virtual bool Destroyed()
-        {
-            return Health <= 0;
-        }
-
-        #region object overrides
-
-        public override bool Equals(object obj)
-        {
-            var ent = obj as TacticalEntity;
-            return ent != null &&
-                ID == ent.ID;
-        }
-
-        public override int GetHashCode()
-        {
-            return Hasher.GetHashCode(Name, Reactor, m_id);
-        }
-
-        public override string ToString()
-        {
-            return Name;
-        }
-
-        #endregion object overrides
-
-        #endregion public methods
-
-        #region protected methods
-
-        // after damage passes through armor & shields, it reduces health
-        protected virtual void InternalDamage(double damage, EffectType damageType)
-        {
-            switch (damageType)
-            {
-                case EffectType.PhysicalDamage:
-                    Health -= damage;
-                    break;
-
-                case EffectType.IncendiaryDamage:
-                    Health -= damage / 2;
-                    break;
-            }
-        }
-
-        // reduce damage by the armor level, wehn relevant.
-        protected virtual double ExternalDamage(double strength, EffectType damageType)
-        {
-            switch (damageType)
-            {
-                case EffectType.PhysicalDamage:
-                case EffectType.IncendiaryDamage:
-                    //TODO - Can armor be ablated away? if so, it needs to be copied over into a local field in the entity
-                    return strength - Template.Armor;
-
-                case EffectType.EmpDamage:
-                case EffectType.HeatDamage:
-                    return strength;
-
-                default:
-                    throw new UnknownValueException(damageType);
-            }
-        }
-
-        // destroy the entity
-        // TODO - log the reason it was destroyed
-        protected virtual void Destroy()
-        {
-            Debug.Log("Destroy {0}".FormatWith(Name));
-            this.Hex.Content = null;
-            TacticalState.DestroyEntity(this);
-            this.Reactor.DestroyGameObject();
-        }
-
-        #endregion protected methods
-    }
-
-    #endregion Entity
-
-    #region inanimate entities
-
-    /// <summary>
-    /// Entities which represent natural pieces of terrain, and aren't active - just obstructions.
-    /// </summary>
-    public class TerrainEntity : TacticalEntity
-    {
-        private Hex m_hex;
-
-        public TerrainEntity(EntityTemplate template, EntityReactor reactor)
-            : base(new SpecificEntity(template), Loyalty.Inactive, reactor)
-        { }
-
-        public override Hex Hex
-        {
-            get
-            {
-                return m_hex;
-            }
-            set
-            {
-                m_hex = value;
-                Assert.AreEqual(m_hex.Conditions, TraversalConditions.Broken, "terrain entities are always placed over broken land to ensure that when they're destroyed there's rubble below");
-            }
-        }
-
-        //inanimate objects take heat damage as physical damage
-        protected override void InternalDamage(double damage, EffectType damageType)
-        {
-            if (damageType == EffectType.HeatDamage || damageType == EffectType.IncendiaryDamage)
-            {
-                damageType = EffectType.PhysicalDamage;
-            }
-            base.InternalDamage(damage, damageType);
-        }
-    }
-
-    #endregion inanimate entities
-
     #region ActiveEntity
 
     /// <summary>
     /// Active entities have subsystems that they can operate, the ability to see & detect other entities,
     /// and several additional properties which are affected by those systems and abilities.
     /// </summary>
-    public class ActiveEntity : TacticalEntity
+    public class ActiveEntity : EntityReactor
     {
         #region constructor
 
-        public ActiveEntity(SpecificEntity entity, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
-            base(entity, loyalty, reactor)
+        public virtual void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<Subsystem> systems)
         {
             Assert.EqualOrGreater(entity.Template.SystemSlots, systems.Count(), "more systems than system slots.");
+            Assert.IsNull(m_systems, "m_systems", "Entity was already initialised.");
+            base.Init(entity, loyalty);
             m_systems = systems;
             CurrentEnergy = Template.MaxEnergy;
             m_tempMaxEnergy = Template.MaxEnergy;
@@ -226,9 +32,9 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region private fields
 
-        private HashSet<Hex> m_detectedHexes;
+        private HashSet<HexReactor> m_detectedHexes;
 
-        private readonly IEnumerable<Subsystem> m_systems;
+        private IEnumerable<Subsystem> m_systems;
 
         private IEnumerable<PotentialAction> m_actions;
 
@@ -257,7 +63,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public double CurrentEnergy { get; set; }
 
-        public HashSet<Hex> SeenHexes { get; private set; }
+        public HashSet<HexReactor> SeenHexes { get; private set; }
 
         public double Shield { get; private set; }
 
@@ -294,8 +100,8 @@ namespace Assets.Scripts.TacticalBattleScene
 
             if (SeenHexes != null)
             {
-                var whatTheEntitySeesNowSet = new HashSet<Hex>(whatTheEntitySeesNow);
-                var whatTheEntitySeesNowInRadarSet = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
+                var whatTheEntitySeesNowSet = new HashSet<HexReactor>(whatTheEntitySeesNow);
+                var whatTheEntitySeesNowInRadarSet = new HashSet<HexReactor>(whatTheEntitySeesNowInRadar);
                 //TODO - we can remove this optimization and just call ResetSeenHexes before this, but it'll be more expensive. Until it'll cause problem I'm keeping this
                 //this leaves in each list the hexes not in the other
                 whatTheEntitySeesNowSet.ExceptOnBoth(SeenHexes);
@@ -329,8 +135,8 @@ namespace Assets.Scripts.TacticalBattleScene
                     hex.Detected();
                 }
             }
-            SeenHexes = new HashSet<Hex>(whatTheEntitySeesNow);
-            m_detectedHexes = new HashSet<Hex>(whatTheEntitySeesNowInRadar);
+            SeenHexes = new HashSet<HexReactor>(whatTheEntitySeesNow);
+            m_detectedHexes = new HashSet<HexReactor>(whatTheEntitySeesNowInRadar);
         }
 
         // reset seeing status
@@ -386,15 +192,15 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region private and protected methods
 
-        private IEnumerable<Hex> FindSeenHexes()
+        private IEnumerable<HexReactor> FindSeenHexes()
         {
             //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
-            return Hex.RaycastAndResolve<HexReactor>(0, Template.SightRange, (hex) => true, true, (hex) => (hex.Content != null && ((hex.Content.Template.Visuals & VisualProperties.BlocksSight) != 0)), "Hexes", (reactor) => reactor.MarkedHex);
+            return Hex.RaycastAndResolve<HexReactor>(0, Template.SightRange, (hex) => true, true, (hex) => (hex.Content != null && ((hex.Content.Template.Visuals & VisualProperties.BlocksSight) != 0)), "Hexes", (reactor) => reactor);
         }
 
-        private IEnumerable<Hex> FindRadarHexes()
+        private IEnumerable<HexReactor> FindRadarHexes()
         {
-            var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.Reactor.enabled).Select(ent => ent.Reactor);
+            var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.enabled);
             inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
             var results = Hex.RaycastAndResolve(0, Template.RadarRange, (hex) => hex.Content != null, true, "Entities");
             inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);
@@ -448,13 +254,13 @@ namespace Assets.Scripts.TacticalBattleScene
                 return new PotentialAction[0];
             }
 
-            var dict = new Dictionary<Hex, List<OperateSystemAction>>();
+            var dict = new Dictionary<HexReactor, List<OperateSystemAction>>();
             var results = m_systems.Where(system => system.Operational())
                 .SelectMany(system => system.ActionsInRange(this, dict)).Materialize();
 
             foreach (var hex in dict.Keys)
             {
-                hex.Reactor.AddCommands(this, dict[hex]);
+                hex.AddCommands(this, dict[hex]);
             }
 
             return results.Select(subsytemAction => (PotentialAction)subsytemAction);
@@ -499,62 +305,4 @@ namespace Assets.Scripts.TacticalBattleScene
     }
 
     #endregion ActiveEntity
-
-    #region MovingEntity
-
-    /// <summary>
-    /// an entity that can move
-    /// </summary>
-    public class MovingEntity : ActiveEntity
-    {
-        #region properties
-
-        public double AvailableSteps { get; set; }
-
-        #endregion properties
-
-        #region constructor
-
-        public MovingEntity(SpecificEntity entity, Loyalty loyalty, EntityReactor reactor, IEnumerable<Subsystem> systems) :
-            base(entity, loyalty, reactor, systems)
-        {
-            AvailableSteps = Template.MaxSpeed;
-        }
-
-        #endregion constructor
-
-        #region overrides
-
-        // actions are also all potential movement targets
-        protected override IEnumerable<PotentialAction> ComputeActions()
-        {
-            var baseActions = base.ComputeActions();
-            var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, Template.MovementMethod);
-            return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement).Shuffle());
-        }
-
-        // compute moves at start of turn
-        public override bool StartTurn()
-        {
-            if (base.StartTurn())
-            {
-                AvailableSteps = Template.MaxSpeed;
-                return true;
-            }
-            else
-            {
-                AvailableSteps = 0;
-                return false;
-            }
-        }
-
-        public override string FullState()
-        {
-            return "{0} movement {1}/{2}".FormatWith(base.FullState(), AvailableSteps, Template.MaxSpeed);
-        }
-
-        #endregion overrides
-    }
-
-    #endregion MovingEntity
 }

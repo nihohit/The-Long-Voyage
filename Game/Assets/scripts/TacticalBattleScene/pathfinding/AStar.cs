@@ -8,7 +8,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
 {
     #region AStar
 
-    internal delegate bool StopCondition(Hex hex);
+    internal delegate bool StopCondition(HexReactor hex);
 
     /// <summary>
     /// The implementation of the AStar algorithm
@@ -24,12 +24,12 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             s_knownPaths.Clear();
         }
 
-        public static Dictionary<Hex, MovementAction> FindAllAvailableHexes(Hex entry, double availableDistance, MovementType movementType)
+        public static Dictionary<HexReactor, MovementAction> FindAllAvailableHexes(HexReactor entry, double availableDistance, MovementType movementType)
         {
             Assert.NotNull(entry, "entry hex");
             var movingEntity = entry.Content as MovingEntity;
             Assert.NotNull(movingEntity, "moving entity in entry hex");
-            var dict = new Dictionary<Hex, MovementAction>();
+            var dict = new Dictionary<HexReactor, MovementAction>();
             //no heuristic here - we want accurate results
             var internalState = GenerateInternalState(entry, new AStarConfiguration(movementType, (check) => 0));
             while (internalState.OpenSet.Count > 0)
@@ -61,12 +61,12 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             return dict;
         }
 
-        public static List<Hex> FindPath(Hex entry, Hex goal, AStarConfiguration configuration)
+        public static List<HexReactor> FindPath(HexReactor entry, HexReactor goal, AStarConfiguration configuration)
         {
             return ReconstructPath(FindPathNoReconstruction(entry, goal, configuration), goal, configuration);
         }
 
-        public static double FindPathCost(Hex entry, Hex goal, AStarConfiguration configuration)
+        public static double FindPathCost(HexReactor entry, HexReactor goal, AStarConfiguration configuration)
         {
             var node = FindPathNoReconstruction(entry, goal, configuration);
             if (node == null)
@@ -76,7 +76,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             return node.GValue;
         }
 
-        private static AstarNode FindPathNoReconstruction(Hex entry, Hex goal, AStarConfiguration configuration)
+        private static AstarNode FindPathNoReconstruction(HexReactor entry, HexReactor goal, AStarConfiguration configuration)
         {
             if (goal.Content == null)
             {
@@ -90,7 +90,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             }
         }
 
-        private static AstarNode FindPathNoReconstruction(Hex entry, Hex goal, AStarConfiguration configuration, StopCondition stopCondition)
+        private static AstarNode FindPathNoReconstruction(HexReactor entry, HexReactor goal, AStarConfiguration configuration, StopCondition stopCondition)
         {
             var internalState = GenerateInternalState(entry, configuration);
 
@@ -128,7 +128,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             return null;
         }
 
-        public static void FeedResults(AstarNode rudamentaryList, Hex goal, AStarConfiguration configuration)
+        public static void FeedResults(AstarNode rudamentaryList, HexReactor goal, AStarConfiguration configuration)
         {
             ReconstructPath(rudamentaryList, goal, configuration);
         }
@@ -154,7 +154,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             return node;
         }
 
-        private static AStarInternalState GenerateInternalState(Hex entry, AStarConfiguration configuration)
+        private static AStarInternalState GenerateInternalState(HexReactor entry, AStarConfiguration configuration)
         {
             var internalState = new AStarInternalState(configuration);
 
@@ -171,7 +171,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             }
         }
 
-        private static void CheckHex(Hex temp, AstarNode current, AStarInternalState state)
+        private static void CheckHex(HexReactor temp, AstarNode current, AStarInternalState state)
         {
             AstarNode newNode;
             var cost = CostOfMovement(temp, state);
@@ -205,7 +205,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             }
         }
 
-        private static int CostOfMovement(Hex temp, AStarInternalState state)
+        private static int CostOfMovement(HexReactor temp, AStarInternalState state)
         {
             if (temp.Content != null)
             {
@@ -220,10 +220,10 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             else return Math.Max(1, cost - 2);
         }
 
-        private static List<Hex> ReconstructPath(AstarNode current, Hex goal, AStarConfiguration configuration)
+        private static List<HexReactor> ReconstructPath(AstarNode current, HexReactor goal, AStarConfiguration configuration)
         {
             Assert.NotNull(current, "current");
-            var ans = new List<Hex>();
+            var ans = new List<HexReactor>();
 
 #if DEBUG
             var nodes = new List<AstarNode>();
@@ -263,13 +263,13 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             public AStarInternalState(AStarConfiguration configuration)
             {
                 Configuration = configuration;
-                Hexes = new Dictionary<Hex, AstarNode>();
+                Hexes = new Dictionary<HexReactor, AstarNode>();
                 OpenSet = new PriorityQueue<AstarNode>();
             }
 
             public AStarConfiguration Configuration { get; private set; }
 
-            public Dictionary<Hex, AstarNode> Hexes { get; private set; }
+            public Dictionary<HexReactor, AstarNode> Hexes { get; private set; }
 
             public PriorityQueue<AstarNode> OpenSet { get; private set; }
 
@@ -299,7 +299,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
 
             public BackwardsAstarNode Son { get; private set; }
 
-            public Hex ChosenHex { get; private set; }
+            public HexReactor ChosenHex { get; private set; }
         }
 
         #endregion BackwardsAstarNode
@@ -308,13 +308,13 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
 
         private class HexPair
         {
-            public Hex Goal { get; private set; }
+            public HexReactor Goal { get; private set; }
 
-            public Hex Current { get; private set; }
+            public HexReactor Current { get; private set; }
 
             public MovementType TraversalMethod { get; private set; }
 
-            public HexPair(Hex current, Hex goal, MovementType movement)
+            public HexPair(HexReactor current, HexReactor goal, MovementType movement)
             {
                 Current = current;
                 Goal = goal;

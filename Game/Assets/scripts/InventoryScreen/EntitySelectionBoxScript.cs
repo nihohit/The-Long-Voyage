@@ -69,7 +69,7 @@ namespace Assets.Scripts.InventoryScreen
                 }
 
                 GlobalState.StrategicMap.State.EquippedEntities.Remove(firstEntity);
-                SelectedItem = firstEntity.Entity;
+                SelectedItem = firstEntity.InternalEntity;
                 var systemsArray = firstEntity.Subsystems.ToArray();
                 var selectionBoxesArray = m_systems.ToArray();
                 for (int i = 0; i < systemsArray.Length; i++)

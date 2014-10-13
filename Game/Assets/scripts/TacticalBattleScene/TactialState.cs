@@ -25,12 +25,12 @@ namespace Assets.Scripts.TacticalBattleScene
         //for each entity and each hex, the available actions
         private static HashSet<ActiveEntity> s_activeEntities;
 
-        private static IEnumerable<Hex> s_hexes;
+        private static IEnumerable<HexReactor> s_hexes;
 
         private static Dictionary<Loyalty, IAIRunner> s_nonPlayerTeams;
 
         //this is needed, since we need to enable all the entities before each radar sweep.
-        private static List<TacticalEntity> s_radarableEntity = new List<TacticalEntity>();
+        private static List<EntityReactor> s_radarableEntity = new List<EntityReactor>();
 
         private static List<ActiveEntity> s_destroyedEntities = new List<ActiveEntity>();
 
@@ -62,7 +62,7 @@ namespace Assets.Scripts.TacticalBattleScene
             }
         }
 
-        public static IEnumerable<TacticalEntity> RadarVisibleEntities { get { return s_radarableEntity; } }
+        public static IEnumerable<EntityReactor> RadarVisibleEntities { get { return s_radarableEntity; } }
 
         public static Loyalty CurrentTurn { get { return s_currentTurn.Value; } }
 
@@ -71,13 +71,13 @@ namespace Assets.Scripts.TacticalBattleScene
         #region public methods
 
         // to be called when entities are created
-        public static void AddRadarVisibleEntity(TacticalEntity ent)
+        public static void AddRadarVisibleEntity(EntityReactor ent)
         {
             Assert.AssertConditionMet((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0, "Added entity isn't radar visible");
             s_radarableEntity.Add(ent);
         }
 
-        public static void DestroyEntity(TacticalEntity ent)
+        public static void DestroyEntity(EntityReactor ent)
         {
             if ((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0)
             {
@@ -92,7 +92,7 @@ namespace Assets.Scripts.TacticalBattleScene
         }
 
         // initiate a new battle with the relevant information on all active entities
-        public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<Hex> hexes)
+        public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<HexReactor> hexes)
         {
             TextureManager = new TacticalTextureHandler();
             BattleStarted = false;

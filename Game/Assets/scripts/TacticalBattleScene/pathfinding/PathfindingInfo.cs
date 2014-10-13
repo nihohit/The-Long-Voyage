@@ -7,9 +7,9 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
 {
     #region delegates
 
-    internal delegate List<Hex> pathfindFunction(Vector2 entry, Vector2 goal, MovementType traversalMethod);
+    internal delegate List<HexReactor> pathfindFunction(Vector2 entry, Vector2 goal, MovementType traversalMethod);
 
-    internal delegate float Heuristic(Hex check);
+    internal delegate float Heuristic(HexReactor check);
 
     #endregion delegates
 
@@ -25,7 +25,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
 
         #region constructors
 
-        public AstarNode(Hex value, float costToEnterThisNode, int g_total, float heuristicCost, AstarNode parent)
+        public AstarNode(HexReactor value, float costToEnterThisNode, int g_total, float heuristicCost, AstarNode parent)
         {
             ChosenHex = value;
             m_gTotalValue = g_total;
@@ -36,12 +36,12 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             Open = true;
         }
 
-        public AstarNode(Hex value, AstarNode parent) :
+        public AstarNode(HexReactor value, AstarNode parent) :
             this(value, 0, 0, 0, parent)
         { }
 
         //only first node uses this
-        public AstarNode(Hex value, float h) :
+        public AstarNode(HexReactor value, float h) :
             this(value, 0, 0, h, null)
         { }
 
@@ -51,7 +51,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
 
         public AstarNode Parent { get; set; }
 
-        public Hex ChosenHex { get; private set; }
+        public HexReactor ChosenHex { get; private set; }
 
         public bool Open { get; set; }
 

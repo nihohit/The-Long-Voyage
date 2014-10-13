@@ -8,13 +8,13 @@ namespace Assets.Scripts.LogicBase
     /// </summary>
     public class EquippedEntity
     {
-        public SpecificEntity Entity { get; private set; }
+        public SpecificEntity InternalEntity { get; private set; }
 
         public IEnumerable<SubsystemTemplate> Subsystems { get; private set; }
 
         public EquippedEntity(SpecificEntity entity, IEnumerable<SubsystemTemplate> subsystems)
         {
-            Entity = entity;
+            InternalEntity = entity;
             Subsystems = subsystems;
         }
     }

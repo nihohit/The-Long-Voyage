@@ -16,7 +16,7 @@ namespace Assets.Scripts.Base
 
         public static void NotEqual(object first, object second, string additionalMessage = "")
         {
-            AssertConditionMet(!first.Equals(second), additionalMessage);
+            AssertConditionMet(!first.Equals(second), "{0} equals {1}. {2}".FormatWith(first, second, additionalMessage));
         }
 
         public static void EqualOrGreater(double num, double top, string additionalMessage = "")
