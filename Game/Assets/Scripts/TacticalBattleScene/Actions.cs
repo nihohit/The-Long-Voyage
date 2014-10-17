@@ -132,6 +132,24 @@ namespace Assets.Scripts.TacticalBattleScene
             return m_name;
         }
 
+        public override bool Equals(object obj)
+        {
+            var action = obj as PotentialAction;
+            return action != null &&
+                action.m_button.Equals(m_button) &&
+                action.Name.Equals(m_name) &&
+                action.ActingEntity.Equals(ActingEntity) &&
+                action.TargetedHex.Equals(TargetedHex);
+        }
+
+        public override int GetHashCode()
+        {
+            return Hasher.GetHashCode(m_name,
+                TargetedHex,
+                ActingEntity,
+                m_button);
+        }
+
         //represents the necessary conditions for the action to exist
         public abstract bool NecessaryConditions();
 

@@ -114,7 +114,6 @@ namespace Assets.Scripts.Base
 
         public static TVal Get<TKey, TVal>(this IDictionary<TKey, TVal> dict, TKey key, string dictionaryName = "")
         {
-            Assert.DictionaryContains(dict, key, dictionaryName);
             return dict[key];
         }
 

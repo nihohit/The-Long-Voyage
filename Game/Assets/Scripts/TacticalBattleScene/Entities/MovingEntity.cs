@@ -39,7 +39,9 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             var baseActions = base.ComputeActions();
             var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, Template.MovementMethod);
-            return baseActions.Union(possibleHexes.Values.Select(movement => (PotentialAction)movement).Shuffle());
+            List<PotentialAction> movementActions = possibleHexes.Values.Select(movement => (PotentialAction)movement).ToList();
+            var shuffledActions = movementActions.Shuffle().ToList();
+            return baseActions.Union(shuffledActions);
         }
 
         // compute moves at start of turn

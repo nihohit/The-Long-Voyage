@@ -9,11 +9,6 @@ namespace Assets.Scripts.Base
     /// </summary>
     public static class Assert
     {
-        public static void DictionaryContains<Tkey, Tvalue>(IDictionary<Tkey, Tvalue> dict, Tkey key, string dictionaryName = "")
-        {
-            AssertConditionMet(dict.ContainsKey(key), "Key {0} not found in dictionary {1}".FormatWith(key, dictionaryName));
-        }
-
         public static void NotEqual(object first, object second, string additionalMessage = "")
         {
             AssertConditionMet(!first.Equals(second), "{0} equals {1}. {2}".FormatWith(first, second, additionalMessage));
@@ -45,24 +40,29 @@ namespace Assets.Scripts.Base
             AssertConditionMet(false, "unreachable code: {0}".FormatWith(message));
         }
 
-        public static void IsNull(object a, string variableName, string additionalMessage = "")
+        public static void IsNull(object a, string name, string additionalMessage = "")
         {
-            AssertConditionMet(a == null, "{0} isn't null. {1}".FormatWith(variableName, additionalMessage));
+            AssertConditionMet(a == null, "\'{0}\' isn't null. {1}".FormatWith(name, additionalMessage));
         }
 
-        public static void NotNull(object a, string variableName, string additionalMessage = "")
+        public static void NotNull(object a, string name, string additionalMessage = "")
         {
-            AssertConditionMet(a != null, "{0} is null. {1}".FormatWith(variableName, additionalMessage));
+            AssertConditionMet(a != null, "\'{0}\' is null. {1}".FormatWith(name, additionalMessage));
         }
 
-        public static void NotNullOrEmpty<T>(IEnumerable<T> a, string variableName, string additionalMessage = "")
+        public static void NotNullOrEmpty<T>(IEnumerable<T> a, string name, string additionalMessage = "")
         {
-            AssertConditionMet(a != null || !a.Any(), "{0} is null or empty. {1}".FormatWith(variableName, additionalMessage));
+            AssertConditionMet(a != null || !a.Any(), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
         }
 
-        public static void StringNotNullOrEmpty(string a, string variableName, string additionalMessage = "")
+        internal static void NotNullOrEmpty(string name, string variableName)
         {
-            AssertConditionMet(a != null || !a.Equals(string.Empty), "{0} is null or empty. {1}".FormatWith(variableName, additionalMessage));
+            AssertConditionMet(!String.IsNullOrEmpty(name), "\'{0}\' was null or empty".FormatWith(variableName));
+        }
+
+        public static void StringNotNullOrEmpty(string a, string name, string additionalMessage = "")
+        {
+            AssertConditionMet(a != null || !a.Equals(string.Empty), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
         }
 
         public static void AreEqual(object a, object b, string additionalMessage = "")

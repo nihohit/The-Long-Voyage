@@ -13,7 +13,6 @@ namespace Assets.Scripts.MainScreenScene
 
         private void Start()
         {
-            SimpleConfigurationHandler.Init();
             minHexSlider = SimpleConfigurationHandler.GetIntProperty("min number of hexes", FileAccessor.General);
             maxHexSlider = SimpleConfigurationHandler.GetIntProperty("max number of hexes", FileAccessor.General);
             sliderValue = (minHexSlider + maxHexSlider) / 3;

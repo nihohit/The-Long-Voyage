@@ -12,7 +12,7 @@ namespace Assets.Scripts.TacticalBattleScene
     /// </summary>
     public class TacticalBattleScript : MonoBehaviour
     {
-        private TerrainEntityTemplateStorage m_terrainEntities = new TerrainEntityTemplateStorage("TerrainEntities");
+        private TerrainEntityTemplateStorage m_terrainEntities = new TerrainEntityTemplateStorage();
 
         #region public members
 
@@ -128,7 +128,6 @@ namespace Assets.Scripts.TacticalBattleScene
         private void InitClasses()
         {
             TacticalState.BattleStarted = false;
-            SimpleConfigurationHandler.Init();
             InitiateGlobalState();
         }
 
@@ -200,7 +199,6 @@ namespace Assets.Scripts.TacticalBattleScene
         private void InitiateGlobalState()
         {
             //TODO - replace with exception throwing when we remove the direct access to level generation
-            SimpleConfigurationHandler.Init();
             HexReactor.Init();
             GlobalState.Init();
 
@@ -221,14 +219,11 @@ namespace Assets.Scripts.TacticalBattleScene
         // create a collection of mechs
         private IEnumerable<ActiveEntity> CreateMechs(Loyalty loyalty, int number)
         {
-            var entityTemplates = GlobalState.Configurations.EntityTemplates.GetAllConfigurations();
-            var systemTemplates = GlobalState.Configurations.SubsystemTemplates.GetAllConfigurations();
-
             return CreateMechs(
                 Enumerable.Range(0, number).Select(num =>
                 {
-                    var template = entityTemplates.ChooseRandomValue();
-                    var systems = systemTemplates.ChooseRandomValues(template.SystemSlots);
+                    var template = EntityTemplateStorage.Instance.GetAllConfigurations().ChooseRandomValue();
+                    var systems = SubsystemTemplateStorage.Instance.GetAllConfigurations().ChooseRandomValues(template.SystemSlots);
                     return new EquippedEntity(new SpecificEntity(template), systems);
                 }),
                 loyalty);

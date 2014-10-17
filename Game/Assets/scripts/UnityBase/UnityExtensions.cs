@@ -62,7 +62,7 @@ namespace Assets.Scripts.UnityBase
             UnityEngine.Object.Destroy(unityObject.gameObject);
         }
 
-        public static double Distance(this Vector3 point, Vector3 otherPoint)
+        public static float Distance(this Vector3 point, Vector3 otherPoint)
         {
             return Vector3.Distance(point, otherPoint);
         }
@@ -70,6 +70,16 @@ namespace Assets.Scripts.UnityBase
         public static float Distance(this Vector2 point, Vector2 otherPoint)
         {
             return Vector2.Distance(point, otherPoint);
+        }
+
+        public static float Distance(this Vector3 point)
+        {
+            return Vector3.Distance(point, Vector3.zero);
+        }
+
+        public static float Distance(this Vector2 point)
+        {
+            return Vector2.Distance(point, Vector2.zero);
         }
 
         // return the bounds of a collider

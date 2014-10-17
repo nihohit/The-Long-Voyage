@@ -24,21 +24,20 @@ namespace Assets.Scripts.InventoryScreen
         {
             if (GlobalState.StrategicMap == null)
             {
-                SimpleConfigurationHandler.Init();
                 GlobalState.Init();
                 GlobalState.StrategicMap = new StrategicMapInformation();
                 GlobalState.StrategicMap.State = new PlayerState();
-                var mechTemplate = GlobalState.Configurations.EntityTemplates.GetConfiguration("StandardMech");
+                var mechTemplate = EntityTemplateStorage.Instance.GetConfiguration("StandardMech");
                 for (int i = 0; i < 2; i++)
                 {
                     GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
                 }
-                mechTemplate = GlobalState.Configurations.EntityTemplates.GetConfiguration("ScoutMech");
+                mechTemplate = EntityTemplateStorage.Instance.GetConfiguration("ScoutMech");
                 for (int i = 0; i < 2; i++)
                 {
                     GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
                 }
-                var systems = GlobalState.Configurations.SubsystemTemplates.GetAllConfigurations().ToArray();
+                var systems = SubsystemTemplateStorage.Instance.GetAllConfigurations().ToArray();
                 for (int i = 0; i < 5; i++)
                 {
                     for (int j = 0; j < 3; j++)

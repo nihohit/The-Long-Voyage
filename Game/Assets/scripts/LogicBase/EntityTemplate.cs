@@ -110,10 +110,10 @@ namespace Assets.Scripts.LogicBase
 
     #region EntityTemplateStorage
 
-    public class EntityTemplateStorage : ConfigurationStorage<EntityTemplate>
+    public class EntityTemplateStorage : ConfigurationStorage<EntityTemplate, EntityTemplateStorage>
     {
-        public EntityTemplateStorage(string fileName)
-            : base(fileName)
+        public EntityTemplateStorage()
+            : base("MovingEntities")
         { }
 
         protected override JSONParser<EntityTemplate> GetParser()
@@ -153,10 +153,10 @@ namespace Assets.Scripts.LogicBase
 
     #region TerrainEntityTemplateStorage
 
-    public class TerrainEntityTemplateStorage : ConfigurationStorage<EntityTemplate>
+    public class TerrainEntityTemplateStorage : ConfigurationStorage<EntityTemplate, TerrainEntityTemplateStorage>
     {
-        public TerrainEntityTemplateStorage(string fileName)
-            : base(fileName)
+        public TerrainEntityTemplateStorage()
+            : base("TerrainEntities")
         { }
 
         protected override JSONParser<EntityTemplate> GetParser()

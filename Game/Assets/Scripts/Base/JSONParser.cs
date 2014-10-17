@@ -86,18 +86,29 @@ namespace Assets.Scripts.Base
     #region ConfigurationStorage
 
     // A storage class for configurations of type Tconfiguration
-    public abstract class ConfigurationStorage<TConfiguration> where TConfiguration : IIdentifiable
+    public abstract class ConfigurationStorage<TConfiguration, TStorageType>
+        where TConfiguration : IIdentifiable
+        where TStorageType : ConfigurationStorage<TConfiguration, TStorageType>, new()
     {
         #region fields
 
         private IDictionary<string, TConfiguration> m_configurationsDictionary;
         private string m_fileName;
+        private static TStorageType s_instance = new TStorageType();
 
         #endregion fields
 
+        public static TStorageType Instance
+        {
+            get
+            {
+                return s_instance;
+            }
+        }
+
         #region constructor
 
-        public ConfigurationStorage(string fileName)
+        protected ConfigurationStorage(string fileName)
         {
             m_fileName = "Config/{0}.json".FormatWith(fileName);
             var parser = GetParser();

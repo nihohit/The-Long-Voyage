@@ -70,10 +70,10 @@ namespace Assets.Scripts.LogicBase
 
     #region SubsystemTemplateStorage
 
-    public class SubsystemTemplateStorage : ConfigurationStorage<SubsystemTemplate>
+    public class SubsystemTemplateStorage : ConfigurationStorage<SubsystemTemplate, SubsystemTemplateStorage>
     {
-        public SubsystemTemplateStorage(string fileName)
-            : base(fileName)
+        public SubsystemTemplateStorage()
+            : base("Subsystems")
         { }
 
         protected override JSONParser<SubsystemTemplate> GetParser()
