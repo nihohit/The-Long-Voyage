@@ -11,6 +11,34 @@ namespace Assets.Scripts.UnityBase
     /// </summary>
     public static class UnityExtensions
     {
+        public static Vector3 LerpAngle(this Vector3 direction, Vector3 other, float time)
+        {
+            /*return new Vector3(Mathf.LerpAngle(direction.x, other.x, time),
+                Mathf.LerpAngle(direction.y, other.y, time),
+                Mathf.LerpAngle(direction.z, other.z, time));*/
+            return new Vector3(0, 0, Mathf.LerpAngle(direction.z, other.z, time));
+        }
+
+        public static Vector3 ToRotationVector(this Vector3 direction)
+        {
+            var angle = Vector3.Angle(new Vector3(0, 1, 0), direction);
+            if (direction.x > 0)
+            {
+                angle = -angle;
+            }
+            return new Vector3(0, 0, angle);
+        }
+
+        public static Vector3 ToRotationVector(this Vector2 direction)
+        {
+            var angle = Vector2.Angle(new Vector2(0, 1), direction);
+            if (direction.x > 0)
+            {
+                angle = -angle;
+            }
+            return new Vector3(0, 0, angle);
+        }
+
         public static float GetAngleBetweenTwoPoints(this Vector2 from, Vector2 to)
         {
             var differenceVector = to - from;

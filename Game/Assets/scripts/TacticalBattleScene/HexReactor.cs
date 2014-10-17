@@ -87,6 +87,7 @@ namespace Assets.Scripts.TacticalBattleScene
                     m_content = value;
                     return;
                 }
+                Debug.Log("Enter {0} to {1}".FormatWith(value, this));
 
                 Assert.NotEqual(value, m_content, "Entered the same entity to hex {0}".FormatWith(this));
 

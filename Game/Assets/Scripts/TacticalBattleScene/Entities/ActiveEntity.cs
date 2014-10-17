@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
+using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 using System.Linq;

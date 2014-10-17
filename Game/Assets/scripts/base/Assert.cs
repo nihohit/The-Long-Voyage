@@ -45,24 +45,24 @@ namespace Assets.Scripts.Base
             AssertConditionMet(false, "unreachable code: {0}".FormatWith(message));
         }
 
-        public static void IsNull(object a, string name, string additionalMessage = "")
+        public static void IsNull(object a, string variableName, string additionalMessage = "")
         {
-            AssertConditionMet(a == null, "{0} isn't null. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a == null, "{0} isn't null. {1}".FormatWith(variableName, additionalMessage));
         }
 
-        public static void NotNull(object a, string name, string additionalMessage = "")
+        public static void NotNull(object a, string variableName, string additionalMessage = "")
         {
-            AssertConditionMet(a != null, "{0} is null. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a != null, "{0} is null. {1}".FormatWith(variableName, additionalMessage));
         }
 
-        public static void NotNullOrEmpty<T>(IEnumerable<T> a, string name, string additionalMessage = "")
+        public static void NotNullOrEmpty<T>(IEnumerable<T> a, string variableName, string additionalMessage = "")
         {
-            AssertConditionMet(a != null || !a.Any(), "{0} is null or empty. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a != null || !a.Any(), "{0} is null or empty. {1}".FormatWith(variableName, additionalMessage));
         }
 
-        public static void StringNotNullOrEmpty(string a, string name, string additionalMessage = "")
+        public static void StringNotNullOrEmpty(string a, string variableName, string additionalMessage = "")
         {
-            AssertConditionMet(a != null || !a.Equals(string.Empty), "{0} is null or empty. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a != null || !a.Equals(string.Empty), "{0} is null or empty. {1}".FormatWith(variableName, additionalMessage));
         }
 
         public static void AreEqual(object a, object b, string additionalMessage = "")
@@ -79,9 +79,14 @@ namespace Assets.Scripts.Base
             }
         }
 
-        internal static void NotNullOrEmpty(string name, string variableName)
+        internal static void NotNullOrEmpty(string name, string variableName, string additionalMessage = "")
         {
-            AssertConditionMet(!String.IsNullOrEmpty(name), "{0} was null or empty".FormatWith(variableName));
+            AssertConditionMet(!String.IsNullOrEmpty(name), "{0} was null or empty. {1}".FormatWith(variableName, additionalMessage));
+        }
+
+        internal static void IsEmpty<T>(IEnumerable<T> list, string variableName, string additionalMessage = "")
+        {
+            AssertConditionMet(list.None(), "{0} wasn't empty. {1}".FormatWith(variableName, additionalMessage));
         }
     }
 }

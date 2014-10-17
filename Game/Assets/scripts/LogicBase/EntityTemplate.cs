@@ -38,7 +38,7 @@ namespace Assets.Scripts.LogicBase
 
         public MovementType MovementMethod { get; private set; }
 
-        public double MaxSpeed { get; private set; }
+        public float MaxSpeed { get; private set; }
 
         public int SystemSlots { get; private set; }
 
@@ -55,12 +55,13 @@ namespace Assets.Scripts.LogicBase
         public EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
             int radarRange, int sightRange, double maxEnergy, double maxHeat, double maxShields,
             double heatLossRate, double shieldRechargeRate, int systemSlots) :
-            this(name, health, visualProperties, armor, radarRange, sightRange, maxEnergy, maxHeat, maxShields, heatLossRate, shieldRechargeRate, systemSlots, MovementType.Unmoving, 0)
+            this(name, health, visualProperties, armor, radarRange, sightRange, maxEnergy,
+            maxHeat, maxShields, heatLossRate, shieldRechargeRate, systemSlots, MovementType.Unmoving, 0)
         { }
 
         public EntityTemplate(string name, int health, VisualProperties visualProperties, double armor,
             int radarRange, int sightRange, double maxEnergy, double maxHeat, double maxShields,
-            double heatLossRate, double shieldRechargeRate, int systemSlots, MovementType movementType, double maximumSpeed)
+            double heatLossRate, double shieldRechargeRate, int systemSlots, MovementType movementType, float maximumSpeed)
         {
             Name = name;
             Health = health;

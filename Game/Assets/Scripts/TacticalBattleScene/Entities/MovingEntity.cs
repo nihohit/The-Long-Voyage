@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.TacticalBattleScene.PathFinding;
+using Assets.Scripts.UnityBase;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +14,8 @@ namespace Assets.Scripts.TacticalBattleScene
     /// </summary>
     public class MovingEntity : ActiveEntity
     {
+        private const float s_speedModifier = 6;
+
         #region properties
 
         public double AvailableSteps { get; set; }
@@ -57,6 +60,12 @@ namespace Assets.Scripts.TacticalBattleScene
         public override string FullState()
         {
             return "{0} movement {1}/{2}".FormatWith(base.FullState(), AvailableSteps, Template.MaxSpeed);
+        }
+
+        public void Move(IEnumerable<HexReactor> m_path)
+        {
+            BeginMove(m_path.Select(hex => new MoveOrder(hex.Position,
+                () => hex.Content = this)), Template.MaxSpeed * s_speedModifier, true);
         }
 
         #endregion overrides

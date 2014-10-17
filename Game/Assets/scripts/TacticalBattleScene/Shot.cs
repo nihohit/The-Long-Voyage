@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.UnityBase;
+using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
@@ -17,12 +18,9 @@ namespace Assets.Scripts.TacticalBattleScene
             m_endPoint = to;
             m_started = true;
             var differenceVector = to - from;
-            var angle = Vector2.Angle(new Vector2(0, 1), differenceVector);
-            if (differenceVector.x > 0)
-            {
-                angle = -angle;
-            }
-            this.gameObject.transform.Rotate(new Vector3(0, 0, angle));
+            this.gameObject.transform.Rotate(differenceVector.ToRotationVector());
+
+            //TODO - movement speed is not a constant for different shots. Use code from here - http://www.attiliocarotenuto.com/83-articles-tutorials/unity/292-unity-3-moving-a-npc-along-a-path
             m_movementFraction = differenceVector / 30;
             TacticalState.TextureManager.UpdateEffectTexture(name, this.GetComponent<SpriteRenderer>());
         }

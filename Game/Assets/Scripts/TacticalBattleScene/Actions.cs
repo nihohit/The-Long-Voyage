@@ -167,11 +167,11 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region constructors
 
-        public MovementAction(ActiveEntity entity, IEnumerable<HexReactor> path, double cost) :
+        public MovementAction(MovingEntity entity, IEnumerable<HexReactor> path, double cost) :
             this(entity, path, cost, path.Last())
         { }
 
-        public MovementAction(ActiveEntity entity, IEnumerable<HexReactor> path, double cost, HexReactor lastHex) :
+        public MovementAction(MovingEntity entity, IEnumerable<HexReactor> path, double cost, HexReactor lastHex) :
             base(entity, "movementMarker", path.Last().Position, lastHex, "movement to {0}".FormatWith(path.Last().Coordinates))
         {
             m_path = path;
@@ -183,7 +183,7 @@ namespace Assets.Scripts.TacticalBattleScene
         }
 
         public MovementAction(MovementAction action, HexReactor hex, double cost) :
-            this(action.ActingEntity, action.m_path.Union(new[] { hex }), cost, hex)
+            this((MovingEntity)action.ActingEntity, action.m_path.Union(new[] { hex }), cost, hex)
         {
         }
 
@@ -237,7 +237,7 @@ namespace Assets.Scripts.TacticalBattleScene
         public override void Commit()
         {
             base.Commit();
-            TargetedHex.Content = ActingEntity;
+            ((MovingEntity)ActingEntity).Move(m_path);
             TacticalState.SelectedHex = null;
             //TODO - should effects on commiting entity be calculated here? Energy / heat cost, etc.?
             Destroy();
