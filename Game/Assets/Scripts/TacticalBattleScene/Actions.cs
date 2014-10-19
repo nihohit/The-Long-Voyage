@@ -41,12 +41,15 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public string Name { get; private set; }
 
+        public Action Callback { get; set; }
+
         #endregion properties
 
         #region constructor
 
         protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position, HexReactor targetedHex, String name)
         {
+            Callback = () => { };
             m_active = false;
             Destroyed = false;
             Name = buttonName;
@@ -255,7 +258,7 @@ namespace Assets.Scripts.TacticalBattleScene
         public override void Commit()
         {
             base.Commit();
-            ((MovingEntity)ActingEntity).Move(m_path);
+            ((MovingEntity)ActingEntity).Move(m_path, Callback);
             TacticalState.SelectedHex = null;
             //TODO - should effects on commiting entity be calculated here? Energy / heat cost, etc.?
             Destroy();
@@ -311,8 +314,12 @@ namespace Assets.Scripts.TacticalBattleScene
             var to = TargetedHex.transform.position;
             var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>(); ;
             m_button.Renderer.sortingOrder = 1;
-            shot.Init(to, from, Name);
-            m_action();
+            shot.Init(to, from, Name,
+                () =>
+                {
+                    m_action();
+                    Callback();
+                });
             TargetedHex.DisplayCommands(true);
         }
 

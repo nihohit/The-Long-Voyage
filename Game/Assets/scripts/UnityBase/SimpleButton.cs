@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
@@ -65,21 +66,27 @@ namespace Assets.Scripts.UnityBase
                     // Store the point where the user has clicked as a Vector3
                     var mousePosition = Input.mousePosition;
                     var clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
-                    // Retrieve all raycast hits from the click position and store them in an array called "hits"
-                    var rayHits = Physics2D.RaycastAll(clickPosition, new Vector2(0, 0));
-                    foreach (var rayHit in rayHits)
+
+                    var layerMask = LayerMask.NameToLayer("AddedUI");
+
+                    var UIOnPoint = ObjectOnPoint(clickPosition, layerMask);
+
+                    if (UIOnPoint != null)
                     {
-                        var clickedComponent = rayHit.collider.gameObject;
-                        var layerMask = LayerMask.NameToLayer("AddedUI");
-                        if (clickedComponent.layer == layerMask)
-                        {
-                            var button = clickedComponent.GetComponent<SimpleButton>();
-                            button.ClickableAction();
-                            return;
-                        }
+                        var button = UIOnPoint.GetComponent<SimpleButton>();
+                        button.ClickableAction();
+                        return;
                     }
                     action();
                 };
+        }
+
+        //returns an object on a layer, in a certain point
+        protected GameObject ObjectOnPoint(Vector3 point, Int32 layerMask)
+        {
+            var rayHits = Physics2D.RaycastAll(point, new Vector2(0, 0));
+            return rayHits.Select(rayHit => rayHit.collider.gameObject).
+                FirstOrDefault(gameObject => gameObject.layer == layerMask);
         }
 
         private void OnMouseOver()

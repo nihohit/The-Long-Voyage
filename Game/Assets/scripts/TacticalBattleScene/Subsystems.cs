@@ -79,7 +79,7 @@ namespace Assets.Scripts.TacticalBattleScene
         public void Hit(EffectType type, double damage)
         {
             //TODO - decide on a relevant value
-            if (Randomiser.ProbabilityCheck(damage / 5))
+            if (Randomiser.ProbabilityCheck(damage * 0.2))
             {
                 switch (type)
                 {

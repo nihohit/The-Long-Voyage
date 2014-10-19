@@ -137,7 +137,6 @@ namespace Assets.Scripts.TacticalBattleScene
             if (CurrentTurn != Loyalty.Player)
             {
                 s_nonPlayerTeams[CurrentTurn].Act(thisTurnActiveEntities);
-                StartTurn();
             }
         }
 

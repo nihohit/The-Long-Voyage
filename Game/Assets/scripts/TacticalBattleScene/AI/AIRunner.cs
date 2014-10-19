@@ -78,10 +78,13 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         #region private fields
 
         //the evaluator which assigns a value to each potential action
-        private IActionEvaluator m_actionEvaluator;
+        private readonly IActionEvaluator m_actionEvaluator;
 
         // where the evaluated actions are stored by order
-        private IPriorityQueue<EvaluatedAction> m_prioritizedActions;
+        private readonly IPriorityQueue<EvaluatedAction> m_prioritizedActions;
+
+        private IEnumerable<ActiveEntity> m_controlledEntities;
+        private EvaluatedAction m_currentAction;
 
         #endregion private fields
 
@@ -101,44 +104,54 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         /// <param name="controlledEntities"></param>
         public void Act(IEnumerable<ActiveEntity> controlledEntities)
         {
+            m_controlledEntities = controlledEntities;
             m_actionEvaluator.Clear();
-            EvaluateActions(controlledEntities);
-            while (m_prioritizedActions.Peek() != null)
-            {
-                var action = m_prioritizedActions.Pop();
-                if (action.EvaluatedPriority <= 0)
-                {
-                    break;
-                }
-                if (action.NecessaryConditions())
-                {
-                    action.Action.Commit();
-                    if (action.AchievedGoal())
-                    {
-                        m_prioritizedActions.Clear();
-                        EvaluateActions(controlledEntities);
-                    }
-                }
-            }
+            EvaluateActions();
+            NextAction();
         }
 
         /// <summary>
         /// combines all seen entities, and send them to all cotrolled entities to evaluate their actions.
         /// </summary>
-        /// <param name="controlledEntities"></param>
-        private void EvaluateActions(IEnumerable<ActiveEntity> controlledEntities)
+        private void EvaluateActions()
         {
             Debug.Log("Evaluating actions");
-            controlledEntities.ForEach(ent => ent.ResetActions());
-            var loyalty = controlledEntities.First().Loyalty;
+            m_prioritizedActions.Clear();
+            m_controlledEntities.ForEach(ent => ent.ResetActions());
+            var loyalty = m_controlledEntities.First().Loyalty;
             var entitiesSeen = Enumerable.Empty<EntityReactor>();
-            foreach (var ent in controlledEntities)
-            {
-                entitiesSeen = entitiesSeen.Union(ent.SeenHexes.Select(hex => hex.Content).Where(entity => entity != null && entity.Loyalty != loyalty));
-            }
+            entitiesSeen = m_controlledEntities.Aggregate(entitiesSeen, (current, ent) => current.Union(ent.SeenHexes.Select(hex => hex.Content)
+                .Where(entity => entity != null && entity.Loyalty != loyalty)));
             entitiesSeen = entitiesSeen.Distinct();
-            controlledEntities.SelectMany(ent => m_actionEvaluator.EvaluateActions(ent, entitiesSeen))
+            m_controlledEntities.SelectMany(ent => m_actionEvaluator.EvaluateActions(ent, entitiesSeen))
                 .ForEach(action => m_prioritizedActions.Push(action));
+        }
+
+        private void NextAction()
+        {
+            if (m_currentAction != null && m_currentAction.AchievedGoal())
+            {
+                EvaluateActions();
+            }
+
+            m_currentAction = m_prioritizedActions.Peek();
+
+            if (m_currentAction == null || m_currentAction.EvaluatedPriority <= 0)
+            {
+                TacticalState.StartTurn();
+            }
+
+            m_prioritizedActions.Pop();
+
+            if (m_currentAction.NecessaryConditions())
+            {
+                m_currentAction.Action.Callback = NextAction;
+                m_currentAction.Action.Commit();
+            }
+            else
+            {
+                NextAction();
+            }
         }
     }
 
@@ -154,7 +167,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
     {
         #region fields
 
-        private IEntityEvaluator m_entityEvaluator;
+        private readonly IEntityEvaluator m_entityEvaluator;
 
         #endregion fields
 
@@ -197,8 +210,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
             foreach (var action in actingEntity.Actions)
             {
                 //TODO - possible to create an AI usage hint enumerator, which will say whether a given system should be used on friendlies or enemies, weakend or strong, etc.
-                var evaluatedAction = new EvaluatedAction();
-                evaluatedAction.Action = action;
+                var evaluatedAction = new EvaluatedAction { Action = action };
                 var systemAction = action as OperateSystemAction;
                 var movementAction = action as MovementAction;
 
@@ -209,10 +221,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                     if (target.Loyalty != Loyalty.Inactive)
                     {
                         evaluatedAction.EvaluatedPriority += EvaluateSystemEffect(systemAction.System, target);
-                        evaluatedAction.NecessaryConditions = () =>
-                        {
-                            return !actingEntity.Destroyed() && !target.Destroyed();
-                        };
+                        evaluatedAction.NecessaryConditions = () => !actingEntity.Destroyed() && !target.Destroyed();
 
                         evaluatedAction.AchievedGoal = CreateAchievedGoal(systemAction);
                         //Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
@@ -233,11 +242,8 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                         //the value of a hex is compared to that of the current location.
                         evaluatedAction.EvaluatedPriority = EvaluateHexValue(movementAction.TargetedHex, potentialTargets, movingEntity, minRange, maxRange) - currentHexValue;
                     }
-                    evaluatedAction.NecessaryConditions = () =>
-                    {
-                        return targetHex.Content == null;
-                    };
-                    evaluatedAction.AchievedGoal = () => { return true; };
+                    evaluatedAction.NecessaryConditions = () => targetHex.Content == null;
+                    evaluatedAction.AchievedGoal = () => true;
                 }
                 else
                 {
@@ -277,19 +283,15 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                 var distance = evaluatedHex.Distance(target.Hex);
                 if (distance >= minRange && distance <= maxRange)
                 {
-                    foreach (var system in movingEntity.Systems)
-                    {
-                        if (evaluatedHex.CanAffect(target.Hex, system.Template.DeliveryMethod, minRange, maxRange))
-                        {
-                            result += EvaluateSystemEffect(system.Template, target);
-                        }
-                    }
+                    result += movingEntity.Systems
+                        .Where(system => evaluatedHex.CanAffect(target.Hex, system.Template.DeliveryMethod, minRange, maxRange))
+                        .Sum(system => EvaluateSystemEffect(system.Template, target));
                 }
                 if (result == 0)
                 {
                     //TODO - time complexity could be reduced significantly by a. feeding astar some heuristic or b. replacing a star with a heuristic
                     result += m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
-                        evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.Template.MovementMethod, (HexReactor hex) => 0));
+                        evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.Template.MovementMethod, hex => 0));
                 }
             }
             //Debug.Log("Hex {0} valued as {1}".FormatWith(evaluatedHex, result));
@@ -318,7 +320,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
     public class SimpleEntityEvaluator : IEntityEvaluator
     {
-        private Dictionary<EntityReactor, double> m_entitiesValue = new Dictionary<EntityReactor, double>();
+        private readonly Dictionary<EntityReactor, double> m_entitiesValue = new Dictionary<EntityReactor, double>();
 
         public double EvaluateValue(EntityReactor entity)
         {

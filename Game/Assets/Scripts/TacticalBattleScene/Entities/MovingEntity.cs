@@ -2,6 +2,7 @@
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.TacticalBattleScene.PathFinding;
 using Assets.Scripts.UnityBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -32,6 +33,41 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #endregion constructor
 
+        #region public methods
+
+        public override void Update()
+        {
+            base.Update();
+            if (IsMoving())
+            {
+                var hexObject = ObjectOnPoint(transform.position, UnityEngine.LayerMask.NameToLayer("Hexes"));
+                Assert.NotNull(hexObject, "hexObject");
+                var hex = hexObject.GetComponent<HexReactor>();
+                Assert.NotNull(hex, "hex");
+                if (!hex.Equals(Hex))
+                {
+                    hex.Content = this;
+                }
+            }
+        }
+
+        public void Move(IEnumerable<HexReactor> m_path)
+        {
+            BeginMove(m_path.Select(hex => new MoveOrder(hex.Position,
+                () => { })), Template.MaxSpeed * s_speedModifier, true);
+        }
+
+        public void Move(IEnumerable<HexReactor> m_path, Action callback)
+        {
+            var lastHex = m_path.Last();
+            BeginMove(m_path.Select(hex =>
+                new MoveOrder(hex.Position,
+                hex == lastHex ? callback : () => { })),
+                Template.MaxSpeed * s_speedModifier, true);
+        }
+
+        #endregion public methods
+
         #region overrides
 
         // actions are also all potential movement targets
@@ -52,22 +88,13 @@ namespace Assets.Scripts.TacticalBattleScene
                 AvailableSteps = Template.MaxSpeed;
                 return true;
             }
-            else
-            {
-                AvailableSteps = 0;
-                return false;
-            }
+            AvailableSteps = 0;
+            return false;
         }
 
         public override string FullState()
         {
             return "{0} movement {1}/{2}".FormatWith(base.FullState(), AvailableSteps, Template.MaxSpeed);
-        }
-
-        public void Move(IEnumerable<HexReactor> m_path)
-        {
-            BeginMove(m_path.Select(hex => new MoveOrder(hex.Position,
-                () => hex.Content = this)), Template.MaxSpeed * s_speedModifier, true);
         }
 
         #endregion overrides

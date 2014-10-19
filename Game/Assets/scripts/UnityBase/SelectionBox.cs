@@ -109,8 +109,9 @@ namespace Assets.Scripts.UnityBase
         }
 
         // Update is called once per frame
-        public virtual void Update()
+        public override void Update()
         {
+            base.Update();
             if (m_frameCounter > 0)
             {
                 m_frameCounter--;

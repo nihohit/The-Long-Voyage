@@ -12,7 +12,16 @@ namespace Assets.Scripts.TacticalBattleScene
     /// </summary>
     public class TacticalBattleScript : MonoBehaviour
     {
-        private TerrainEntityTemplateStorage m_terrainEntities = new TerrainEntityTemplateStorage();
+        #region private members
+
+        private readonly TerrainEntityTemplateStorage m_terrainEntities = new TerrainEntityTemplateStorage();
+
+        //HACK - to be deleted.
+        private readonly List<HexReactor> m_emptyHexes = new List<HexReactor>();
+
+        private int screenSpeed;
+
+        #endregion
 
         #region public members
 
@@ -23,11 +32,6 @@ namespace Assets.Scripts.TacticalBattleScene
         public Camera mainCamera;
 
         #endregion public members
-
-        //HACK - to be deleted.
-        private List<HexReactor> m_emptyHexes = new List<HexReactor>();
-
-        private int screenSpeed;
 
         #region MonoBehaviour overrides
 
@@ -204,14 +208,16 @@ namespace Assets.Scripts.TacticalBattleScene
 
             if (GlobalState.TacticalBattle == null)
             {
-                var state = new TacticalBattleInformation();
-                state.AmountOfHexes = SimpleConfigurationHandler.GetIntProperty(
-                    "default map size",
-                    FileAccessor.TerrainGeneration);
-                if (GlobalState.StrategicMap == null)
-                    state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(Loyalty.Player, 4));
-                else
-                    state.EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4).Union(CreateMechs(GlobalState.StrategicMap.State.EquippedEntities, Loyalty.Player));
+                var state = new TacticalBattleInformation
+                    {
+                        AmountOfHexes = SimpleConfigurationHandler.GetIntProperty(
+                            "default map size",
+                            FileAccessor.TerrainGeneration),
+                        EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4)
+                            .Union(GlobalState.StrategicMap == null
+                                       ? CreateMechs(Loyalty.Player, 4)
+                                       : CreateMechs(GlobalState.StrategicMap.State.EquippedEntities, Loyalty.Player))
+                    };
                 GlobalState.TacticalBattle = state;
             }
         }

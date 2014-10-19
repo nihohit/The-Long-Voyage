@@ -30,29 +30,25 @@ namespace Assets.Scripts.TacticalBattleScene
         private static MarkerScript s_selected;
 
         // Only a single hex is hovered over at a single time
-        private static HexReactor m_currentHoveredOverHex;
+        private static HexReactor s_currentHoveredOverHex;
 
         // The actions that each entity can operate on this hex
-        private Dictionary<EntityReactor, List<OperateSystemAction>> m_orders = new Dictionary<EntityReactor, List<OperateSystemAction>>();
+        private readonly Dictionary<EntityReactor, List<OperateSystemAction>> m_orders = new Dictionary<EntityReactor, List<OperateSystemAction>>();
 
         // amount of commands currently on display
         private int m_displayCommandsAmount;
 
         //holds all the hexes by their hex-coordinates
-        private static Dictionary<Vector2, HexReactor> s_repository = new Dictionary<Vector2, HexReactor>();
+        private static readonly Dictionary<Vector2, HexReactor> s_repository = new Dictionary<Vector2, HexReactor>();
 
-        private EntityReactor m_content = null;
+        private EntityReactor m_content;
 
         //these shouldn't be touched directly. There's a property for that.
-        private int m_seen = 0, m_detected = 0;
+        private int m_seen, m_detected;
 
         #endregion private fields
 
         #region properties
-
-        public HexEffect Effects { get; private set; }
-
-        public Biome BiomeType { get; private set; }
 
         public Vector2 Coordinates { get; private set; }
 
@@ -100,7 +96,6 @@ namespace Assets.Scripts.TacticalBattleScene
 
                 var otherHex = m_content.Hex;
                 m_content.Hex = this;
-                m_content.Mark(Position);
 
                 if (otherHex != null)
                 {
@@ -111,6 +106,11 @@ namespace Assets.Scripts.TacticalBattleScene
                 if (active != null)
                 {
                     active.SetSeenHexes();
+                }
+
+                if (SeenAmount > 0)
+                {
+                    m_content.Mark();
                 }
 
                 TacticalState.ResetAllActions();
@@ -195,7 +195,7 @@ namespace Assets.Scripts.TacticalBattleScene
         // constructor
         public HexReactor()
         {
-            base.ClickableAction = CheckIfClickIsOnUI(() => TacticalState.SelectedHex = this);
+            ClickableAction = CheckIfClickIsOnUI(() => TacticalState.SelectedHex = this);
             m_setMouseOverAction = () => { };
         }
 
@@ -214,8 +214,8 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public int Distance(HexReactor other)
         {
-            var yDist = Math.Abs(this.Coordinates.y - other.Coordinates.y);
-            var xDist = Math.Abs(this.Coordinates.x - other.Coordinates.x);
+            var yDist = Math.Abs(Coordinates.y - other.Coordinates.y);
+            var xDist = Math.Abs(Coordinates.x - other.Coordinates.x);
             var correctedXDist = Math.Max(xDist - yDist / 2, 0);
             return (Int32)(correctedXDist + yDist);
         }
@@ -285,7 +285,7 @@ namespace Assets.Scripts.TacticalBattleScene
         // checks if the target hex is in effect range from this hex. Used by the AI to evaluate far away hexes
         public bool CanAffect(HexReactor targetHex, DeliveryMethod deliveryMethod, int minRange, int maxRange, string layerName)
         {
-            var distance = this.Distance(targetHex);
+            var distance = Distance(targetHex);
             if (deliveryMethod == DeliveryMethod.Unobstructed)
             {
                 return (distance >= minRange && distance <= maxRange);
@@ -296,7 +296,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 Content.collider2D.enabled = false;
             }
             var layerMask = 1 << LayerMask.NameToLayer(layerName);
-            var angle = this.Position.GetAngleBetweenTwoPoints(targetHex.Position);
+            var angle = Position.GetAngleBetweenTwoPoints(targetHex.Position);
             var radianAngle = angle.DegreesToRadians();
             var directionVector = new Vector2(Mathf.Sin(radianAngle), Mathf.Cos(radianAngle));
             var rayHit = Physics2D.Raycast(Position, directionVector, renderer.bounds.size.x * distance, layerMask);
@@ -423,22 +423,22 @@ namespace Assets.Scripts.TacticalBattleScene
                 return;
             }
 
-            var Entity = TacticalState.SelectedHex.Content as EntityReactor;
-            if (Entity == null)
+            var entity = TacticalState.SelectedHex.Content as EntityReactor;
+            if (entity == null)
             {
                 RemoveMarker(m_targetMarker);
                 return;
             }
 
-            List<OperateSystemAction> actions = null;
-            if (Entity != null && m_orders.TryGetValue(Entity, out actions))
+            List<OperateSystemAction> actions;
+
+            if (!m_orders.TryGetValue(entity, out actions)) return;
+
+            actions.Remove(action);
+            m_displayCommandsAmount = actions.Count;
+            if (actions.Count == 0)
             {
-                actions.Remove(action);
-                m_displayCommandsAmount = actions.Count;
-                if (actions.Count == 0)
-                {
-                    RemoveMarker(m_targetMarker);
-                }
+                RemoveMarker(m_targetMarker);
             }
         }
 
@@ -480,11 +480,11 @@ namespace Assets.Scripts.TacticalBattleScene
             }
         }
 
-        public void AddCommands(EntityReactor Entity, List<OperateSystemAction> list)
+        public void AddCommands(EntityReactor entity, List<OperateSystemAction> list)
         {
             // assert that all existing orders are destroyed
-            Assert.AssertConditionMet(!m_orders.ContainsKey(Entity) || m_orders[Entity].None(order => !order.Destroyed), "Existing orders weren't destroyed");
-            m_orders[Entity] = list;
+            Assert.AssertConditionMet(!m_orders.ContainsKey(entity) || m_orders[entity].None(order => !order.Destroyed), "Existing orders weren't destroyed");
+            m_orders[entity] = list;
         }
 
         public void StartTurn()
@@ -501,23 +501,20 @@ namespace Assets.Scripts.TacticalBattleScene
         public void DisplayCommands(bool forceUpdate)
         {
             // Don't do anything if this is already the current hovered over and there's no need to update
-            if (!forceUpdate && m_currentHoveredOverHex == this) return;
+            if (!forceUpdate && s_currentHoveredOverHex == this) return;
 
             // remove the display from the other hovered over hex and set this as the hovered over hex
-            if (m_currentHoveredOverHex != null)
+            if (s_currentHoveredOverHex != null)
             {
-                m_currentHoveredOverHex.RemoveCommands();
+                s_currentHoveredOverHex.RemoveCommands();
             }
-            m_currentHoveredOverHex = this;
+            s_currentHoveredOverHex = this;
 
             // If a hex is selected
             if (TacticalState.SelectedHex != null && m_orders.Any())
             {
-                List<OperateSystemAction> actions = null;
-                var Entity = TacticalState.SelectedHex.Content as EntityReactor;
-
-                // if there are any orders to display, display them
-                if (Entity != null && m_orders.TryGetValue(Entity, out actions))
+                var actions = GetCurrentSelectedActions();
+                if (actions != null)
                 {
                     DisplayCommands(actions);
                 }
@@ -528,9 +525,8 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             if (TacticalState.SelectedHex != null)
             {
-                List<OperateSystemAction> actions = null;
-                var Entity = TacticalState.SelectedHex.Content as EntityReactor;
-                if (Entity != null && m_orders.TryGetValue(Entity, out actions))
+                var actions = GetCurrentSelectedActions();
+                if (actions != null)
                 {
                     m_displayCommandsAmount = 0;
                     foreach (var action in actions.Where(command => !command.Destroyed))
@@ -545,7 +541,17 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region private methods
 
-        private void CheckAndAdd(IList<HexReactor> result, Vector2 coordinates)
+        private IEnumerable<OperateSystemAction> GetCurrentSelectedActions()
+        {
+            List<OperateSystemAction> actions = null;
+            if (TacticalState.SelectedHex.Content != null)
+            {
+                m_orders.TryGetValue(TacticalState.SelectedHex.Content, out actions);
+            }
+            return actions;
+        }
+
+        private static void CheckAndAdd(IList<HexReactor> result, Vector2 coordinates)
         {
             HexReactor temp;
             if (s_repository.TryGetValue(coordinates, out temp))
@@ -568,7 +574,7 @@ namespace Assets.Scripts.TacticalBattleScene
             {
                 m_displayCommandsAmount = commandCount;
                 Vector2 displayOffset = default(Vector2);
-                var size = ((CircleCollider2D)this.collider2D).radius;
+                var size = ((CircleCollider2D)collider2D).radius;
 
                 int i = 0;
                 foreach (var action in activeCommands)
@@ -601,7 +607,7 @@ namespace Assets.Scripts.TacticalBattleScene
                             break;
                     }
 
-                    action.DisplayAction((Vector2)this.transform.position + displayOffset);
+                    action.DisplayAction((Vector2)transform.position + displayOffset);
                 }
             }
         }

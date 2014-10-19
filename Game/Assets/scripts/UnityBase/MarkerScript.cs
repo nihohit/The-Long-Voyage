@@ -14,11 +14,11 @@ namespace Assets.Scripts.UnityBase
 
         private bool m_moveWithRotation;
 
-        private Queue<MoveOrder> m_movementRoute = new Queue<MoveOrder>();
+        private readonly Queue<MoveOrder> m_movementRoute = new Queue<MoveOrder>();
 
         private MoveOrder m_currentOrder;
 
-        private static double s_minDistance = 0.2;
+        private const double s_minDistance = 0.2;
 
         private float m_moveSpeed;
 
@@ -79,7 +79,7 @@ namespace Assets.Scripts.UnityBase
         public virtual void Unmark()
         {
             Renderer.enabled = false;
-            this.enabled = false;
+            enabled = false;
         }
 
         public void DestroyGameObject()
@@ -104,51 +104,44 @@ namespace Assets.Scripts.UnityBase
             m_currentOrder = m_movementRoute.Dequeue();
         }
 
-        #endregion public methods
-
-        #region private methods
-
         // runs on every frame
-        private void Update()
+        public virtual void Update()
         {
-            if (m_currentOrder != null)
+            if (IsMoving())
             {
                 MoveTowardsCurrentPoint();
 
                 if (transform.position.Distance(m_currentOrder.Point) < s_minDistance)
                 {
-                    m_currentOrder.ArrivalCallback();
-                    if (m_movementRoute.Any())
-                    {
-                        m_currentOrder = m_movementRoute.Dequeue();
-                    }
-                    else
-                    {
-                        m_currentOrder = null;
-                    }
+                    var currentOrder = m_currentOrder;
+                    m_currentOrder = m_movementRoute.Any() ? m_movementRoute.Dequeue() : null;
+                    currentOrder.ArrivalCallback();
                 }
             }
         }
+
+        protected bool IsMoving()
+        {
+            return m_currentOrder != null;
+        }
+
+        #endregion public methods
+
+        #region private methods
 
         private void MoveTowardsCurrentPoint()
         {
             var direction = m_currentOrder.Point - transform.position;
             var moveVector = direction.normalized * m_moveSpeed * Time.deltaTime;
             transform.position += moveVector;
-            var eulerAngles = transform.rotation.eulerAngles;
-            Debug.Log("first euler: {0}".FormatWith(eulerAngles));
-            /*
-            if (eulerAngles.z > 180)
+
+            if (m_moveWithRotation)
             {
-                eulerAngles.z = eulerAngles.z - 360;
-                Debug.Log("last euler: {0}".FormatWith(eulerAngles));
+                var lerpVector = transform.rotation.eulerAngles
+                    .LerpAngle(direction.ToRotationVector(),
+                        m_moveSpeed * Time.deltaTime);
+                transform.eulerAngles = lerpVector;
             }
-             */
-            var rotationVector = direction.ToRotationVector();
-            Debug.Log("rotation: {0}".FormatWith(rotationVector));
-            Vector3 lerpVector = transform.rotation.eulerAngles.LerpAngle(direction.ToRotationVector(), m_moveSpeed * Time.deltaTime);
-            Debug.Log("slerp: {0}".FormatWith(lerpVector));
-            transform.eulerAngles = lerpVector;
         }
 
         #endregion private methods
