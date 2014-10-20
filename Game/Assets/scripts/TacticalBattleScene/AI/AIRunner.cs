@@ -221,11 +221,12 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                     if (target.Loyalty != Loyalty.Inactive)
                     {
                         evaluatedAction.EvaluatedPriority += EvaluateSystemEffect(systemAction.System, target);
-                        evaluatedAction.NecessaryConditions = () => !actingEntity.Destroyed() && !target.Destroyed();
 
-                        evaluatedAction.AchievedGoal = CreateAchievedGoal(systemAction);
                         //Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
                     }
+                    evaluatedAction.NecessaryConditions = () => !actingEntity.Destroyed() && !target.Destroyed();
+
+                    evaluatedAction.AchievedGoal = CreateAchievedGoal(systemAction);
                 }
                 else if (movementAction != null)
                 {

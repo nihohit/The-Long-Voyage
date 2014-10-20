@@ -151,7 +151,7 @@ namespace Assets.Scripts.TacticalBattleScene
         // all preparations an entity does at the beginning of its turn
         public virtual bool StartTurn()
         {
-            Debug.Log(FullState());
+            //Debug.Log("Atstart of turn: {0}".FormatWith(FullState()));
             ResetActions();
             ResetSeenHexes();
             CurrentEnergy = m_tempMaxEnergy;

@@ -18,7 +18,7 @@ namespace Assets.Scripts.UnityBase
 
         private MoveOrder m_currentOrder;
 
-        private const double s_minDistance = 0.2;
+        private const double s_minDistance = 0.4;
 
         private float m_moveSpeed;
 
@@ -113,6 +113,7 @@ namespace Assets.Scripts.UnityBase
 
                 if (transform.position.Distance(m_currentOrder.Point) < s_minDistance)
                 {
+                    transform.position = m_currentOrder.Point;
                     var currentOrder = m_currentOrder;
                     m_currentOrder = m_movementRoute.Any() ? m_movementRoute.Dequeue() : null;
                     currentOrder.ArrivalCallback();
@@ -137,8 +138,9 @@ namespace Assets.Scripts.UnityBase
 
             if (m_moveWithRotation)
             {
+                var directionAngle = direction.ToRotationVector();
                 var lerpVector = transform.rotation.eulerAngles
-                    .LerpAngle(direction.ToRotationVector(),
+                    .LerpAngle(directionAngle,
                         m_moveSpeed * Time.deltaTime);
                 transform.eulerAngles = lerpVector;
             }

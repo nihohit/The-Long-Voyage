@@ -1,5 +1,6 @@
 using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -78,8 +79,9 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public void Hit(EffectType type, double damage)
         {
-            //TODO - decide on a relevant value
-            if (Randomiser.ProbabilityCheck(damage * 0.2))
+            //TODO - decide on a relevant value.
+            // Using Math.Max, because a rounding error creates the occasional negative value.
+            if (Randomiser.ProbabilityCheck(Math.Max(damage * 0.2, 0.01)))
             {
                 switch (type)
                 {
