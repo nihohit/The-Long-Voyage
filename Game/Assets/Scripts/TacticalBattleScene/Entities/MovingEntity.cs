@@ -51,12 +51,6 @@ namespace Assets.Scripts.TacticalBattleScene
             }
         }
 
-        public void Move(IEnumerable<HexReactor> m_path)
-        {
-            BeginMove(m_path.Select(hex => new MoveOrder(hex.Position,
-                () => { })), Template.MaxSpeed * s_speedModifier, true);
-        }
-
         public void Move(IEnumerable<HexReactor> m_path, Action callback)
         {
             var lastHex = m_path.Last();

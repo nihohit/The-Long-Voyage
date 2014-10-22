@@ -139,6 +139,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
             if (m_currentAction == null || m_currentAction.EvaluatedPriority <= 0)
             {
                 TacticalState.StartTurn();
+                return;
             }
 
             m_prioritizedActions.Pop();
@@ -343,7 +344,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
             var systemsValue = activeEntity.Systems.Where(system => system.Operational()).Sum(system => (system.Template.EffectStrength + system.Template.MaxRange - system.Template.MinRange) / (system.Template.EnergyCost + system.Template.HeatGenerated));
             var healthValue = activeEntity.Shield + activeEntity.Health - activeEntity.CurrentHeat;
             var value = systemsValue / healthValue;
-            Debug.Log("Mech {0} is of value {1}".FormatWith(activeEntity.FullState(), systemsValue + healthValue));
+            //Debug.Log("Mech {0} is of value {1}".FormatWith(activeEntity.FullState(), systemsValue + healthValue));
             return value;
         }
 

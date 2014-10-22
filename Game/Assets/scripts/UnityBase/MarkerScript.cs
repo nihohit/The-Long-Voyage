@@ -132,6 +132,12 @@ namespace Assets.Scripts.UnityBase
 
         private void MoveTowardsCurrentPoint()
         {
+            // if the last frame took too much time, skip this frame.
+            if (Time.deltaTime > 0.05f)
+            {
+                return;
+            }
+
             var direction = m_currentOrder.Point - transform.position;
             var moveVector = direction.normalized * m_moveSpeed * Time.deltaTime;
             transform.position += moveVector;

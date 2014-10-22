@@ -80,6 +80,10 @@ namespace Assets.Scripts.TacticalBattleScene
                                                 (m_content.Hex != null &&
                                                 !m_content.Hex.Equals(this)),
                                                 "When replaced with a null value, entity should either move to another hex or be destroyed");
+                    if (m_content.Destroyed())
+                    {
+                        TacticalState.ResetAllActions();
+                    }
                     m_content = value;
                     return;
                 }
@@ -112,8 +116,6 @@ namespace Assets.Scripts.TacticalBattleScene
                 {
                     m_content.Mark();
                 }
-
-                TacticalState.ResetAllActions();
             }
         }
 

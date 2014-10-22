@@ -8,8 +8,6 @@ using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
-    #region actions
-
     #region PotentialAction
 
     ///
@@ -26,8 +24,6 @@ namespace Assets.Scripts.TacticalBattleScene
 
         //TODO - remove after testing if no longer needed
         private readonly string m_name;
-
-        private bool m_active;
 
         #endregion fields
 
@@ -50,7 +46,6 @@ namespace Assets.Scripts.TacticalBattleScene
         protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position, HexReactor targetedHex, String name)
         {
             Callback = () => { };
-            m_active = false;
             Destroyed = false;
             Name = buttonName;
 
@@ -59,11 +54,7 @@ namespace Assets.Scripts.TacticalBattleScene
             command.name = name;
             TacticalState.TextureManager.UpdateButtonTexture(buttonName, command.GetComponent<SpriteRenderer>());
             m_button = command.GetComponent<SimpleButton>();
-            m_button.ClickableAction = () =>
-            {
-                m_active = true;
-                Commit();
-            };
+            m_button.ClickableAction = Commit;
             m_button.OnMouseOverAction = () => targetedHex.OnMouseOverAction();
             m_button.OnMouseExitAction = () => targetedHex.OnMouseExitAction();
             m_button.Unmark();
@@ -71,6 +62,8 @@ namespace Assets.Scripts.TacticalBattleScene
             m_name = name;
             ActingEntity = entity;
             TargetedHex = targetedHex;
+
+            //Debug.Log("{0} created".FormatWith(this));
         }
 
         #endregion constructor
@@ -107,6 +100,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             if (!Destroyed)
             {
+                Debug.Log("{0} destroyed".FormatWith(this));
                 RemoveDisplay();
                 m_button.DestroyGameObject();
                 Destroyed = true;
@@ -115,19 +109,8 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public virtual void Commit()
         {
-            Assert.AssertConditionMet((!Destroyed) || m_active, "Action {0} was operated after being destroyed".FormatWith(this));
-            Debug.Log("{0} committing {1}".FormatWith(ActingEntity, this));
-            m_active = false;
-            AffectEntity();
-            foreach (var action in ActingEntity.Actions)
-            {
-                if (!action.NecessaryConditions())
-                {
-                    action.Destroy();
-                }
-            }
-            //makes it display all buttons;
-            TacticalState.SelectedHex = TacticalState.SelectedHex;
+            StartCommit();
+            Act(EndCommit);
         }
 
         public override string ToString()
@@ -163,6 +146,31 @@ namespace Assets.Scripts.TacticalBattleScene
         //affects the acting entity with the action's costs
         protected abstract void AffectEntity();
 
+        // This is the actual action
+        protected abstract void Act(Action callback);
+
+        private void StartCommit()
+        {
+            Debug.Log("{0} start commit".FormatWith(this));
+            Assert.AssertConditionMet(!Destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
+            AffectEntity();
+        }
+
+        private void EndCommit()
+        {
+            Debug.Log("{0} end commit".FormatWith(this));
+            foreach (var action in ActingEntity.Actions)
+            {
+                if (!action.NecessaryConditions())
+                {
+                    action.Destroy();
+                }
+            }
+            //makes it display all buttons;
+            TacticalState.SelectedHex = TacticalState.SelectedHex;
+            Callback();
+        }
+
         #endregion private methods
     }
 
@@ -193,7 +201,7 @@ namespace Assets.Scripts.TacticalBattleScene
         { }
 
         public MovementAction(MovingEntity entity, IEnumerable<HexReactor> path, double cost, HexReactor lastHex) :
-            base(entity, "movementMarker", path.Last().Position, lastHex, "movement to {0}".FormatWith(path.Last().Coordinates))
+            base(entity, "movementMarker", path.Last().Position, lastHex, "{0} move to {1}".FormatWith(entity, path.Last().Coordinates))
         {
             m_path = path;
             m_button.OnMouseOverAction = DisplayPath;
@@ -232,6 +240,13 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region overloaded methods
 
+        protected override void Act(Action callback)
+        {
+            TacticalState.SelectedHex = null;
+            TacticalState.ResetAllActions();
+            ((MovingEntity)ActingEntity).Move(m_path, callback);
+        }
+
         public override void RemoveDisplay()
         {
             base.RemoveDisplay();
@@ -245,23 +260,6 @@ namespace Assets.Scripts.TacticalBattleScene
             base.DisplayAction();
             TargetedHex.OnMouseOverAction = DisplayPath;
             TargetedHex.OnMouseExitAction = RemovePath;
-        }
-
-        public override void Destroy()
-        {
-            TargetedHex.OnMouseOverAction = () => { };
-            TargetedHex.OnMouseExitAction = () => { };
-            RemovePath();
-            base.Destroy();
-        }
-
-        public override void Commit()
-        {
-            base.Commit();
-            ((MovingEntity)ActingEntity).Move(m_path, Callback);
-            TacticalState.SelectedHex = null;
-            //TODO - should effects on commiting entity be calculated here? Energy / heat cost, etc.?
-            Destroy();
         }
 
         protected override void AffectEntity()
@@ -300,16 +298,15 @@ namespace Assets.Scripts.TacticalBattleScene
         public SubsystemTemplate System { get; private set; }
 
         public OperateSystemAction(ActiveEntity actingEntity, HexOperation effect, SubsystemTemplate template, HexReactor targetedHex) :
-            base(actingEntity, template.Name, (Vector2)targetedHex.Position, targetedHex, "Operate {0} on {1}".FormatWith(template.Name, targetedHex))
+            base(actingEntity, template.Name, (Vector2)targetedHex.Position, targetedHex, "{0} Operate {1} on {2}".FormatWith(actingEntity, template.Name, targetedHex))
         {
             m_action = () => effect(targetedHex);
             System = template;
             RemoveDisplay();
         }
 
-        public override void Commit()
+        protected override void Act(Action callback)
         {
-            base.Commit();
             var from = ActingEntity.transform.position;
             var to = TargetedHex.transform.position;
             var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>(); ;
@@ -318,9 +315,8 @@ namespace Assets.Scripts.TacticalBattleScene
                 () =>
                 {
                     m_action();
-                    Callback();
+                    callback();
                 });
-            TargetedHex.DisplayCommands(true);
         }
 
         protected override void AffectEntity()
@@ -354,6 +350,4 @@ namespace Assets.Scripts.TacticalBattleScene
     }
 
     #endregion OperateSystemAction
-
-    #endregion actions
 }
