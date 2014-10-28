@@ -48,8 +48,9 @@
 	"Ammo":2,
 	"EnergyCost" : 2.0,
 	"HeatGenerated": 2.0,
-	"MaxRange":2,
-	"EffectType":5,
-	"EffectStrength":1.5
+	"MaxRange":3,
+	"EffectType":2,
+	"EffectStrength":2.0,
+	"HexEffect":"Fire"
 }
 ]

@@ -21,7 +21,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private int screenSpeed;
 
-        #endregion
+        #endregion private members
 
         #region public members
 
@@ -117,7 +117,7 @@ namespace Assets.Scripts.TacticalBattleScene
             }
 
             // inititate the tactical state
-            TacticalState.Init(state.EntitiesInBattle, hexes);
+            TacticalState.EnterEntitiesAndHexes(state.EntitiesInBattle, hexes);
 
             // position the entities
             //HACK - to be removed. in charge of positioning the first entities
@@ -131,7 +131,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private void InitClasses()
         {
-            TacticalState.BattleStarted = false;
+            TacticalState.Init();
             InitiateGlobalState();
         }
 
@@ -243,7 +243,7 @@ namespace Assets.Scripts.TacticalBattleScene
                     var entity = ((GameObject)Instantiate(Resources.Load("MovingEntity"), transform.position, Quaternion.identity)).GetComponent<ActiveEntity>();
                     entity.Init(equippedEntity.InternalEntity,
                        loyalty,
-                       equippedEntity.Subsystems.Where(template => template != null).Select(template => new Subsystem(template, loyalty)));
+                       equippedEntity.Subsystems);
 
                     return entity;
                 }).Materialize();

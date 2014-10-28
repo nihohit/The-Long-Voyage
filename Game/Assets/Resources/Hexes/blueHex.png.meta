@@ -1,6 +1,8 @@
 fileFormatVersion: 2
-guid: 6affe75b7f5ecef4291ed20f26956737
+guid: 90af3eac2c2b634449a363b41a312059
 TextureImporter:
+  fileIDToRecycleName:
+    21300000: blueHex
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -35,6 +37,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: .5, y: .5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 100
   alphaIsTransparency: 1
   textureType: 8

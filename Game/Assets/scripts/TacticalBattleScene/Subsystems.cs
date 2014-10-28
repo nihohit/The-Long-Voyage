@@ -17,9 +17,9 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private int m_ammo;
 
-        private readonly HexCheck m_conditionForTargeting;
+        private readonly ActiveEntity m_containingEntity;
 
-        private readonly HexOperation m_effect;
+        private HexEffectTemplate m_hexEffectTemplate;
 
         #endregion fields
 
@@ -48,36 +48,39 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region constructors
 
-        public Subsystem(SubsystemTemplate template, Loyalty loyalty)
+        public Subsystem(SubsystemTemplate template, ActiveEntity containingEntity)
         {
+            m_containingEntity = containingEntity;
             m_workingCondition = SystemCondition.Operational;
             Template = template;
-            m_conditionForTargeting = CreateTargetingCheck(loyalty, Template.PossibleTargets);
-            var effect = CreateSystemEffect(Template.EffectStrength, Template.Effect);
-            if (Template.MaxAmmo > 0)
-            {
-                m_ammo = Template.MaxAmmo;
-                m_effect = (hex) =>
-                {
-                    effect(hex);
-                    --m_ammo;
-                    if (m_ammo == 0)
-                    {
-                        m_workingCondition = SystemCondition.OutOfAmmo;
-                    }
-                };
-            }
-            else
-            {
-                m_effect = effect;
-            }
+            m_hexEffectTemplate = Template.HexEffect;
         }
 
         #endregion constructors
 
         #region public methods
 
-        public void Hit(EffectType type, double damage)
+        public void Effect(HexReactor targetHex)
+        {
+            if (Template.Effect != EntityEffectType.None && targetHex.Content != null)
+            {
+                targetHex.Content.Affect(Template.EffectStrength, Template.Effect);
+            }
+            if (m_hexEffectTemplate != null)
+            {
+                HexEffect.Create(m_hexEffectTemplate, targetHex);
+            }
+            if (m_ammo > 0)
+            {
+                --m_ammo;
+                if (m_ammo == 0)
+                {
+                    m_workingCondition = SystemCondition.OutOfAmmo;
+                }
+            }
+        }
+
+        public void Hit(EntityEffectType type, double damage)
         {
             //TODO - decide on a relevant value.
             // Using Math.Max, because a rounding error creates the occasional negative value.
@@ -85,11 +88,11 @@ namespace Assets.Scripts.TacticalBattleScene
             {
                 switch (type)
                 {
-                    case (EffectType.EmpDamage):
+                    case (EntityEffectType.EmpDamage):
                         OperationalCondition = SystemCondition.Neutralized;
                         break;
 
-                    case (EffectType.PhysicalDamage):
+                    case (EntityEffectType.PhysicalDamage):
                         OperationalCondition = SystemCondition.Destroyed;
                         break;
                 }
@@ -102,52 +105,42 @@ namespace Assets.Scripts.TacticalBattleScene
             return m_workingCondition == SystemCondition.Operational;
         }
 
-        public IEnumerable<OperateSystemAction> ActionsInRange(ActiveEntity actingEntity, Dictionary<HexReactor, List<OperateSystemAction>> dict)
+        public IEnumerable<OperateSystemAction> ActionsInRange(Dictionary<HexReactor, List<OperateSystemAction>> dict)
         {
             //if we can't operate the system, return no actions
-            if (actingEntity.CurrentEnergy < Template.EnergyCost)
+            if (m_containingEntity.CurrentEnergy < Template.EnergyCost)
             {
                 return new OperateSystemAction[0];
             }
-            return TargetsInRange(actingEntity.Hex).Select(targetedHex => CreateAction(actingEntity, targetedHex, dict));
+            return TargetsInRange().Select(targetedHex => CreateAction(targetedHex, dict));
         }
 
         #endregion public methods
 
         #region private methods
 
-        private static HexOperation CreateSystemEffect(double effectStrength, EffectType damageType)
+        public bool TargetingCheck(HexReactor targetedHex)
         {
-            return (hex) =>
-            {
-                hex.Content.Affect(effectStrength, damageType);
-            };
+            return (Template.PossibleTargets.HasFlag(TargetingType.AllHexes) ||
+                    (Template.PossibleTargets.HasFlag(TargetingType.Enemy) && targetedHex.Content != null && targetedHex.Content.Loyalty != m_containingEntity.Loyalty) ||
+                    (Template.PossibleTargets.HasFlag(TargetingType.Friendly) && targetedHex.Content != null && targetedHex.Content.Loyalty == m_containingEntity.Loyalty));
         }
 
-        private static HexCheck CreateTargetingCheck(Loyalty loyalty, TargetingType targeting)
+        private OperateSystemAction CreateAction(HexReactor targetedHex, Dictionary<HexReactor, List<OperateSystemAction>> dict)
         {
-            return (hex) =>
-            {
-                return ((targeting & TargetingType.AllHexes) != 0) ||
-                    (((targeting & TargetingType.Enemy) != 0) && (hex.Content != null && hex.Content.Loyalty != loyalty)) ||
-                    (((targeting & TargetingType.Friendly) != 0) && (hex.Content != null && hex.Content.Loyalty == loyalty));
-            };
-        }
-
-        private OperateSystemAction CreateAction(ActiveEntity actingEntity, HexReactor hex, Dictionary<HexReactor, List<OperateSystemAction>> dict)
-        {
-            var list = dict.TryGetOrAdd(hex, () => new List<OperateSystemAction>());
+            var list = dict.TryGetOrAdd(targetedHex, () => new List<OperateSystemAction>());
             Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
 
-            var operation = new OperateSystemAction(actingEntity, m_effect, Template, hex);
+            var operation = new OperateSystemAction(m_containingEntity, Effect, Template, targetedHex);
             if (operation.NecessaryConditions())
 
                 list.Add(operation);
             return operation;
         }
 
-        private IEnumerable<HexReactor> TargetsInRange(HexReactor hex)
+        private IEnumerable<HexReactor> TargetsInRange()
         {
+            var hex = m_containingEntity.Hex;
             if (Template.MaxRange == 0)
             {
                 return new[] { hex };
@@ -158,10 +151,10 @@ namespace Assets.Scripts.TacticalBattleScene
             switch (Template.DeliveryMethod)
             {
                 case (DeliveryMethod.Direct):
-                    return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, m_conditionForTargeting, false, layerName);
+                    return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, TargetingCheck, false, layerName);
 
                 case (DeliveryMethod.Unobstructed):
-                    return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, m_conditionForTargeting, true, layerName);
+                    return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, TargetingCheck, true, layerName);
 
                 default:
                     throw new UnknownValueException(Template.DeliveryMethod);

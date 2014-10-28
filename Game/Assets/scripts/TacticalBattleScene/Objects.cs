@@ -6,14 +6,6 @@ namespace Assets.Scripts.TacticalBattleScene
 
     public enum Biome { Tundra, City, Grass, Desert, Swamp }
 
-    [Flags]
-    public enum HexEffect
-    {
-        None = 0,
-        Heating = 1,
-        Chilling = 2,
-    }
-
     //the logic behind the numbering is that the addition of this enumerator and MovementType gives the following result - if the value is between 0-5, no movement penalty. above 4 - slow, above 6 - impossible
     public enum TraversalConditions
     {

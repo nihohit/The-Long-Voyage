@@ -25,7 +25,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region constructor
 
-        public override void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<Subsystem> systems)
+        public override void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<SubsystemTemplate> systems)
         {
             base.Init(entity, loyalty, systems);
             AvailableSteps = Template.MaxSpeed;

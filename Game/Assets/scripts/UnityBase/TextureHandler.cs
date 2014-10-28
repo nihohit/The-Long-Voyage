@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.Base;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
 {
@@ -22,6 +25,19 @@ namespace Assets.Scripts.UnityBase
     /// </summary>
     public abstract class TextureHandler
     {
+        protected Dictionary<string, Texture2D> GetDictionary(string folderName)
+        {
+            var textures = Resources.LoadAll<Texture2D>(folderName);
+            return textures.ToDictionary(texture => texture.name,
+                                                          texture => texture);
+        }
+
+        protected void UpdateTexture(string itemName, SpriteRenderer renderer, IDictionary<string, Texture2D> dictionary, string dictionaryName)
+        {
+            var newTexture = dictionary.Get(itemName, dictionaryName);
+            ReplaceTexture(renderer, newTexture, itemName);
+        }
+
         //the default switching color is white
         protected Texture2D GetColoredTexture(Texture2D copiedTexture, Color replacementColor, string textureName)
         {
@@ -72,6 +88,8 @@ namespace Assets.Scripts.UnityBase
 
         public static void ReplaceTexture(SpriteRenderer renderer, Texture2D newTexture, string name)
         {
+            Assert.NotNull(renderer, "renderer", "for mech {0}".FormatWith(name));
+            Assert.NotNull(renderer.sprite, "sprite", "for mech {0}".FormatWith(name));
             renderer.sprite = Sprite.Create(newTexture, renderer.sprite.rect, new Vector2(0.5f, 0.5f));
             renderer.sprite.name = name;
         }

@@ -14,7 +14,7 @@ namespace Assets.Scripts.InventoryScreen
     {
         #region fields
 
-        private Dictionary<string, Texture2D> m_knownButtonTextures;
+        private Dictionary<string, Texture2D> m_buttonTextures;
 
         #endregion fields
 
@@ -22,9 +22,7 @@ namespace Assets.Scripts.InventoryScreen
 
         public InventoryTextureHandler()
         {
-            var textures = Resources.LoadAll<Texture2D>("UI");
-            m_knownButtonTextures = textures.ToDictionary(texture => texture.name,
-                                                           texture => texture);
+            m_buttonTextures = GetDictionary("SystemsUI");
         }
 
         #endregion constructor
@@ -38,8 +36,7 @@ namespace Assets.Scripts.InventoryScreen
 
         public void UpdateMarkerTexture(SubsystemTemplate item, SpriteRenderer renderer)
         {
-            var texture = m_knownButtonTextures.Get(item.Name, "button textures");
-            ReplaceTexture(renderer, texture, item.Name);
+            UpdateTexture(item.Name, renderer, m_buttonTextures, "button textures");
         }
 
         public Texture2D GetTexture(SpecificEntity ent)
@@ -49,12 +46,12 @@ namespace Assets.Scripts.InventoryScreen
 
         public Texture2D GetTexture(SubsystemTemplate system)
         {
-            return m_knownButtonTextures.Get(system.Name, "button textures");
+            return m_buttonTextures.Get(system.Name, "button textures");
         }
 
         public Texture2D GetNullTexture()
         {
-            return m_knownButtonTextures.Get("Null");
+            return m_buttonTextures.Get("Null");
         }
 
         #endregion public methods

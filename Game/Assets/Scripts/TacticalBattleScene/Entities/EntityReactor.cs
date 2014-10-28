@@ -50,7 +50,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         // Change the entity's state. Usually called when a subsystem operates on the entity.
         // TODO - currently only damages the unit
-        public void Affect(double strength, EffectType effectType)
+        public void Affect(double strength, EntityEffectType effectType)
         {
             Debug.Log("{0} was hit for damage {1} and type {2}".FormatWith(Name, strength, effectType));
             var remainingDamage = ExternalDamage(strength, effectType);
@@ -101,15 +101,15 @@ namespace Assets.Scripts.TacticalBattleScene
         #region protected methods
 
         // after damage passes through armor & shields, it reduces health
-        protected virtual void InternalDamage(double damage, EffectType damageType)
+        protected virtual void InternalDamage(double damage, EntityEffectType damageType)
         {
             switch (damageType)
             {
-                case EffectType.PhysicalDamage:
+                case EntityEffectType.PhysicalDamage:
                     Health -= damage;
                     break;
 
-                case EffectType.IncendiaryDamage:
+                case EntityEffectType.IncendiaryDamage:
                     Health -= damage / 2;
                     break;
             }
@@ -126,20 +126,21 @@ namespace Assets.Scripts.TacticalBattleScene
             {
                 TacticalState.AddRadarVisibleEntity(this);
             }
+            TacticalState.TextureManager.UpdateEntityTexture(this);
         }
 
         // reduce damage by the armor level, wehn relevant.
-        protected virtual double ExternalDamage(double strength, EffectType damageType)
+        protected virtual double ExternalDamage(double strength, EntityEffectType damageType)
         {
             switch (damageType)
             {
-                case EffectType.PhysicalDamage:
-                case EffectType.IncendiaryDamage:
+                case EntityEffectType.PhysicalDamage:
+                case EntityEffectType.IncendiaryDamage:
                     //TODO - Can armor be ablated away? if so, it needs to be copied over into a local field in the entity
                     return strength - Template.Armor;
 
-                case EffectType.EmpDamage:
-                case EffectType.HeatDamage:
+                case EntityEffectType.EmpDamage:
+                case EntityEffectType.HeatDamage:
                     return strength;
 
                 default:

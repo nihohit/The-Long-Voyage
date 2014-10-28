@@ -91,11 +91,15 @@ namespace Assets.Scripts.TacticalBattleScene
             ResetAllActions();
         }
 
-        // initiate a new battle with the relevant information on all active entities
-        public static void Init(IEnumerable<ActiveEntity> entities, IEnumerable<HexReactor> hexes)
+        public static void Init()
         {
             TextureManager = new TacticalTextureHandler();
             BattleStarted = false;
+        }
+
+        // initiate a new battle with the relevant information on all active entities
+        public static void EnterEntitiesAndHexes(IEnumerable<ActiveEntity> entities, IEnumerable<HexReactor> hexes)
+        {
             s_activeEntities = new HashSet<ActiveEntity>(entities);
             s_radarableEntity.Clear();
             entities.ForEach(ent => TextureManager.UpdateEntityTexture(ent));
@@ -116,6 +120,11 @@ namespace Assets.Scripts.TacticalBattleScene
             // reset the actions of all entities that could act in the last turn
             var thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn);
             thisTurnActiveEntities.ForEach(ent => ent.ResetActions());
+
+            if (s_currentTurn.Value == Loyalty.Player)
+            {
+                HexEffect.OperateEffects();
+            }
 
             // pass the turn to the next group
             s_currentTurn = s_currentTurn.Next;
@@ -179,6 +188,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private static void EndBattle()
         {
+            HexEffect.Clear();
             GlobalState.BattleSummary = new EndBattleSummary(
                 GetSurvivingEntities(),
                 GetSalvagedEntities(),

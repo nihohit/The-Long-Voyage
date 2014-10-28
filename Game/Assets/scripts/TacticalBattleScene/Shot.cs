@@ -27,7 +27,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
             //TODO - movement speed is not a constant for different shots. Use code from here - http://www.attiliocarotenuto.com/83-articles-tutorials/unity/292-unity-3-moving-a-npc-along-a-path
             m_movementFraction = differenceVector / 30;
-            TacticalState.TextureManager.UpdateEffectTexture(shotName, this.GetComponent<SpriteRenderer>());
+            TacticalState.TextureManager.UpdateShotTexture(shotName, this.GetComponent<SpriteRenderer>());
         }
 
         // Use this for initialization

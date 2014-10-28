@@ -100,7 +100,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             if (!Destroyed)
             {
-                Debug.Log("{0} destroyed".FormatWith(this));
+                //Debug.Log("{0} destroyed".FormatWith(this));
                 RemoveDisplay();
                 m_button.DestroyGameObject();
                 Destroyed = true;

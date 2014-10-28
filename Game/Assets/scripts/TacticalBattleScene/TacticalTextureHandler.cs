@@ -13,8 +13,9 @@ namespace Assets.Scripts.TacticalBattleScene
     {
         #region fields
 
-        private Dictionary<string, Texture2D> m_knownEffectsTextures;
-        private Dictionary<string, Texture2D> m_knownButtonTextures;
+        private Dictionary<string, Texture2D> m_effectsTextures;
+        private Dictionary<string, Texture2D> m_buttonTextures;
+        private Dictionary<string, Texture2D> m_hexEffectsTextures;
 
         #endregion fields
 
@@ -22,12 +23,9 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public TacticalTextureHandler()
         {
-            var textures = Resources.LoadAll<Texture2D>("effects");
-            m_knownEffectsTextures = textures.ToDictionary(texture => texture.name,
-                                                           texture => texture);
-            textures = Resources.LoadAll<Texture2D>("UI");
-            m_knownButtonTextures = textures.ToDictionary(texture => texture.name,
-                                                           texture => texture);
+            m_effectsTextures = GetDictionary("effects");
+            m_buttonTextures = GetDictionary("SystemsUI");
+            m_hexEffectsTextures = GetDictionary("HexEffects");
         }
 
         #endregion constructor
@@ -42,16 +40,19 @@ namespace Assets.Scripts.TacticalBattleScene
             ReplaceTexture(renderer, newTexture, name);
         }
 
-        public void UpdateEffectTexture(string effectName, SpriteRenderer renderer)
+        public void UpdateShotTexture(string effectName, SpriteRenderer renderer)
         {
-            var newTexture = m_knownEffectsTextures.Get(effectName, "effects textures");
-            ReplaceTexture(renderer, newTexture, effectName);
+            UpdateTexture(effectName, renderer, m_effectsTextures, "effects textures");
         }
 
         public void UpdateButtonTexture(string buttonName, SpriteRenderer renderer)
         {
-            var newTexture = m_knownButtonTextures.Get(buttonName, "button textures");
-            ReplaceTexture(renderer, newTexture, buttonName);
+            UpdateTexture(buttonName, renderer, m_buttonTextures, "button textures");
+        }
+
+        public void UpdateHexEffectTexture(string effectName, SpriteRenderer renderer)
+        {
+            UpdateTexture(effectName, renderer, m_hexEffectsTextures, "hex effects textures");
         }
 
         #endregion public methods

@@ -18,12 +18,12 @@ namespace Assets.Scripts.TacticalBattleScene
     {
         #region constructor
 
-        public virtual void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<Subsystem> systems)
+        public virtual void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<SubsystemTemplate> systems)
         {
             Assert.EqualOrGreater(entity.Template.SystemSlots, systems.Count(), "more systems than system slots.");
             Assert.IsNull(m_systems, "m_systems", "Entity was already initialised.");
             base.Init(entity, loyalty);
-            m_systems = systems;
+            m_systems = systems.Where(template => template != null).Select(template => new Subsystem(template, this));
             CurrentEnergy = Template.MaxEnergy;
             m_tempMaxEnergy = Template.MaxEnergy;
             Shield = Template.MaxShields;
@@ -193,6 +193,15 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region private and protected methods
 
+        protected override void Destroy()
+        {
+            base.Destroy();
+            m_actions.ForEach(action => action.Destroy());
+            m_actions = null;
+            m_detectedHexes.Clear();
+            m_systems = null;
+        }
+
         private IEnumerable<HexReactor> FindSeenHexes()
         {
             //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
@@ -209,7 +218,7 @@ namespace Assets.Scripts.TacticalBattleScene
         }
 
         // internal damage to an active entity can cause heat, reduce energy levels & damage subsystems.
-        protected override void InternalDamage(double damage, EffectType damageType)
+        protected override void InternalDamage(double damage, EntityEffectType damageType)
         {
             var heatDamage = 0.0;
             var physicalDamage = 0.0;
@@ -217,20 +226,20 @@ namespace Assets.Scripts.TacticalBattleScene
 
             switch (damageType)
             {
-                case EffectType.IncendiaryDamage:
+                case EntityEffectType.IncendiaryDamage:
                     heatDamage = damage / 2;
                     physicalDamage = damage / 2;
                     break;
 
-                case EffectType.PhysicalDamage:
+                case EntityEffectType.PhysicalDamage:
                     physicalDamage = damage;
                     break;
 
-                case EffectType.EmpDamage:
+                case EntityEffectType.EmpDamage:
                     energyDamage = damage;
                     break;
 
-                case EffectType.HeatDamage:
+                case EntityEffectType.HeatDamage:
                     heatDamage = damage;
                     break;
             }
@@ -243,7 +252,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 m_systems.Where(system => system.Operational()).ChooseRandomValue().Hit(damageType, physicalDamage + energyDamage);
             }
 
-            base.InternalDamage(physicalDamage, EffectType.PhysicalDamage);
+            base.InternalDamage(physicalDamage, EntityEffectType.PhysicalDamage);
         }
 
         // find all potential targets for all operational subsystems
@@ -257,7 +266,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
             var dict = new Dictionary<HexReactor, List<OperateSystemAction>>();
             var results = m_systems.Where(system => system.Operational())
-                .SelectMany(system => system.ActionsInRange(this, dict)).Materialize();
+                .SelectMany(system => system.ActionsInRange(dict)).Materialize();
 
             foreach (var hex in dict.Keys)
             {
@@ -269,25 +278,25 @@ namespace Assets.Scripts.TacticalBattleScene
 
         // external damage to an active entity is mitigated by its shields.
         // different damage types are differently effective against shields
-        protected override double ExternalDamage(double strength, EffectType effectType)
+        protected override double ExternalDamage(double strength, EntityEffectType effectType)
         {
             var result = strength;
             if (Shield > 0)
             {
                 switch (effectType)
                 {
-                    case EffectType.PhysicalDamage:
-                    case EffectType.EmpDamage:
+                    case EntityEffectType.PhysicalDamage:
+                    case EntityEffectType.EmpDamage:
                         Shield -= strength;
                         strength = -Shield;
                         break;
 
-                    case EffectType.IncendiaryDamage:
+                    case EntityEffectType.IncendiaryDamage:
                         Shield -= strength / 2;
                         strength = -Shield;
                         break;
 
-                    case EffectType.HeatDamage:
+                    case EntityEffectType.HeatDamage:
                         //TODO - implement heat mechanics
                         Shield -= 1;
                         break;

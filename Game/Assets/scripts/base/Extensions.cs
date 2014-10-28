@@ -53,6 +53,11 @@ namespace Assets.Scripts.Base
 
         #region IEnumerable
 
+        public static IEnumerable<T> Duplicate<T>(this IEnumerable<T> enumerable)
+        {
+            return enumerable.Select(item => item).Materialize();
+        }
+
         //returns an enumerable with all values of an enumerator
         public static IEnumerable<T> GetValues<T>()
         {

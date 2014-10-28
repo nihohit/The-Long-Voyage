@@ -31,11 +31,11 @@ namespace Assets.Scripts.TacticalBattleScene
         }
 
         //inanimate objects take heat damage as physical damage
-        protected override void InternalDamage(double damage, EffectType damageType)
+        protected override void InternalDamage(double damage, EntityEffectType damageType)
         {
-            if (damageType == EffectType.HeatDamage || damageType == EffectType.IncendiaryDamage)
+            if (damageType == EntityEffectType.HeatDamage || damageType == EntityEffectType.IncendiaryDamage)
             {
-                damageType = EffectType.PhysicalDamage;
+                damageType = EntityEffectType.PhysicalDamage;
             }
             base.InternalDamage(damage, damageType);
         }

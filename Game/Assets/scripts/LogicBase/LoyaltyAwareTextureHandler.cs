@@ -24,15 +24,18 @@ namespace Assets.Scripts.LogicBase
 
         public LoyaltyAwareTextureHandler()
         {
-            var textures = Resources.LoadAll<Texture2D>("Entities");
-            m_uncoloredEntityTextures = textures.ToDictionary(texture => texture.name,
-                                                          texture => texture);
+            m_uncoloredEntityTextures = GetDictionary("Entities");
         }
 
         protected Texture2D GetEntityTexture(EntityTemplate template, Loyalty loyalty)
         {
             var name = "{0}_{1}".FormatWith(template.Name, loyalty);
             var texture = m_uncoloredEntityTextures.Get(template.Name, "entity textures");
+
+            if (loyalty == Loyalty.Inactive)
+            {
+                return texture;
+            }
             return m_knownEntityTextures.TryGetOrAdd(name, () => GetColoredTexture(texture, loyalty, name));
         }
 

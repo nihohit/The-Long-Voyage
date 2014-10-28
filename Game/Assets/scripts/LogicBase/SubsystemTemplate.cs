@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts.Base;
+using System;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -20,7 +21,7 @@ namespace Assets.Scripts.LogicBase
         public DeliveryMethod DeliveryMethod { get; private set; }
 
         // The effect of the system
-        public EffectType Effect { get; private set; }
+        public EntityEffectType Effect { get; private set; }
 
         // The stranegth of the system's effect
         public double EffectStrength { get; private set; }
@@ -36,6 +37,8 @@ namespace Assets.Scripts.LogicBase
 
         public int MaxAmmo { get; private set; }
 
+        public HexEffectTemplate HexEffect { get; set; }
+
         #endregion properties
 
         #region constructor and initializer
@@ -47,9 +50,10 @@ namespace Assets.Scripts.LogicBase
                                 int maxRange,
                                 DeliveryMethod deliveryMethod,
                                 string name,
-                                EffectType effectType,
+                                EntityEffectType effectType,
                                 double effectStrength,
-                                TargetingType targetingType)
+                                TargetingType targetingType,
+                                string hexEffectName)
         {
             MinRange = minRange;
             MaxRange = maxRange;
@@ -61,6 +65,10 @@ namespace Assets.Scripts.LogicBase
             EnergyCost = energyCost;
             MaxAmmo = ammo;
             HeatGenerated = heatGenerated;
+            if (!String.IsNullOrEmpty(hexEffectName))
+            {
+                HexEffect = HexEffectTemplateStorage.Instance.GetConfiguration(hexEffectName);
+            }
         }
 
         #endregion constructor and initializer
@@ -88,16 +96,17 @@ namespace Assets.Scripts.LogicBase
             protected override SubsystemTemplate ConvertCurrentItemToObject()
             {
                 return new SubsystemTemplate(
-                    TryGetValueOrSetDefaultValue<int>("Ammo", 0),
+                    TryGetValueOrSetDefaultValue<int>("Ammo", -1),
                     TryGetValueAndFail<float>("EnergyCost"),
                     TryGetValueAndFail<float>("HeatGenerated"),
                     TryGetValueOrSetDefaultValue<int>("MinRange", 0),
                     TryGetValueAndFail<int>("MaxRange"),
                     TryGetValueOrSetDefaultValue<DeliveryMethod>("DeliveryMethod", DeliveryMethod.Direct),
                     TryGetValueAndFail<string>("Name"),
-                    TryGetValueAndFail<EffectType>("EffectType"),
+                    TryGetValueAndFail<EntityEffectType>("EffectType"),
                     TryGetValueAndFail<float>("EffectStrength"),
-                    TryGetValueOrSetDefaultValue<TargetingType>("TargetingType", TargetingType.Enemy));
+                    TryGetValueOrSetDefaultValue<TargetingType>("TargetingType", TargetingType.Enemy),
+                    TryGetValueOrSetDefaultValue<string>("HexEffect", null));
             }
         }
 
