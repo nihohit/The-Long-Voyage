@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
@@ -151,20 +151,17 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private void StartCommit()
         {
-            Debug.Log("{0} start commit".FormatWith(this));
+            //Debug.Log("{0} start commit".FormatWith(this));
             Assert.AssertConditionMet(!Destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
             AffectEntity();
         }
 
         private void EndCommit()
         {
-            Debug.Log("{0} end commit".FormatWith(this));
-            foreach (var action in ActingEntity.Actions)
+            //Debug.Log("{0} end commit".FormatWith(this));
+            foreach (var action in ActingEntity.Actions.Where(action => !action.NecessaryConditions()))
             {
-                if (!action.NecessaryConditions())
-                {
-                    action.Destroy();
-                }
+                action.Destroy();
             }
             //makes it display all buttons;
             TacticalState.SelectedHex = TacticalState.SelectedHex;

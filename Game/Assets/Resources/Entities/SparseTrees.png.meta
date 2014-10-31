@@ -1,6 +1,8 @@
 fileFormatVersion: 2
 guid: 032ecf3acd2077d4f901aadd98fbe94a
 TextureImporter:
+  fileIDToRecycleName:
+    21300000: SparseTrees
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0

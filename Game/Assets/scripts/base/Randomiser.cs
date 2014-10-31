@@ -52,7 +52,7 @@ namespace Assets.Scripts.Base
         //choose a single value out of a collection
         public static T ChooseValue<T>(IEnumerable<T> group)
         {
-            Assert.NotNullOrEmpty(group, "group");
+            Assert.NotNull(group, "group");
             T current = default(T);
             int count = 0;
             foreach (T element in group)
@@ -78,7 +78,7 @@ namespace Assets.Scripts.Base
 
         public static IEnumerable<T> Shuffle<T>(IEnumerable<T> group)
         {
-            Assert.NotNullOrEmpty(group, "group");
+            Assert.NotNull(group, "group");
             var buffer = group.ToList();
 
             for (int i = 0; i < buffer.Count; i++)

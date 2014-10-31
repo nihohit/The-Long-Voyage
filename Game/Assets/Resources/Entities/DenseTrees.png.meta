@@ -1,6 +1,8 @@
 fileFormatVersion: 2
 guid: 0501146a88795e54db2990f00bcddda3
 TextureImporter:
+  fileIDToRecycleName:
+    21300000: DenseTrees
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0

@@ -49,9 +49,9 @@ namespace Assets.Scripts.TacticalBattleScene
             UpdateTexture(buttonName, renderer, m_buttonTextures, "button textures");
         }
 
-        public void UpdateHexEffectTexture(string effectName, SpriteRenderer renderer)
+        public void UpdateHexEffectTexture(HexEffectTemplate effectTemplate, SpriteRenderer renderer)
         {
-            UpdateTexture(effectName, renderer, m_hexEffectsTextures, "hex effects textures");
+            UpdateTexture(effectTemplate.Name, renderer, m_hexEffectsTextures, "hex effects textures");
         }
 
         #endregion public methods

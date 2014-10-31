@@ -44,6 +44,8 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public bool Act()
         {
+            Debug.Log("{0} acts with remaining duration {1}".FormatWith(Template.Name, m_remainingDuration));
+
             Assert.Greater(m_remainingDuration, 0);
 
             if (m_affectedHex.Content != null)
@@ -65,10 +67,12 @@ namespace Assets.Scripts.TacticalBattleScene
             var newEffect = ((GameObject)Instantiate(Resources.Load("HexEffect"), hex.transform.position, Quaternion.identity)).GetComponent<HexEffect>();
             newEffect.Init(hexEffectTemplate, hex);
             s_effects.Add(newEffect);
+            TacticalState.TextureManager.UpdateHexEffectTexture(hexEffectTemplate, newEffect.GetComponent<SpriteRenderer>());
         }
 
         public static void OperateEffects()
         {
+            Debug.Log("Operate effects");
             foreach (var effect in s_effects.Duplicate())
             {
                 if (effect.Act())

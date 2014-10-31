@@ -52,7 +52,7 @@ namespace Assets.Scripts.Base
 
         public static void NotNullOrEmpty<T>(IEnumerable<T> a, string name, string additionalMessage = "")
         {
-            AssertConditionMet(a != null && !a.Any(), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a != null && a.Any(), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
         }
 
         public static void StringNotNullOrEmpty(string str, string variableName, string additionalMessage = "")

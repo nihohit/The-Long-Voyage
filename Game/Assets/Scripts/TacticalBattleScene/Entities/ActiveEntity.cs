@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.Scripts.Base;
-using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
@@ -152,6 +152,7 @@ namespace Assets.Scripts.TacticalBattleScene
             // an entity shutsdown if its temp max energy is negative, or it overheats
             if (m_tempMaxEnergy <= 0 || CurrentHeat >= Template.MaxHeat)
             {
+                Debug.Log("{0} shuts down.".FormatWith(FullState()));
                 // reset state & mark as shutdown for the turn
                 if (CurrentHeat >= Template.MaxHeat) CurrentHeat = 0;
                 m_tempMaxEnergy = Template.MaxEnergy;

@@ -1,8 +1,8 @@
 fileFormatVersion: 2
-guid: a4175ef3b0bb8bf4aaafb48367e45fd2
+guid: 86d7f15ca19a0a641968bd57fd940b88
 TextureImporter:
   fileIDToRecycleName:
-    21300000: EndTurnButton
+    21300000: Fire
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -26,9 +26,9 @@ TextureImporter:
   maxTextureSize: 1024
   textureSettings:
     filterMode: -1
-    aniso: 1
+    aniso: -1
     mipBias: -1
-    wrapMode: 1
+    wrapMode: -1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
