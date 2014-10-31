@@ -1,13 +1,13 @@
-﻿using Assets.Scripts.LogicBase;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene.PathFinding
 {
     #region delegates
 
-    internal delegate List<HexReactor> pathfindFunction(Vector2 entry, Vector2 goal, MovementType traversalMethod);
+    internal delegate List<HexReactor> PathfindFunction(Vector2 entry, Vector2 goal, MovementType traversalMethod);
 
     internal delegate float Heuristic(HexReactor check);
 
@@ -25,12 +25,12 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
 
         #region constructors
 
-        public AstarNode(HexReactor value, float costToEnterThisNode, int g_total, float heuristicCost, AstarNode parent)
+        public AstarNode(HexReactor value, float costToEnterThisNode, int gTotal, float heuristicCost, AstarNode parent)
         {
             ChosenHex = value;
-            m_gTotalValue = g_total;
+            m_gTotalValue = gTotal;
             GValue = costToEnterThisNode;
-            FValue = GValue + heuristicCost + g_total;
+            FValue = GValue + heuristicCost + gTotal;
             HValue = heuristicCost;
             Parent = parent;
             Open = true;
@@ -75,15 +75,6 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
             if (FValue < other.FValue) return -1;
             if (HValue > other.HValue) return 1;
             if (HValue < other.HValue) return -1;
-            return 0;
-        }
-
-        private static int NodeComparer(AstarNode a, AstarNode b)
-        {
-            if (a.FValue > b.FValue) return 1;
-            if (a.FValue < b.FValue) return -1;
-            if (a.HValue > b.HValue) return 1;
-            if (a.HValue < b.HValue) return -1;
             return 0;
         }
 

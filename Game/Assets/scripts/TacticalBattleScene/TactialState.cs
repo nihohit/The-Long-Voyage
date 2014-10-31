@@ -30,9 +30,9 @@ namespace Assets.Scripts.TacticalBattleScene
         private static Dictionary<Loyalty, IAIRunner> s_nonPlayerTeams;
 
         //this is needed, since we need to enable all the entities before each radar sweep.
-        private static List<EntityReactor> s_radarableEntity = new List<EntityReactor>();
+        private static readonly List<EntityReactor> s_radarableEntity = new List<EntityReactor>();
 
-        private static List<ActiveEntity> s_destroyedEntities = new List<ActiveEntity>();
+        private static readonly List<ActiveEntity> s_destroyedEntities = new List<ActiveEntity>();
 
         #endregion fields
 
@@ -40,7 +40,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public static bool BattleStarted { get; set; }
 
-        public static TacticalTextureHandler TextureManager;
+        public static TacticalTextureHandler TextureManager { get; private set; }
 
         // when a hex is selected, mark it as such, and remove the mark from the previously selected hex
         public static HexReactor SelectedHex
@@ -83,10 +83,10 @@ namespace Assets.Scripts.TacticalBattleScene
             {
                 s_radarableEntity.Remove(ent);
             }
-            var Entity = ent as ActiveEntity;
-            if (Entity != null)
+            var entity = ent as ActiveEntity;
+            if (entity != null)
             {
-                DestroyEntity(Entity);
+                DestroyEntity(entity);
             }
             ResetAllActions();
         }
@@ -127,11 +127,7 @@ namespace Assets.Scripts.TacticalBattleScene
             }
 
             // pass the turn to the next group
-            s_currentTurn = s_currentTurn.Next;
-            if (s_currentTurn == null)
-            {
-                s_currentTurn = s_turnOrder.First;
-            }
+            s_currentTurn = s_currentTurn.Next ?? s_turnOrder.First;
 
             // reset sight on all hexes
             s_hexes.ForEach(hex => hex.ResetSight());

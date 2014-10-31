@@ -14,7 +14,7 @@ namespace Assets.Scripts.TacticalBattleScene
         private Vector3 m_endPoint;
         private Action m_callback;
 
-        private const double s_minDistance = 0.2;
+        private const double c_minDistance = 0.2;
 
         public void Init(Vector2 to, Vector2 from, string shotName, Action callback)
         {
@@ -27,7 +27,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
             //TODO - movement speed is not a constant for different shots. Use code from here - http://www.attiliocarotenuto.com/83-articles-tutorials/unity/292-unity-3-moving-a-npc-along-a-path
             m_movementFraction = differenceVector / 30;
-            TacticalState.TextureManager.UpdateShotTexture(shotName, this.GetComponent<SpriteRenderer>());
+            TacticalState.TextureManager.UpdateShotTexture(shotName, GetComponent<SpriteRenderer>());
         }
 
         // Use this for initialization
@@ -39,8 +39,8 @@ namespace Assets.Scripts.TacticalBattleScene
         private void Update()
         {
             if (!m_started) return;
-            transform.position = (Vector2)m_movementFraction + (Vector2)transform.position;
-            if (m_endPoint.Distance(transform.position) < s_minDistance)
+            transform.position = m_movementFraction + (Vector2)transform.position;
+            if (m_endPoint.Distance(transform.position) < c_minDistance)
             {
                 Destroy(gameObject);
                 m_callback();

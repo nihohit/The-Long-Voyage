@@ -36,19 +36,19 @@ namespace Assets.Scripts.UnityBase
 
         public override void Mark()
         {
-            Mark(this.transform.position);
+            Mark(transform.position);
         }
 
         public override void Mark(Vector3 position)
         {
             base.Mark(position);
-            this.GetComponent<Collider2D>().enabled = true;
+            GetComponent<Collider2D>().enabled = true;
         }
 
         public override void Unmark()
         {
             base.Unmark();
-            this.GetComponent<Collider2D>().enabled = false;
+            GetComponent<Collider2D>().enabled = false;
         }
 
         #endregion overrides

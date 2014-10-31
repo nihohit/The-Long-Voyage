@@ -1,6 +1,6 @@
-﻿using Assets.Scripts.LogicBase;
+﻿using System.Collections.Generic;
+using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
@@ -41,8 +41,8 @@ namespace Assets.Scripts.InventoryScreen
             }
             else
             {
-                var renderer = m_markedTexture.Renderer;
-                s_textureHandler.UpdateMarkerTexture(item, renderer);
+                var textureRenderer = m_markedTexture.Renderer;
+                s_textureHandler.UpdateMarkerTexture(item, textureRenderer);
                 m_markedTexture.Mark(transform.position);
                 m_markedTexture.Scale = new Vector3(0.1f, 0.1f, 0.1f);
             }

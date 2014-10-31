@@ -1,8 +1,7 @@
-﻿using Assets.Scripts.Base;
+﻿using System.Collections.Generic;
+using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
@@ -14,7 +13,7 @@ namespace Assets.Scripts.InventoryScreen
     {
         #region fields
 
-        private Dictionary<string, Texture2D> m_buttonTextures;
+        private readonly Dictionary<string, Texture2D> m_buttonTextures;
 
         #endregion fields
 

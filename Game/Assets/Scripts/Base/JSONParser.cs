@@ -19,6 +19,7 @@ namespace Assets.Scripts.Base
             {
                 var fileAsString = fileReader.ReadToEnd();
                 var items = Json.Deserialize(fileAsString) as IEnumerable<object>;
+                Assert.NotNull(items, "items");
                 var itemsAsDictionaries = items.Select(item => item as Dictionary<string, object>);
                 return itemsAsDictionaries.Select(item => ConvertToObject(item)).Materialize();
             }
@@ -29,29 +30,29 @@ namespace Assets.Scripts.Base
         #region private methods
 
         // Check a dictionary representation of a class for a property value.
-        private bool TryGetValue<ValType>(string propertyName, out ValType result)
+        private bool TryGetValue<TValue>(string propertyName, out TValue result)
         {
-            result = default(ValType);
-            object value = null;
+            result = default(TValue);
+            object value;
             if (!m_currentDictionary.TryGetValue(propertyName, out value))
             {
                 return false;
             }
 
-            if (!(value is ValType) && (typeof(ValType).IsEnum && !(value is int)))
+            if (!(value is TValue) && (typeof(TValue).IsEnum && !(value is int)))
             {
-                throw new WrongValueType(propertyName, typeof(ValType), value.GetType());
+                throw new WrongValueType(propertyName, typeof(TValue), value.GetType());
             }
 
-            result = (ValType)value;
+            result = (TValue)value;
             return true;
         }
 
         // Check a dictionary representation of a class for a property value and throw an exception if it can't be found.
-        protected ValType TryGetValueAndFail<ValType>(string propertyName)
+        protected TValue TryGetValueAndFail<TValue>(string propertyName)
         {
-            ValType result;
-            if (!TryGetValue<ValType>(propertyName, out result))
+            TValue result;
+            if (!TryGetValue(propertyName, out result))
             {
                 throw new ValueNotFoundException(propertyName, typeof(T));
             }
@@ -59,11 +60,11 @@ namespace Assets.Scripts.Base
         }
 
         // Check a dictionary representation of a class for a property and return a default value if it can't be found.
-        protected ValType TryGetValueOrSetDefaultValue<ValType>
-            (string propertyName, ValType defaultValue)
+        protected TValue TryGetValueOrSetDefaultValue<TValue>
+            (string propertyName, TValue defaultValue)
         {
-            ValType result;
-            if (!TryGetValue<ValType>(propertyName, out result))
+            TValue result;
+            if (!TryGetValue(propertyName, out result))
             {
                 result = defaultValue;
             }
@@ -92,9 +93,9 @@ namespace Assets.Scripts.Base
     {
         #region fields
 
-        private IDictionary<string, TConfiguration> m_configurationsDictionary;
-        private string m_fileName;
-        private static TStorageType s_instance = new TStorageType();
+        private readonly IDictionary<string, TConfiguration> m_configurationsDictionary;
+        private readonly string m_fileName;
+        private static readonly TStorageType s_instance = new TStorageType();
 
         #endregion fields
 

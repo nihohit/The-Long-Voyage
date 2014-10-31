@@ -29,8 +29,8 @@ namespace Assets.Scripts.Base
     {
         #region Variables Declaration
 
-        protected List<T> InnerList = new List<T>();
-        protected IComparer<T> mComparer;
+        protected List<T> m_innerList = new List<T>();
+        protected IComparer<T> m_mComparer;
 
         #endregion Variables Declaration
 
@@ -38,18 +38,18 @@ namespace Assets.Scripts.Base
 
         public PriorityQueue()
         {
-            mComparer = Comparer<T>.Default;
+            m_mComparer = Comparer<T>.Default;
         }
 
         public PriorityQueue(IComparer<T> comparer)
         {
-            mComparer = comparer;
+            m_mComparer = comparer;
         }
 
         public PriorityQueue(IComparer<T> comparer, int capacity)
         {
-            mComparer = comparer;
-            InnerList.Capacity = capacity;
+            m_mComparer = comparer;
+            m_innerList.Capacity = capacity;
         }
 
         #endregion Contructors
@@ -58,30 +58,30 @@ namespace Assets.Scripts.Base
 
         protected void SwitchElements(int i, int j)
         {
-            T h = InnerList[i];
-            InnerList[i] = InnerList[j];
-            InnerList[j] = h;
+            T h = m_innerList[i];
+            m_innerList[i] = m_innerList[j];
+            m_innerList[j] = h;
         }
 
         protected virtual int OnCompare(int i, int j)
         {
-            return mComparer.Compare(InnerList[i], InnerList[j]);
+            return m_mComparer.Compare(m_innerList[i], m_innerList[j]);
         }
 
         /// <summary>
         /// Push an object onto the PQ
         /// </summary>
-        /// <param name="O">The new object</param>
+        /// <param name="item"></param>
         /// <returns>The index in the list where the object is now_. This will change when objects are taken from or put onto the PQ.</returns>
         public int Push(T item)
         {
-            int p = InnerList.Count, p2;
-            InnerList.Add(item); // E[p] = O
+            int p = m_innerList.Count;
+            m_innerList.Add(item); // E[p] = O
             do
             {
                 if (p == 0)
                     break;
-                p2 = (p - 1) / 2;
+                int p2 = (p - 1) / 2;
                 if (OnCompare(p, p2) < 0)
                 {
                     SwitchElements(p, p2);
@@ -99,18 +99,18 @@ namespace Assets.Scripts.Base
         /// <returns>The smallest object</returns>
         public T Pop()
         {
-            T result = InnerList[0];
-            int p = 0, p1, p2, pn;
-            InnerList[0] = InnerList[InnerList.Count - 1];
-            InnerList.RemoveAt(InnerList.Count - 1);
+            T result = m_innerList[0];
+            int p = 0;
+            m_innerList[0] = m_innerList[m_innerList.Count - 1];
+            m_innerList.RemoveAt(m_innerList.Count - 1);
             do
             {
-                pn = p;
-                p1 = 2 * p + 1;
-                p2 = 2 * p + 2;
-                if (InnerList.Count > p1 && OnCompare(p, p1) > 0) // links kleiner
+                int pn = p;
+                int p1 = 2 * p + 1;
+                int p2 = 2 * p + 2;
+                if (m_innerList.Count > p1 && OnCompare(p, p1) > 0) // links kleiner
                     p = p1;
-                if (InnerList.Count > p2 && OnCompare(p, p2) > 0) // rechts noch kleiner
+                if (m_innerList.Count > p2 && OnCompare(p, p2) > 0) // rechts noch kleiner
                     p = p2;
 
                 if (p == pn)
@@ -128,11 +128,11 @@ namespace Assets.Scripts.Base
         /// explicit IList.this) you should not call this function without knowing exactly
         /// what you do.
         /// </summary>
-        /// <param name="x">The index of the changed object.</param>
+        /// <param name="i">The index of the changed object.</param>
         public void Update(int i)
         {
-            int p = i, pn;
-            int p1, p2;
+            int p = i;
+            int p2;
             do	// aufsteigen
             {
                 if (p == 0)
@@ -150,12 +150,12 @@ namespace Assets.Scripts.Base
                 return;
             do	   // absteigen
             {
-                pn = p;
-                p1 = 2 * p + 1;
+                int pn = p;
+                int p1 = 2 * p + 1;
                 p2 = 2 * p + 2;
-                if (InnerList.Count > p1 && OnCompare(p, p1) > 0) // links kleiner
+                if (m_innerList.Count > p1 && OnCompare(p, p1) > 0) // links kleiner
                     p = p1;
-                if (InnerList.Count > p2 && OnCompare(p, p2) > 0) // rechts noch kleiner
+                if (m_innerList.Count > p2 && OnCompare(p, p2) > 0) // rechts noch kleiner
                     p = p2;
 
                 if (p == pn)
@@ -170,40 +170,40 @@ namespace Assets.Scripts.Base
         /// <returns>The smallest object</returns>
         public T Peek()
         {
-            if (InnerList.Count > 0)
-                return InnerList[0];
+            if (m_innerList.Count > 0)
+                return m_innerList[0];
             return default(T);
         }
 
         public void Clear()
         {
-            InnerList.Clear();
+            m_innerList.Clear();
         }
 
         public int Count
         {
-            get { return InnerList.Count; }
+            get { return m_innerList.Count; }
         }
 
         public void RemoveLocation(T item)
         {
             int index = -1;
-            for (int i = 0; i < InnerList.Count; i++)
+            for (int i = 0; i < m_innerList.Count; i++)
             {
-                if (mComparer.Compare(InnerList[i], item) == 0)
+                if (m_mComparer.Compare(m_innerList[i], item) == 0)
                     index = i;
             }
 
             if (index != -1)
-                InnerList.RemoveAt(index);
+                m_innerList.RemoveAt(index);
         }
 
         public T this[int index]
         {
-            get { return InnerList[index]; }
+            get { return m_innerList[index]; }
             set
             {
-                InnerList[index] = value;
+                m_innerList[index] = value;
                 Update(index);
             }
         }

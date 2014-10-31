@@ -1,6 +1,6 @@
-﻿using Assets.Scripts.Base;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Base;
 using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
@@ -48,11 +48,13 @@ namespace Assets.Scripts.UnityBase
         protected Texture2D GetColoredTexture(Texture2D copiedTexture, Color originalColor, Color replacementColor, string textureName)
         {
             //Create a new Texture2D, which will be the copy.
-            Texture2D texture = new Texture2D(copiedTexture.width, copiedTexture.height);
+            var texture = new Texture2D(copiedTexture.width, copiedTexture.height)
+                {
+                    filterMode = FilterMode.Point,
+                    wrapMode = TextureWrapMode.Clamp
+                };
 
             //Choose your filtermode and wrapmode here.
-            texture.filterMode = FilterMode.Point;
-            texture.wrapMode = TextureWrapMode.Clamp;
 
             int y = 0;
             while (y < texture.height)
@@ -61,15 +63,10 @@ namespace Assets.Scripts.UnityBase
 
                 while (x < texture.width)
                 {
-                    if (copiedTexture.GetPixel(x, y) == originalColor)
-                    {
-                        texture.SetPixel(x, y, replacementColor);
-                    }
-                    else
-                    {
-                        //This line of code is REQUIRED. Do NOT delete it. This is what copies the image as it was, without any change.
-                        texture.SetPixel(x, y, copiedTexture.GetPixel(x, y));
-                    }
+                    texture.SetPixel(x, y,
+                                     copiedTexture.GetPixel(x, y) == originalColor
+                                         ? replacementColor
+                                         : copiedTexture.GetPixel(x, y));
 
                     ++x;
                 }
@@ -97,11 +94,13 @@ namespace Assets.Scripts.UnityBase
         public Texture2D MergeTextures(Texture2D bottom, Texture2D top, string textureName)
         {
             //Create a new Texture2D, which will be the copy.
-            Texture2D texture = new Texture2D(bottom.width, bottom.height);
+            var texture = new Texture2D(bottom.width, bottom.height)
+                {
+                    filterMode = FilterMode.Point,
+                    wrapMode = TextureWrapMode.Clamp
+                };
 
             //Choose your filtermode and wrapmode here.
-            texture.filterMode = FilterMode.Point;
-            texture.wrapMode = TextureWrapMode.Clamp;
 
             int y = 0;
             while (y < texture.height)
@@ -110,14 +109,8 @@ namespace Assets.Scripts.UnityBase
 
                 while (x < texture.width)
                 {
-                    if (top.GetPixel(x, y) == Color.clear)
-                    {
-                        texture.SetPixel(x, y, bottom.GetPixel(x, y));
-                    }
-                    else
-                    {
-                        texture.SetPixel(x, y, top.GetPixel(x, y));
-                    }
+                    texture.SetPixel(x, y,
+                                     top.GetPixel(x, y) == Color.clear ? bottom.GetPixel(x, y) : top.GetPixel(x, y));
 
                     ++x;
                 }

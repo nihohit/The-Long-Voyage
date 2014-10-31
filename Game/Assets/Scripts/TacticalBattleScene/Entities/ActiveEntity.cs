@@ -1,9 +1,8 @@
-﻿using Assets.Scripts.Base;
-using Assets.Scripts.LogicBase;
-using Assets.Scripts.UnityBase;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
@@ -22,7 +21,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             Assert.EqualOrGreater(entity.Template.SystemSlots, systems.Count(), "more systems than system slots.");
             Assert.IsNull(m_systems, "m_systems", "Entity was already initialised.");
-            base.Init(entity, loyalty);
+            Init(entity, loyalty);
             m_systems = systems.Where(template => template != null).Select(template => new Subsystem(template, this));
             CurrentEnergy = Template.MaxEnergy;
             m_tempMaxEnergy = Template.MaxEnergy;
@@ -44,7 +43,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         // checks whether a mech shutdown in the last turn. If a mech shuts down two turns in a row it is destroyed
         // TODO - do we want to keep this?
-        private bool m_wasShutDown = false;
+        private bool m_wasShutDown;
 
         #endregion private fields
 
@@ -52,14 +51,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public IEnumerable<PotentialAction> Actions
         {
-            get
-            {
-                if (m_actions == null)
-                {
-                    m_actions = ComputeActions().Materialize();
-                }
-                return m_actions;
-            }
+            get { return m_actions ?? (m_actions = ComputeActions().Materialize()); }
         }
 
         public double CurrentEnergy { get; set; }

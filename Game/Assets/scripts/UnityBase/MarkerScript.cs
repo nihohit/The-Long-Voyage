@@ -1,6 +1,6 @@
-﻿using Assets.Scripts.Base;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Base;
 using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
@@ -18,7 +18,7 @@ namespace Assets.Scripts.UnityBase
 
         private MoveOrder m_currentOrder;
 
-        private const double s_minDistance = 0.4;
+        private const double c_minDistance = 0.4;
 
         private float m_moveSpeed;
 
@@ -66,7 +66,7 @@ namespace Assets.Scripts.UnityBase
         // Displays the sprite at the given location.
         public virtual void Mark(Vector3 position)
         {
-            this.enabled = true;
+            enabled = true;
             Renderer.enabled = true;
             Position = position;
         }
@@ -111,7 +111,7 @@ namespace Assets.Scripts.UnityBase
             {
                 MoveTowardsCurrentPoint();
 
-                if (transform.position.Distance(m_currentOrder.Point) < s_minDistance)
+                if (transform.position.Distance(m_currentOrder.Point) < c_minDistance)
                 {
                     transform.position = m_currentOrder.Point;
                     var currentOrder = m_currentOrder;

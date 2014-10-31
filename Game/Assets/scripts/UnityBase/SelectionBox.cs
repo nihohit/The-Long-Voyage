@@ -1,6 +1,6 @@
-﻿using Assets.Scripts.Base;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Base;
 using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
@@ -49,8 +49,8 @@ namespace Assets.Scripts.UnityBase
             }
             else
             {
-                var renderer = m_markedTexture.Renderer;
-                s_textureHandler.UpdateMarkerTexture(item, renderer);
+                var textureRenderer = m_markedTexture.Renderer;
+                s_textureHandler.UpdateMarkerTexture(item, textureRenderer);
                 m_markedTexture.Mark(transform.position);
                 m_markedTexture.Scale = new Vector3(0.1f, 0.1f, 0.1f);
             }

@@ -9,6 +9,7 @@ namespace Assets.Scripts.StrategicGameScene
 {
     public abstract class Location
     {
+
         public string Message { get; private set; }
 
         public IEnumerable<PlayerActionChoice> Choices { get; private set; }

@@ -19,7 +19,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private readonly ActiveEntity m_containingEntity;
 
-        private HexEffectTemplate m_hexEffectTemplate;
+        private readonly HexEffectTemplate m_hexEffectTemplate;
 
         #endregion fields
 
@@ -146,7 +146,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 return new[] { hex };
             }
 
-            var layerName = "Entities";
+            const string layerName = "Entities";
 
             switch (Template.DeliveryMethod)
             {

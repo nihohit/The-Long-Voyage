@@ -1,7 +1,6 @@
-﻿using Assets.Scripts.Base;
+﻿using System.Collections.Generic;
+using Assets.Scripts.Base;
 using Assets.Scripts.UnityBase;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.LogicBase
@@ -11,10 +10,10 @@ namespace Assets.Scripts.LogicBase
     /// </summary>
     public abstract class LoyaltyAwareTextureHandler : TextureHandler
     {
-        private Dictionary<string, Texture2D> m_uncoloredEntityTextures = new Dictionary<string, Texture2D>();
-        private Dictionary<string, Texture2D> m_knownEntityTextures = new Dictionary<string, Texture2D>();
+        private readonly Dictionary<string, Texture2D> m_uncoloredEntityTextures = new Dictionary<string, Texture2D>();
+        private readonly Dictionary<string, Texture2D> m_knownEntityTextures = new Dictionary<string, Texture2D>();
 
-        private Dictionary<Loyalty, Color> m_affiliationColors = new Dictionary<Loyalty, Color>
+        private readonly Dictionary<Loyalty, Color> m_affiliationColors = new Dictionary<Loyalty, Color>
         {
         {Loyalty.Bandits, Color.red},
         {Loyalty.EnemyArmy, Color.black},
@@ -22,7 +21,7 @@ namespace Assets.Scripts.LogicBase
         {Loyalty.Player, Color.blue},
         }; //inactive or monster units should have unique visuals.
 
-        public LoyaltyAwareTextureHandler()
+        protected LoyaltyAwareTextureHandler()
         {
             m_uncoloredEntityTextures = GetDictionary("Entities");
         }

@@ -1,9 +1,9 @@
-using Assets.Scripts.Base;
-using Assets.Scripts.LogicBase;
-using Assets.Scripts.TacticalBattleScene.PathFinding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using Assets.Scripts.TacticalBattleScene.PathFinding;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene.AI

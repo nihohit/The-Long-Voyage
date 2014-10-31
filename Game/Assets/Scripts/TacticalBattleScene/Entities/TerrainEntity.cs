@@ -14,7 +14,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public void Init(EntityTemplate template)
         {
-            base.Init(new SpecificEntity(template), Loyalty.Inactive);
+            Init(new SpecificEntity(template), Loyalty.Inactive);
         }
 
         public override HexReactor Hex

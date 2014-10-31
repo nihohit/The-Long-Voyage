@@ -105,19 +105,15 @@ namespace Assets.Scripts.Base
 
         /// This is taken from here https://stackoverflow.com/questions/11775946/select-x-random-elements-from-a-weighted-list-in-c-sharp-without-replacement
         /// and adapted to a generic case.
-        /// </summary>
         /// <typeparam name="T"></typeparam>
         private class WeightedValuesChooser<T>
         {
             private List<Node> GenerateHeap(IDictionary<T, double> dictionary)
             {
-                List<Node> nodes = new List<Node>();
+                var nodes = new List<Node>();
                 nodes.Add(null);
 
-                foreach (var pair in dictionary)
-                {
-                    nodes.Add(new Node(pair.Value, pair.Key, pair.Value));
-                }
+                nodes.AddRange(dictionary.Select(pair => new Node(pair.Value, pair.Key, pair.Value)));
 
                 for (int i = nodes.Count - 1; i > 1; i--)
                 {
@@ -129,9 +125,7 @@ namespace Assets.Scripts.Base
 
             private T PopFromHeap(List<Node> heap)
             {
-                T card = default(T);
-
-                var gas = Randomiser.NextDouble(heap[1].TotalWeight);
+                var gas = NextDouble(heap[1].TotalWeight);
                 int i = 1;
 
                 while (gas >= heap[i].Weight)
@@ -147,7 +141,7 @@ namespace Assets.Scripts.Base
                 }
 
                 var weight = heap[i].Weight;
-                card = heap[i].Value;
+                T card = heap[i].Value;
 
                 heap[i].Weight = 0;
 
@@ -162,9 +156,9 @@ namespace Assets.Scripts.Base
 
             public IEnumerable<T> ChooseWeightedValues(IDictionary<T, double> dictionary, int amount)
             {
-                List<T> values = new List<T>();
+                var values = new List<T>();
 
-                List<Node> nodesHeap = GenerateHeap(dictionary);
+                var nodesHeap = GenerateHeap(dictionary);
 
                 for (int i = 0; i < amount; i++)
                 {
@@ -178,7 +172,7 @@ namespace Assets.Scripts.Base
             {
                 public double Weight { get; set; }
 
-                public T Value { get; set; }
+                public T Value { get; private set; }
 
                 public double TotalWeight { get; set; }
 

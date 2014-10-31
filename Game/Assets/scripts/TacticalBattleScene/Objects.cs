@@ -1,5 +1,3 @@
-using System;
-
 namespace Assets.Scripts.TacticalBattleScene
 {
     #region enums

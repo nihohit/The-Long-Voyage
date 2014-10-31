@@ -1,5 +1,5 @@
-﻿using Assets.Scripts.Base;
-using System;
+﻿using System;
+using Assets.Scripts.Base;
 
 namespace Assets.Scripts.LogicBase
 {

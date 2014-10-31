@@ -1,10 +1,10 @@
-﻿using Assets.Scripts.Base;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.TacticalBattleScene.PathFinding;
 using Assets.Scripts.UnityBase;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
@@ -15,7 +15,7 @@ namespace Assets.Scripts.TacticalBattleScene
     /// </summary>
     public class MovingEntity : ActiveEntity
     {
-        private const float s_speedModifier = 6;
+        private const float c_speedModifier = 6;
 
         #region properties
 
@@ -51,13 +51,14 @@ namespace Assets.Scripts.TacticalBattleScene
             }
         }
 
-        public void Move(IEnumerable<HexReactor> m_path, Action callback)
+        public void Move(IEnumerable<HexReactor> path, Action callback)
         {
-            var lastHex = m_path.Last();
-            BeginMove(m_path.Select(hex =>
+            Assert.NotNullOrEmpty(path, "path");
+            var lastHex = path.Last();
+            BeginMove(path.Select(hex =>
                 new MoveOrder(hex.Position,
                 hex == lastHex ? callback : () => { })),
-                Template.MaxSpeed * s_speedModifier, true);
+                Template.MaxSpeed * c_speedModifier, true);
         }
 
         #endregion public methods

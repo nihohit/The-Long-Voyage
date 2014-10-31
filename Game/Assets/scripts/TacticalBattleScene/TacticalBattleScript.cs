@@ -19,7 +19,7 @@ namespace Assets.Scripts.TacticalBattleScene
         //HACK - to be deleted.
         private readonly List<HexReactor> m_emptyHexes = new List<HexReactor>();
 
-        private int screenSpeed;
+        private int m_screenSpeed;
 
         #endregion private members
 
@@ -49,8 +49,8 @@ namespace Assets.Scripts.TacticalBattleScene
             // update camera position based on input. The axis are defined in the Unity editor
             if (Camera.current != null)
             {
-                float xAxisValue = Input.GetAxis("Horizontal") * screenSpeed;
-                float yAxisValue = Input.GetAxis("Vertical") * screenSpeed;
+                float xAxisValue = Input.GetAxis("Horizontal") * m_screenSpeed;
+                float yAxisValue = Input.GetAxis("Vertical") * m_screenSpeed;
                 float zAxisValue = Input.GetAxisRaw("Zoom");
                 Camera.current.transform.Translate(new Vector3(xAxisValue, yAxisValue, zAxisValue));
             }
@@ -70,7 +70,7 @@ namespace Assets.Scripts.TacticalBattleScene
         private void Start()
         {
             InitClasses();
-            screenSpeed = SimpleConfigurationHandler.GetIntProperty("screen movement speed", FileAccessor.General);
+            m_screenSpeed = SimpleConfigurationHandler.GetIntProperty("screen movement speed", FileAccessor.General);
 
             // create new hexes from a given entry point and of a given size
             var hexes = new List<HexReactor>();
@@ -192,11 +192,6 @@ namespace Assets.Scripts.TacticalBattleScene
                 default:
                     return CreateGrassHex(nextPosition, hexCoordinates);
             }
-        }
-
-        private void CreateRandomHex(Vector2 hexCoordinates)
-        {
-            CreateRandomHex(Vector3.zero, hexCoordinates);
         }
 
         // initiate all relevant classes and create a new global state if there's no current one

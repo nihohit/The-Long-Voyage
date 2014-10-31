@@ -52,17 +52,12 @@ namespace Assets.Scripts.Base
 
         public static void NotNullOrEmpty<T>(IEnumerable<T> a, string name, string additionalMessage = "")
         {
-            AssertConditionMet(a != null || !a.Any(), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(a != null && !a.Any(), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
         }
 
-        internal static void NotNullOrEmpty(string name, string variableName)
+        public static void StringNotNullOrEmpty(string str, string variableName, string additionalMessage = "")
         {
-            AssertConditionMet(!String.IsNullOrEmpty(name), "\'{0}\' was null or empty".FormatWith(variableName));
-        }
-
-        public static void StringNotNullOrEmpty(string a, string name, string additionalMessage = "")
-        {
-            AssertConditionMet(a != null || !a.Equals(string.Empty), "\'{0}\' is null or empty. {1}".FormatWith(name, additionalMessage));
+            AssertConditionMet(!String.IsNullOrEmpty(str), "\'{0}\' is null or empty. {1}".FormatWith(variableName, additionalMessage));
         }
 
         public static void AreEqual(object a, object b, string additionalMessage = "")

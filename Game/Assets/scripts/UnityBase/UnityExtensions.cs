@@ -13,9 +13,6 @@ namespace Assets.Scripts.UnityBase
     {
         public static Vector3 LerpAngle(this Vector3 direction, Vector3 other, float time)
         {
-            /*return new Vector3(Mathf.LerpAngle(direction.x, other.x, time),
-                Mathf.LerpAngle(direction.y, other.y, time),
-                Mathf.LerpAngle(direction.z, other.z, time));*/
             return new Vector3(0, 0, Mathf.LerpAngle(direction.z, other.z, time));
         }
 

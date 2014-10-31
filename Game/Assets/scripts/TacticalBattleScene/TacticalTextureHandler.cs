@@ -1,7 +1,6 @@
 using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
@@ -13,9 +12,9 @@ namespace Assets.Scripts.TacticalBattleScene
     {
         #region fields
 
-        private Dictionary<string, Texture2D> m_effectsTextures;
-        private Dictionary<string, Texture2D> m_buttonTextures;
-        private Dictionary<string, Texture2D> m_hexEffectsTextures;
+        private readonly Dictionary<string, Texture2D> m_effectsTextures;
+        private readonly Dictionary<string, Texture2D> m_buttonTextures;
+        private readonly Dictionary<string, Texture2D> m_hexEffectsTextures;
 
         #endregion fields
 

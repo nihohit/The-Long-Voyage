@@ -21,9 +21,9 @@ namespace Assets.Scripts.Base
         }
 
         //try to get a value out of a dictionary, and if it doesn't exist, create it by a given method
-        public static T TryGetOrAdd<T, S>(this IDictionary<S, T> dict, S key, Func<T> itemCreationMethod)
+        public static TValue TryGetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue> itemCreationMethod)
         {
-            T result;
+            TValue result;
             if (!dict.TryGetValue(key, out result))
             {
                 result = itemCreationMethod();
@@ -150,22 +150,18 @@ namespace Assets.Scripts.Base
     /// </summary>
     public static class Hasher
     {
-        private static int InitialHash = 53; // Prime number
-        private static int Multiplier = 29; // Different prime number
+        private const int c_initialHash = 53; // Prime number
+        private const int c_multiplier = 29; // Different prime number
 
         public static int GetHashCode(params object[] values)
         {
             unchecked // Overflow is fine, just wrap
             {
-                int hash = InitialHash;
+                int hash = c_initialHash;
 
                 if (values != null)
                 {
-                    foreach (var currentObject in values)
-                    {
-                        hash = hash * Multiplier
-                                + (currentObject != null ? currentObject.GetHashCode() : 0);
-                    }
+                    hash = values.Aggregate(hash, (current, currentObject) => current*c_multiplier + (currentObject != null ? currentObject.GetHashCode() : 0));
                 }
 
                 return hash;

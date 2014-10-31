@@ -1,7 +1,7 @@
-﻿using Assets.Scripts.Base;
+﻿using System;
+using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
-using System;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
@@ -15,7 +15,7 @@ namespace Assets.Scripts.TacticalBattleScene
     {
         #region private fields
 
-        private static int s_idCounter = 0;
+        private static int s_idCounter;
 
         private readonly int m_id;
 
@@ -39,7 +39,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region constructor
 
-        public EntityReactor()
+        protected EntityReactor()
         {
             m_id = s_idCounter++;
         }
@@ -121,7 +121,7 @@ namespace Assets.Scripts.TacticalBattleScene
             Loyalty = loyalty;
             Health = Template.Health;
             Name = "{0} {1} {2}".FormatWith(Template.Name, Loyalty, m_id);
-            this.gameObject.name = Name;
+            gameObject.name = Name;
             if ((Template.Visuals & VisualProperties.AppearsOnRadar) != 0)
             {
                 TacticalState.AddRadarVisibleEntity(this);
@@ -153,7 +153,7 @@ namespace Assets.Scripts.TacticalBattleScene
         protected virtual void Destroy()
         {
             Debug.Log("Destroy {0}".FormatWith(Name));
-            this.Hex.Content = null;
+            Hex.Content = null;
             TacticalState.DestroyEntity(this);
             DestroyGameObject();
         }

@@ -1,27 +1,27 @@
-﻿using Assets.Scripts.Base;
+﻿using System;
+using Assets.Scripts.Base;
 using Assets.Scripts.InterSceneCommunication;
-using System;
 using UnityEngine;
 
 namespace Assets.Scripts.MainScreenScene
 {
     public class MainScreenScript : MonoBehaviour
     {
-        private float screenWidth, screenHeight, sliderHeight, sliderWidth, buttonHeight, markerHeight;
+        private float m_screenWidth, m_screenHeight, m_sliderHeight, m_sliderWidth, m_buttonHeight, m_markerHeight;
 
-        private int sliderValue, minHexSlider, maxHexSlider;
+        private int m_sliderValue, m_minHexSlider, m_maxHexSlider;
 
         private void Start()
         {
-            minHexSlider = SimpleConfigurationHandler.GetIntProperty("min number of hexes", FileAccessor.General);
-            maxHexSlider = SimpleConfigurationHandler.GetIntProperty("max number of hexes", FileAccessor.General);
-            sliderValue = (minHexSlider + maxHexSlider) / 3;
-            screenWidth = Screen.width;
-            screenHeight = Screen.height;
-            sliderHeight = screenHeight * 0.3f;
-            buttonHeight = screenHeight * 0.6f;
-            sliderWidth = screenWidth / 2;
-            markerHeight = screenHeight * 0.4f;
+            m_minHexSlider = SimpleConfigurationHandler.GetIntProperty("min number of hexes", FileAccessor.General);
+            m_maxHexSlider = SimpleConfigurationHandler.GetIntProperty("max number of hexes", FileAccessor.General);
+            m_sliderValue = (m_minHexSlider + m_maxHexSlider) / 3;
+            m_screenWidth = Screen.width;
+            m_screenHeight = Screen.height;
+            m_sliderHeight = m_screenHeight * 0.3f;
+            m_buttonHeight = m_screenHeight * 0.6f;
+            m_sliderWidth = m_screenWidth / 2;
+            m_markerHeight = m_screenHeight * 0.4f;
         }
 
         private void OnGUI()
@@ -31,13 +31,13 @@ namespace Assets.Scripts.MainScreenScene
 
         private void DisplayButtons()
         {
-            sliderValue = Convert.ToInt32(GUI.HorizontalSlider(new Rect(sliderWidth - 40, sliderHeight, 80, 20), sliderValue,
-                                                               minHexSlider, maxHexSlider));
-            GUI.Box(new Rect(sliderWidth - 40, markerHeight, 80, 20), sliderValue + " hexes");
+            m_sliderValue = Convert.ToInt32(GUI.HorizontalSlider(new Rect(m_sliderWidth - 40, m_sliderHeight, 80, 20), m_sliderValue,
+                                                               m_minHexSlider, m_maxHexSlider));
+            GUI.Box(new Rect(m_sliderWidth - 40, m_markerHeight, 80, 20), m_sliderValue + " hexes");
 
-            if (GUI.Button(new Rect(sliderWidth - 40, buttonHeight, 80, 20), "StartGame"))
+            if (GUI.Button(new Rect(m_sliderWidth - 40, m_buttonHeight, 80, 20), "StartGame"))
             {
-                GlobalState.TacticalBattle.AmountOfHexes = sliderValue;
+                GlobalState.TacticalBattle.AmountOfHexes = m_sliderValue;
                 Application.LoadLevel("TacticalBattleScene");
             }
         }

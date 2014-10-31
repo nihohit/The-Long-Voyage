@@ -12,7 +12,7 @@ namespace Assets.Scripts.Base
     {
         #region static dictionaries
 
-        private static readonly Dictionary<string, Dictionary<string, string>> s_navigator = new Dictionary<string, Dictionary<string, string>> { };
+        private static readonly Dictionary<string, Dictionary<string, string>> s_navigator = new Dictionary<string, Dictionary<string, string>>();
 
         #endregion static dictionaries
 
@@ -56,7 +56,7 @@ namespace Assets.Scripts.Base
             }
         }
 
-        private static void ReadFiles(string[] files)
+        private static void ReadFiles(IEnumerable<string> files)
         {
             foreach (var file in files)
             {

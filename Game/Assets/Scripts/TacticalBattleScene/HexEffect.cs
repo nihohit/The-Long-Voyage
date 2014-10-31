@@ -1,9 +1,7 @@
 ﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
@@ -18,7 +16,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private int m_remainingDuration;
 
-        private static List<HexEffect> s_effects = new List<HexEffect>();
+        private static readonly List<HexEffect> s_effects = new List<HexEffect>();
 
         #endregion private fields
 
@@ -26,7 +24,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public HexEffectTemplate Template { get; private set; }
 
-        #endregion
+        #endregion properties
 
         #region constructors
 
@@ -48,7 +46,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             Assert.Greater(m_remainingDuration, 0);
 
-            if(m_affectedHex.Content != null)
+            if (m_affectedHex.Content != null)
             {
                 AffectEntity(m_affectedHex.Content);
             }
@@ -66,14 +64,14 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             var newEffect = ((GameObject)Instantiate(Resources.Load("HexEffect"), hex.transform.position, Quaternion.identity)).GetComponent<HexEffect>();
             newEffect.Init(hexEffectTemplate, hex);
-            s_effects.Add(newEffect); 
+            s_effects.Add(newEffect);
         }
 
         public static void OperateEffects()
         {
-            foreach(var effect in s_effects.Duplicate())
+            foreach (var effect in s_effects.Duplicate())
             {
-                if(effect.Act())
+                if (effect.Act())
                 {
                     s_effects.Remove(effect);
                 }
@@ -86,7 +84,7 @@ namespace Assets.Scripts.TacticalBattleScene
             s_effects.Clear();
         }
 
-        #endregion
+        #endregion static methods
     }
 
     #endregion HexEffect

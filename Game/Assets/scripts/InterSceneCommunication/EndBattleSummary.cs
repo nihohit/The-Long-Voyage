@@ -1,7 +1,7 @@
-﻿using Assets.Scripts.Base;
-using Assets.Scripts.LogicBase;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
 using UnityEngine;
 
 namespace Assets.Scripts.InterSceneCommunication

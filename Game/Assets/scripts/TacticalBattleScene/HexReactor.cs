@@ -84,7 +84,7 @@ namespace Assets.Scripts.TacticalBattleScene
                     {
                         TacticalState.ResetAllActions();
                     }
-                    m_content = value;
+                    m_content = null;
                     return;
                 }
                 Debug.Log("Enter {0} to {1}".FormatWith(value, this));
@@ -106,10 +106,10 @@ namespace Assets.Scripts.TacticalBattleScene
                     otherHex.Content = null;
                 }
 
-                var active = value as ActiveEntity;
-                if (active != null)
+                var activeEntity = value as ActiveEntity;
+                if (activeEntity != null)
                 {
-                    active.SetSeenHexes();
+                    activeEntity.SetSeenHexes();
                 }
 
                 if (SeenAmount > 0)
@@ -224,7 +224,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public IEnumerable<HexReactor> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, string layerName)
         {
-            return RaycastAndResolve<EntityReactor>(minRange, maxRange, addToListCheck, rayCastAll, (hex) => false, layerName, (ent) => ent.Hex);
+            return RaycastAndResolve<EntityReactor>(minRange, maxRange, addToListCheck, rayCastAll, hex => false, layerName, ent => ent.Hex);
         }
 
         // ray cast in a certain direction, and over a certain layer.
@@ -425,7 +425,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 return;
             }
 
-            var entity = TacticalState.SelectedHex.Content as EntityReactor;
+            var entity = TacticalState.SelectedHex.Content;
             if (entity == null)
             {
                 RemoveMarker(m_targetMarker);
@@ -462,7 +462,7 @@ namespace Assets.Scripts.TacticalBattleScene
         public void Select()
         {
             //Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex));
-            s_selected.Mark(this.transform.position);
+            s_selected.Mark(transform.position);
             ActionCheck().ForEach(action => action.DisplayAction());
         }
 
@@ -617,13 +617,13 @@ namespace Assets.Scripts.TacticalBattleScene
         //returns null if can't return actions, otherwise returns all available actions
         private IEnumerable<PotentialAction> ActionCheck()
         {
-            var Entity = Content as ActiveEntity;
-            if (Entity == null || Entity.Loyalty != TacticalState.CurrentTurn)
+            var entity = Content as ActiveEntity;
+            if (entity == null || entity.Loyalty != TacticalState.CurrentTurn)
             {
                 return null;
             }
 
-            return Entity.Actions.Materialize();
+            return entity.Actions.Materialize();
         }
 
         private void RemoveMarker(IUnityMarker marker)

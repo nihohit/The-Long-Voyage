@@ -1,9 +1,9 @@
-﻿using Assets.Scripts.Base;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Assets.Scripts.Base;
 using Assets.Scripts.InterSceneCommunication;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
@@ -114,8 +114,8 @@ namespace Assets.Scripts.InventoryScreen
             }
             else
             {
-                var renderer = m_markedTexture.Renderer;
-                s_textureHandler.UpdateMarkerTexture(item, renderer);
+                var textureRenderer = m_markedTexture.Renderer;
+                s_textureHandler.UpdateMarkerTexture(item, textureRenderer);
                 m_markedTexture.Mark(UpperLeftCornerLocation());
                 m_markedTexture.Scale = new Vector3(0.2f, 0.2f, 0.2f);
                 m_systems = CreateSystemSelectionBoxes(item.Template.SystemSlots).Materialize();
