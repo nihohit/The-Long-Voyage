@@ -1,4 +1,6 @@
-﻿namespace Assets.Scripts.InterSceneCommunication
+﻿using Assets.Scripts.StrategicGameScene;
+
+namespace Assets.Scripts.InterSceneCommunication
 {
     /// <summary>
     /// Information relevant to the strategic gameplay, to be passed from one encounter to the next.
@@ -6,5 +8,7 @@
     public class StrategicMapInformation
     {
         public PlayerState State { get; set; }
+
+        public Location CurrentLocation { get; set; }
     }
 }

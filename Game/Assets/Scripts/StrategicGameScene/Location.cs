@@ -1,5 +1,6 @@
 ﻿#region
 
+using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
 
@@ -7,9 +8,8 @@ using System.Collections.Generic;
 
 namespace Assets.Scripts.StrategicGameScene
 {
-    public abstract class Location
+    public class Location : SimpleButton
     {
-
         public string Message { get; private set; }
 
         public IEnumerable<PlayerActionChoice> Choices { get; private set; }
@@ -18,12 +18,35 @@ namespace Assets.Scripts.StrategicGameScene
 
         public void Display()
         { }
+
+        public void Init()
+        {}
     }
 
     public class PlayerActionChoice
     {
-        public string Message { get; private set; }
+        #region fields
 
-        public Action Result { get; private set; }
+        private readonly float m_value;
+
+        private readonly ChoiceResults m_results;
+
+        private readonly string m_resultsDescription;
+
+        #endregion
+
+        #region properties
+
+        public string Description { get; private set; }
+
+        #endregion
+
+        public PlayerActionChoice(string description, float value, ChoiceResults results, string resultDescription)
+        {
+            m_value = value;
+            m_results = results;
+            m_resultsDescription = resultDescription;
+            Description = description;
+        }
     }
 }

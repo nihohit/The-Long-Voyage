@@ -222,9 +222,14 @@ namespace Assets.Scripts.TacticalBattleScene
             return (Int32)(correctedXDist + yDist);
         }
 
-        public IEnumerable<HexReactor> RaycastAndResolve(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, string layerName)
+        public IEnumerable<HexReactor> RaycastAndResolveHexes(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll, HexCheck breakCheck)
         {
-            return RaycastAndResolve<EntityReactor>(minRange, maxRange, addToListCheck, rayCastAll, hex => false, layerName, ent => ent.Hex);
+            return RaycastAndResolve<HexReactor>(minRange, maxRange, addToListCheck, rayCastAll, breakCheck, "Hexes", hex => hex);
+        }
+
+        public IEnumerable<HexReactor> RaycastAndResolveEntities(int minRange, int maxRange, HexCheck addToListCheck, bool rayCastAll)
+        {
+            return RaycastAndResolve<EntityReactor>(minRange, maxRange, addToListCheck, rayCastAll, hex => false, "Entities", ent => ent.Hex);
         }
 
         // ray cast in a certain direction, and over a certain layer.
@@ -248,15 +253,15 @@ namespace Assets.Scripts.TacticalBattleScene
                 {
                     // return all colliders that the ray passes through
                     var rayHits = Physics2D.RaycastAll(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
-                    foreach (var rayHit in rayHits)
+                    foreach (var hex in
+                        rayHits.Select(rayHit =>
+                            hexExtractor(rayHit.collider.gameObject.GetComponent<T>())))
                     {
-                        var hex = hexExtractor(rayHit.collider.gameObject.GetComponent<T>());
-                        if (Distance(hex) <= maxRange &&
-                           Distance(hex) >= minRange &&
-                           addToListCheck(hex))
+                        if (RangeAndConditionalCheck(minRange, maxRange, addToListCheck, hex))
                         {
                             results.Add(hex);
                         }
+
                         if (breakCheck(hex))
                         {
                             break;
@@ -265,17 +270,18 @@ namespace Assets.Scripts.TacticalBattleScene
                 }
                 else
                 {
+                    //TODO - can all cases use raycastall, and just check for raycast all in the break check.
                     // return the first active collider in the ray's way
                     var rayHit = Physics2D.Raycast(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
-                    if (rayHit.collider != null)
+                    if (rayHit.collider == null)
                     {
-                        var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Hex;
-                        if (Distance(hex) <= maxRange &&
-                           Distance(hex) >= minRange &&
-                           addToListCheck(hex))
-                        {
-                            results.Add(hex);
-                        }
+                        continue;
+                    }
+
+                    var hex = hexExtractor(rayHit.collider.gameObject.GetComponent<T>());
+                    if (RangeAndConditionalCheck(minRange, maxRange, addToListCheck, hex))
+                    {
+                        results.Add(hex);
                     }
                 }
             }
@@ -542,6 +548,11 @@ namespace Assets.Scripts.TacticalBattleScene
         #endregion public methods
 
         #region private methods
+
+        private bool RangeAndConditionalCheck(int minRange, int maxRange, HexCheck addToListCheck, HexReactor hex)
+        {
+            return this.Distance(hex) <= maxRange && this.Distance(hex) >= minRange && addToListCheck(hex);
+        }
 
         private IEnumerable<OperateSystemAction> GetCurrentSelectedActions()
         {

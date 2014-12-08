@@ -219,7 +219,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                 {
                     //TODO - implicit assumption that all system actions are against entities.
                     var target = systemAction.TargetedHex.Content;
-                    if (target.Loyalty != Loyalty.Inactive)
+                    if (target != null && target.Loyalty != Loyalty.Inactive)
                     {
                         evaluatedAction.EvaluatedPriority += EvaluateSystemEffect(systemAction.System, target);
 

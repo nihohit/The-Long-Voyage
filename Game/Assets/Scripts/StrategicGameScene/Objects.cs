@@ -1,5 +1,6 @@
-﻿namespace Assets.Scripts.StrategicGameScene
+﻿using System;
+namespace Assets.Scripts.StrategicGameScene
 {
-    internal class Objects
-    { }
+    [Flags]
+    public enum ChoiceResults { None, Fight, LosePilot, LoseMech, GetLoot, GetPilot, GetMech }
 }

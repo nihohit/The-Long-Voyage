@@ -198,14 +198,21 @@ namespace Assets.Scripts.TacticalBattleScene
         private IEnumerable<HexReactor> FindSeenHexes()
         {
             //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
-            return Hex.RaycastAndResolve<HexReactor>(0, Template.SightRange, (hex) => true, true, (hex) => (hex.Content != null && ((hex.Content.Template.Visuals & VisualProperties.BlocksSight) != 0)), "Hexes", (reactor) => reactor);
+            return Hex.RaycastAndResolveHexes(
+                0,
+                Template.SightRange,
+                hex => true,
+                true,
+                hex =>
+                    (hex.Content != null &&
+                     hex.Content.Template.Visuals.HasFlag(VisualProperties.BlocksSight)));
         }
 
         private IEnumerable<HexReactor> FindRadarHexes()
         {
             var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.enabled);
             inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
-            var results = Hex.RaycastAndResolve(0, Template.RadarRange, (hex) => hex.Content != null, true, "Entities");
+            var results = Hex.RaycastAndResolveEntities(0, Template.RadarRange, (hex) => hex.Content != null, true);
             inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);
             return results;
         }

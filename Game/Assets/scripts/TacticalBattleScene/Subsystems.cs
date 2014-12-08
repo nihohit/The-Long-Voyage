@@ -121,7 +121,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public bool TargetingCheck(HexReactor targetedHex)
         {
-            return (Template.PossibleTargets.HasFlag(TargetingType.AllHexes) ||
+            return ((Template.PossibleTargets.HasFlag(TargetingType.EmptyHexes) && targetedHex.Content == null) ||
                     (Template.PossibleTargets.HasFlag(TargetingType.Enemy) && targetedHex.Content != null && targetedHex.Content.Loyalty != m_containingEntity.Loyalty) ||
                     (Template.PossibleTargets.HasFlag(TargetingType.Friendly) && targetedHex.Content != null && targetedHex.Content.Loyalty == m_containingEntity.Loyalty));
         }
@@ -146,19 +146,26 @@ namespace Assets.Scripts.TacticalBattleScene
                 return new[] { hex };
             }
 
-            const string layerName = "Entities";
+            var unobstructedShot = Template.DeliveryMethod == DeliveryMethod.Unobstructed;
 
-            switch (Template.DeliveryMethod)
+            if (Template.PossibleTargets.HasFlag(TargetingType.EmptyHexes))
             {
-                case (DeliveryMethod.Direct):
-                    return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, TargetingCheck, false, layerName);
-
-                case (DeliveryMethod.Unobstructed):
-                    return hex.RaycastAndResolve(Template.MinRange, Template.MaxRange, TargetingCheck, true, layerName);
-
-                default:
-                    throw new UnknownValueException(Template.DeliveryMethod);
+                return hex.RaycastAndResolveHexes(
+                    Template.MinRange,
+                    Template.MaxRange,
+                    TargetingCheck,
+                    true,
+                    targetedHex => !unobstructedShot &&
+                        targetedHex.Content != null &&
+                        !targetedHex.Equals(m_containingEntity.Hex));
             }
+
+            if (unobstructedShot)
+            {
+                return hex.RaycastAndResolveEntities(Template.MinRange, Template.MaxRange, TargetingCheck, true);
+            }
+
+            return hex.RaycastAndResolveEntities(Template.MinRange, Template.MaxRange, TargetingCheck, false);
         }
 
         #endregion private methods

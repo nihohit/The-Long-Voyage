@@ -21,7 +21,8 @@ namespace Assets.Scripts.LogicBase
         Enemy = 1,
         Friendly = 2,
         AllEntities = 3,
-        AllHexes = 4
+        EmptyHexes = 4,
+        AllHexes = 7
     }
 
     // Variants of mech designs

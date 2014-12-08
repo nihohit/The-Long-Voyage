@@ -24,7 +24,7 @@ namespace Assets.Scripts.InventoryScreen
             if (GlobalState.StrategicMap == null)
             {
                 GlobalState.Init();
-                GlobalState.StrategicMap = new StrategicMapInformation {State = new PlayerState()};
+                GlobalState.StrategicMap = new StrategicMapInformation { State = new PlayerState() };
                 var mechTemplate = EntityTemplateStorage.Instance.GetConfiguration("StandardMech");
                 for (int i = 0; i < 2; i++)
                 {
@@ -36,7 +36,7 @@ namespace Assets.Scripts.InventoryScreen
                     GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
                 }
                 var systems = SubsystemTemplateStorage.Instance.GetAllConfigurations().ToArray();
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 6; i++)
                 {
                     for (int j = 0; j < 3; j++)
                     {
