@@ -280,35 +280,39 @@ namespace Assets.Scripts.TacticalBattleScene
         // different damage types are differently effective against shields
         protected override double ExternalDamage(double strength, EntityEffectType effectType)
         {
-            var result = strength;
             if (Shield > 0)
             {
                 switch (effectType)
                 {
                     case EntityEffectType.PhysicalDamage:
                     case EntityEffectType.EmpDamage:
-                        Shield -= strength;
-                        strength = -Shield;
+                        strength = StrengthAfterShields(strength);
                         break;
 
                     case EntityEffectType.IncendiaryDamage:
-                        Shield -= strength / 2;
-                        strength = -Shield;
+                        strength = StrengthAfterShields(strength / 2) * 2;
                         break;
 
                     case EntityEffectType.HeatDamage:
-                        //TODO - implement heat mechanics
-                        Shield -= 1;
                         break;
                 }
             }
 
-            if (Shield <= 0)
+            if (strength <= 0)
             {
-                result = base.ExternalDamage(strength, effectType);
-                Shield = 0;
+                return 0;
             }
-            return result;
+
+            strength = base.ExternalDamage(strength, effectType);
+            this.Shield = 0;
+            return strength;
+        }
+
+        private double StrengthAfterShields(double strength)
+        {
+            var strengthAfterShields = strength - Shield;
+            Shield -= strength;
+            return strengthAfterShields;
         }
 
         #endregion private and protected methods
