@@ -22,7 +22,7 @@ namespace Assets.Scripts.TacticalBattleScene
             Assert.EqualOrGreater(entity.Template.SystemSlots, systems.Count(), "more systems than system slots.");
             Assert.IsNull(m_systems, "m_systems", "Entity was already initialised.");
             Init(entity, loyalty);
-            m_systems = systems.Where(template => template != null).Select(template => new Subsystem(template, this));
+            m_systems = systems.Where(template => template != null).Select(template => new Subsystem(template, this)).ToList();
             CurrentEnergy = Template.MaxEnergy;
             m_tempMaxEnergy = Template.MaxEnergy;
             Shield = Template.MaxShields;
@@ -160,6 +160,9 @@ namespace Assets.Scripts.TacticalBattleScene
                 return false;
             }
 
+            Debug.Log("{0} starts its system".FormatWith(Name));
+            m_systems.ForEach(system => system.StartTurn());
+
             m_wasShutDown = false;
             m_tempMaxEnergy = Template.MaxEnergy;
             Shield = Math.Min(Template.MaxShields, Shield + Template.ShieldRechargeRate);
@@ -265,7 +268,7 @@ namespace Assets.Scripts.TacticalBattleScene
             }
 
             var dict = new Dictionary<HexReactor, List<OperateSystemAction>>();
-            var results = m_systems.Where(system => system.Operational())
+            var results = m_systems.Where(system => system.CanOperateNow())
                 .SelectMany(system => system.ActionsInRange(dict)).Materialize();
 
             foreach (var hex in dict.Keys)

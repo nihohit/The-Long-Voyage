@@ -39,6 +39,8 @@ namespace Assets.Scripts.LogicBase
 
         public HexEffectTemplate HexEffect { get; set; }
 
+        public int ActionsPerTurn { get; set; }
+
         #endregion properties
 
         #region constructor and initializer
@@ -53,7 +55,8 @@ namespace Assets.Scripts.LogicBase
                                 EntityEffectType effectType,
                                 double effectStrength,
                                 TargetingType targetingType,
-                                string hexEffectName)
+                                string hexEffectName,
+                                int i_ActionsPerTurn)
         {
             MinRange = minRange;
             MaxRange = maxRange;
@@ -65,6 +68,7 @@ namespace Assets.Scripts.LogicBase
             EnergyCost = energyCost;
             MaxAmmo = ammo;
             HeatGenerated = heatGenerated;
+            this.ActionsPerTurn = i_ActionsPerTurn;
             if (!String.IsNullOrEmpty(hexEffectName))
             {
                 HexEffect = HexEffectTemplateStorage.Instance.GetConfiguration(hexEffectName);
@@ -106,7 +110,8 @@ namespace Assets.Scripts.LogicBase
                     TryGetValueAndFail<EntityEffectType>("EffectType"),
                     TryGetValueAndFail<float>("EffectStrength"),
                     TryGetValueOrSetDefaultValue<TargetingType>("TargetingType", TargetingType.Enemy),
-                    TryGetValueOrSetDefaultValue<string>("HexEffect", null));
+                    TryGetValueOrSetDefaultValue<string>("HexEffect", null),
+                    TryGetValueOrSetDefaultValue<int>("ActionsPerTurn", 1));
             }
         }
 

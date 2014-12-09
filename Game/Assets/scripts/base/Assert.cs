@@ -66,7 +66,7 @@ namespace Assets.Scripts.Base
         }
 
         //the core assert check
-        public static void AssertConditionMet(bool condition, string message, int stackTraceDepth = 1)
+        public static void AssertConditionMet(bool condition, string message)
         {
             if (!condition)
             {

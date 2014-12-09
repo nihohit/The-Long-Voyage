@@ -221,7 +221,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                     var target = systemAction.TargetedHex.Content;
                     if (target != null && target.Loyalty != Loyalty.Inactive)
                     {
-                        evaluatedAction.EvaluatedPriority += EvaluateSystemEffect(systemAction.System, target);
+                        evaluatedAction.EvaluatedPriority += EvaluateSystemEffect(systemAction.System.Template, target);
 
                         //Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
                     }

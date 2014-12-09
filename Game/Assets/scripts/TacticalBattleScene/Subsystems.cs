@@ -17,6 +17,8 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private int m_ammo;
 
+        private int m_actionsThisTurn;
+
         private readonly ActiveEntity m_containingEntity;
 
         private readonly HexEffectTemplate m_hexEffectTemplate;
@@ -62,6 +64,8 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public void Effect(HexReactor targetHex)
         {
+            Assert.Greater(m_actionsThisTurn, 0, "No actions left.");
+
             if (Template.Effect != EntityEffectType.None && targetHex.Content != null)
             {
                 targetHex.Content.Affect(Template.EffectStrength, Template.Effect);
@@ -70,6 +74,9 @@ namespace Assets.Scripts.TacticalBattleScene
             {
                 HexEffect.Create(m_hexEffectTemplate, targetHex);
             }
+
+            m_actionsThisTurn--;
+
             if (m_ammo > 0)
             {
                 --m_ammo;
@@ -78,6 +85,12 @@ namespace Assets.Scripts.TacticalBattleScene
                     m_workingCondition = SystemCondition.OutOfAmmo;
                 }
             }
+        }
+
+        public void StartTurn()
+        {
+            Debug.Log("{0} started turn".FormatWith(this.Template.Name));
+            m_actionsThisTurn = Template.ActionsPerTurn;
         }
 
         public void Hit(EntityEffectType type, double damage)
@@ -100,6 +113,11 @@ namespace Assets.Scripts.TacticalBattleScene
             Debug.Log("{0} was hit for {1} {2} damage, it is now {3}".FormatWith(Template.Name, damage, type, OperationalCondition));
         }
 
+        public bool CanOperateNow()
+        {
+            return Operational() && CanOperate();
+        }
+
         public bool Operational()
         {
             return m_workingCondition == SystemCondition.Operational;
@@ -108,16 +126,18 @@ namespace Assets.Scripts.TacticalBattleScene
         public IEnumerable<OperateSystemAction> ActionsInRange(Dictionary<HexReactor, List<OperateSystemAction>> dict)
         {
             //if we can't operate the system, return no actions
-            if (m_containingEntity.CurrentEnergy < Template.EnergyCost)
-            {
-                return new OperateSystemAction[0];
-            }
+            Assert.AssertConditionMet(Operational(), "System {0} can't act now".FormatWith(this));
             return TargetsInRange().Select(targetedHex => CreateAction(targetedHex, dict));
         }
 
         #endregion public methods
 
         #region private methods
+
+        private bool CanOperate()
+        {
+            return (m_containingEntity.CurrentEnergy >= Template.EnergyCost && m_actionsThisTurn > 0);
+        }
 
         public bool TargetingCheck(HexReactor targetedHex)
         {
@@ -131,7 +151,7 @@ namespace Assets.Scripts.TacticalBattleScene
             var list = dict.TryGetOrAdd(targetedHex, () => new List<OperateSystemAction>());
             Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
 
-            var operation = new OperateSystemAction(m_containingEntity, Effect, Template, targetedHex);
+            var operation = new OperateSystemAction(m_containingEntity, Effect, this, targetedHex);
             if (operation.NecessaryConditions())
 
                 list.Add(operation);

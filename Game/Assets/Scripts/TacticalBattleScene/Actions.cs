@@ -292,13 +292,13 @@ namespace Assets.Scripts.TacticalBattleScene
     {
         private readonly Action m_action;
 
-        public SubsystemTemplate System { get; private set; }
+        public Subsystem System { get; private set; }
 
-        public OperateSystemAction(ActiveEntity actingEntity, HexOperation effect, SubsystemTemplate template, HexReactor targetedHex) :
-            base(actingEntity, template.Name, (Vector2)targetedHex.Position, targetedHex, "{0} Operate {1} on {2}".FormatWith(actingEntity, template.Name, targetedHex))
+        public OperateSystemAction(ActiveEntity actingEntity, HexOperation effect, Subsystem subsystem, HexReactor targetedHex) :
+            base(actingEntity, subsystem.Template.Name, (Vector2)targetedHex.Position, targetedHex, "{0} Operate {1} on {2}".FormatWith(actingEntity, subsystem.Template.Name, targetedHex))
         {
             m_action = () => effect(targetedHex);
-            System = template;
+            System = subsystem;
             RemoveDisplay();
         }
 
@@ -318,16 +318,16 @@ namespace Assets.Scripts.TacticalBattleScene
 
         protected override void AffectEntity()
         {
-            Assert.EqualOrLesser(System.EnergyCost, ActingEntity.CurrentEnergy,
+            Assert.EqualOrLesser(System.Template.EnergyCost, ActingEntity.CurrentEnergy,
                "{0} should have enough energy available. Its condition is {1}".
                                 FormatWith(ActingEntity, ActingEntity.FullState()));
-            ActingEntity.CurrentEnergy -= System.EnergyCost;
-            ActingEntity.CurrentHeat += System.HeatGenerated;
+            ActingEntity.CurrentEnergy -= System.Template.EnergyCost;
+            ActingEntity.CurrentHeat += System.Template.HeatGenerated;
         }
 
         public override bool NecessaryConditions()
         {
-            return System.EnergyCost <= ActingEntity.CurrentEnergy;
+            return System.CanOperateNow();
         }
 
         //TODO - is there a more elegant way to prevent them from displaying?
