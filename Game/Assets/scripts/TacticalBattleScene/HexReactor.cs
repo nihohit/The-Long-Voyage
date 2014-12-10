@@ -46,6 +46,8 @@ namespace Assets.Scripts.TacticalBattleScene
         //these shouldn't be touched directly. There's a property for that.
         private int m_seen, m_detected;
 
+        private static readonly IEqualityComparer<OperateSystemAction> s_systemActionComparer = new ActionComparerByName();
+
         #endregion private fields
 
         #region properties
@@ -581,7 +583,9 @@ namespace Assets.Scripts.TacticalBattleScene
         // display commands in a circle around the targeted hex
         private void DisplayCommands(IEnumerable<OperateSystemAction> actions)
         {
-            var activeCommands = actions.Where(command => !command.Destroyed).Materialize();
+            var activeCommands = actions.Where(command => !command.Destroyed)
+                .Distinct(s_systemActionComparer)
+                .Materialize();
             var commandCount = activeCommands.Count();
             if (m_displayCommandsAmount != commandCount)
             {

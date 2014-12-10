@@ -76,6 +76,27 @@ namespace Assets.Scripts.LogicBase
         }
 
         #endregion constructor and initializer
+
+        #region object overrides
+
+        public override bool Equals(object obj)
+        {
+            var template = obj as SubsystemTemplate;
+            return template != null &&
+                this.Name.Equals(template.Name);
+        }
+
+        public override int GetHashCode()
+        {
+            return Hasher.GetHashCode(this.Name);
+        }
+
+        public override string ToString()
+        {
+            return "{0}_Template".FormatWith(Name);
+        }
+
+        #endregion
     }
 
     #endregion SubsystemTemplate

@@ -347,4 +347,23 @@ namespace Assets.Scripts.TacticalBattleScene
     }
 
     #endregion OperateSystemAction
+
+    #region ActionComparerByName
+
+    public class ActionComparerByName : IEqualityComparer<OperateSystemAction>
+    {
+        private readonly IEqualityComparer<Subsystem> m_systemComparer = new SubsysteByTemplateComparer();
+
+        public bool Equals(OperateSystemAction first, OperateSystemAction second)
+        {
+            return m_systemComparer.Equals(first.System, second.System);
+        }
+
+        public int GetHashCode(OperateSystemAction obj)
+        {
+            return m_systemComparer.GetHashCode(obj.System);
+        }
+    }
+
+    #endregion
 }

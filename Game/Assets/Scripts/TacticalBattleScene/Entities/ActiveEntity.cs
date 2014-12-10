@@ -7,8 +7,6 @@ using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
-    #region ActiveEntity
-
     /// <summary>
     /// Active entities have subsystems that they can operate, the ability to see & detect other entities,
     /// and several additional properties which are affected by those systems and abilities.
@@ -320,6 +318,4 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #endregion private and protected methods
     }
-
-    #endregion ActiveEntity
 }

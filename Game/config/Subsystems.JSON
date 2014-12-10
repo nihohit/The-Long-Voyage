@@ -5,7 +5,8 @@
 	"HeatGenerated": 0.0,
 	"MaxRange":2,
 	"EffectType":1,
-	"EffectStrength":1.5
+	"EffectStrength":1.5,
+	"ActionsPerTurn": 2,
 },
 {
 	"Name":"Laser",
@@ -13,7 +14,8 @@
 	"HeatGenerated": 2.0,
 	"MaxRange":4,
 	"EffectType":4,
-	"EffectStrength":2.0
+	"EffectStrength":2.0,
+	"ActionsPerTurn": 2,
 },
 {
 	"Name":"Missile",
@@ -24,7 +26,8 @@
 	"MaxRange":6,
 	"DeliveryMethod":2,
 	"EffectType":4,
-	"EffectStrength":1.0
+	"EffectStrength":1.0,
+	"ActionsPerTurn": 2,
 },
 {
 	"Name":"IncediaryGun",
@@ -33,7 +36,8 @@
 	"HeatGenerated": 0.5,
 	"MaxRange":4,
 	"EffectType":3,
-	"EffectStrength":1.5
+	"EffectStrength":1.5,
+	"ActionsPerTurn": 3,
 },
 {
 	"Name":"HeatWave",

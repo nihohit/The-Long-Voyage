@@ -7,8 +7,6 @@ using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
-    #region Subsystem
-
     public class Subsystem
     {
         #region fields
@@ -191,5 +189,16 @@ namespace Assets.Scripts.TacticalBattleScene
         #endregion private methods
     }
 
-    #endregion Subsystem
+    public class SubsysteByTemplateComparer : IEqualityComparer<Subsystem>
+    {
+        public bool Equals(Subsystem first, Subsystem second)
+        {
+            return first.Template.Equals(second.Template);
+        }
+
+        public int GetHashCode(Subsystem system)
+        {
+            return system.Template.GetHashCode();
+        }
+    }
 }
