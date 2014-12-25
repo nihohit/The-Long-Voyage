@@ -189,7 +189,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 GetSurvivingEntities(),
                 GetSalvagedEntities(),
                 GetSalvagedEquipment());
-            Application.LoadLevel("InventoryScene");
+            Application.LoadLevel("StrategicMapScene");
         }
 
         //returns all player controlled active entities, with all of their undestroyed equipment

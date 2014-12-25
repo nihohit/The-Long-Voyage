@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
 {
+    using Assets.Scripts.Base;
+
     /*
      * inventory screen specifications -
      * empty boxes across the screen, with a scrollbar at the side which shows the available (unequipped) mechs and systems.
@@ -25,6 +27,10 @@ namespace Assets.Scripts.InventoryScreen
             {
                 GlobalState.Init();
                 GlobalState.StrategicMap = new StrategicMapInformation { State = new PlayerState() };
+            }
+
+            if (GlobalState.StrategicMap.State.AvailableEntities.None())
+            {
                 var mechTemplate = EntityTemplateStorage.Instance.GetConfiguration("StandardMech");
                 for (int i = 0; i < 2; i++)
                 {
@@ -43,26 +49,17 @@ namespace Assets.Scripts.InventoryScreen
                         GlobalState.StrategicMap.State.AvailableSystems.Add(systems[i]);
                     }
                 }
-                var textureHandler = new InventoryTextureHandler();
-                EntitySelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities, textureHandler);
-                SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems, textureHandler);
             }
-            // if we're after a battle, add the battle salvage to our eqiupment
-            if (GlobalState.BattleSummary != null)
-            {
-                var battleResult = GlobalState.BattleSummary;
-                GlobalState.StrategicMap.State.AvailableEntities.AddRange(battleResult.SalvagedEntities);
-                GlobalState.StrategicMap.State.AvailableSystems.AddRange(battleResult.SalvagedSystems);
-                GlobalState.StrategicMap.State.EquippedEntities.Clear();
-                GlobalState.StrategicMap.State.EquippedEntities.AddRange(battleResult.SurvivingEntities);
-                EntitySelectionBoxScript.TryAcquireEntities();
-                EntitySelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities);
-                SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems);
-            }
+
+            var textureHandler = new InventoryTextureHandler();
+            EntitySelectionBoxScript.TryAcquireEntities();
+            EntitySelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities, textureHandler);
+            SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems, textureHandler);
+
             var buttonObject = ((GameObject)Instantiate(Resources.Load("CircularButton"), Vector3.zero, Quaternion.identity));
             buttonObject.transform.localScale = new Vector3(0.3f, 0.3f, 1);
             var button = buttonObject.GetComponent<SimpleButton>();
-            button.ClickableAction = () => Application.LoadLevel("TacticalBattleScene");
+            button.ClickableAction = () => Application.LoadLevel("StrategicMapScene");
         }
     }
 }

@@ -1,14 +1,143 @@
 ﻿using UnityEngine;
+using Assets.Scripts.InterSceneCommunication;
+using Assets.Scripts.Base;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine.UI;
 
-public class StrategicMapScript : MonoBehaviour
+namespace Assets.Scripts.StrategicGameScene
 {
-    // Use this for initialization
-    private void Start()
+    public class StrategicMapScript : MonoBehaviour
     {
-    }
+        #region private fields
 
-    // Update is called once per frame
-    private void Update()
-    {
+        private Location m_currentLocation;
+
+        private string m_chosenDecision = null;
+
+        private List<Button> m_choiceButtonList;
+
+        #endregion
+
+        #region properties
+
+        public GameObject TextPanel;
+        public Button InventoryButton;
+        public Button Choice1Button;
+        public Button Choice2Button;
+        public Button Choice3Button;
+        public Button Choice4Button;
+        public Button DoneButton;
+        public Text LocationText;
+
+        #endregion
+
+        // Use this for initialization
+        private void Start()
+        {
+            m_choiceButtonList = new List<Button> { Choice1Button, Choice2Button, Choice3Button, Choice4Button };
+
+            InitGlobalState();
+
+            m_currentLocation = GlobalState.StrategicMap.CurrentLocation;
+
+
+
+            // if we're after a battle, add the battle salvage to our eqiupment
+            if (GlobalState.BattleSummary != null)
+            {
+                var battleResult = GlobalState.BattleSummary;
+                GlobalState.BattleSummary = null;
+                GlobalState.StrategicMap.State.AvailableEntities.AddRange(battleResult.SalvagedEntities);
+                GlobalState.StrategicMap.State.AvailableSystems.AddRange(battleResult.SalvagedSystems);
+                GlobalState.StrategicMap.State.EquippedEntities.Clear();
+                GlobalState.StrategicMap.State.EquippedEntities.AddRange(battleResult.SurvivingEntities);
+            }
+
+            if (m_currentLocation.DoneChoosing)
+            {
+                RemoveTextualUI();
+            }
+            else
+            {
+                SetupTextualUI();
+            }
+        }
+
+        private void SetupTextualUI()
+        {
+            InventoryButton.gameObject.SetActive(false);
+            DoneButton.gameObject.SetActive(false);
+            LocationText.text = m_currentLocation.Template.Message;
+
+            Assert.EqualOrGreater(m_choiceButtonList.Count, m_currentLocation.Template.Choices.Count(),
+                "There are more location options then buttons.\n options: {0}".FormatWith(
+                string.Join("\n",
+                    m_currentLocation.Template.Choices.Select(choice => choice.Description).ToArray())));
+
+            for (int i = 0; i < m_currentLocation.Template.Choices.Count(); i++)
+            {
+                var button = m_choiceButtonList[i];
+                var choice = m_currentLocation.Choices.ElementAt(i);
+                SetButton(button, choice);
+            }
+
+            for (int i = m_currentLocation.Template.Choices.Count(); i < m_choiceButtonList.Count; i++)
+            {
+                m_choiceButtonList[i].gameObject.SetActive(false);
+            }
+
+            DoneButton.onClick.AddListener(this.RemoveTextualUI);
+        }
+
+        private void SetButton(Button button, PlayerActionChoice choice)
+        {
+            button.onClick.AddListener(() => Choose(choice.Choose()));
+            var buttonText = button.GetComponentInChildren<Text>();
+            buttonText.text = choice.Template.Description;
+        }
+
+        private void Choose(string choiceMessage)
+        {
+            m_chosenDecision = choiceMessage;
+            foreach (var button in m_choiceButtonList)
+            {
+                button.gameObject.SetActive(false);
+            }
+
+            DoneButton.gameObject.SetActive(true);
+            LocationText.text = choiceMessage;
+        }
+
+        private void RemoveTextualUI()
+        {
+            TextPanel.SetActive(false);
+            InventoryButton.gameObject.SetActive(true);
+            InventoryButton.onClick.AddListener(() => Application.LoadLevel("InventoryScene"));
+        }
+
+        private void InitGlobalState()
+        {
+            if (GlobalState.StrategicMap == null)
+            {
+                var playerState = new PlayerState();
+
+                var currentLocation = new Location(new LocationTemplate(
+                        "This is a check",
+                        new[]
+                            {
+                                new PlayerActionChoiceTemplate("First action", 1, ChoiceResults.None, "Nothing happend"),
+                                new PlayerActionChoiceTemplate("Lose mech", 1, ChoiceResults.LoseMech, "You lost a mech"),
+                                new PlayerActionChoiceTemplate("Get Mech", 1, ChoiceResults.GetMech, "You got a mech"),
+                            }),
+                    null);
+
+                GlobalState.StrategicMap = new StrategicMapInformation()
+                                               {
+                                                   CurrentLocation = currentLocation,
+                                                   State = playerState,
+                                               };
+            }
+        }
     }
 }

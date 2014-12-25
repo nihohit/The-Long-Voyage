@@ -14,24 +14,24 @@ namespace Assets.Scripts.Base
             AssertConditionMet(!first.Equals(second), "{0} equals {1}. {2}".FormatWith(first, second, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void EqualOrGreater(double num, double top, string additionalMessage = "", int stackTraceDepth = 1)
+        public static void EqualOrGreater(double num, double min, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(num >= top, "{0} is smaller than {1}. {2}".FormatWith(num, top, additionalMessage), ++stackTraceDepth);
+            AssertConditionMet(num >= min, "{0} is smaller than {1}. {2}".FormatWith(num, min, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void Greater(double num, double top, string additionalMessage = "", int stackTraceDepth = 1)
+        public static void Greater(double num, double min, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(num > top, "{0} is smaller than {1}. {2}".FormatWith(num, top, additionalMessage), ++stackTraceDepth);
+            AssertConditionMet(num > min, "{0} is smaller than {1}. {2}".FormatWith(num, min, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void EqualOrLesser(double num, double top, string additionalMessage = "", int stackTraceDepth = 1)
+        public static void EqualOrLesser(double num, double max, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(num <= top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage), ++stackTraceDepth);
+            AssertConditionMet(num <= max, "{0} is larger than {1}. {2}".FormatWith(num, max, additionalMessage), ++stackTraceDepth);
         }
 
-        public static void Lesser(double num, double top, string additionalMessage = "", int stackTraceDepth = 1)
+        public static void Lesser(double num, double max, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(num < top, "{0} is larger than {1}. {2}".FormatWith(num, top, additionalMessage), ++stackTraceDepth);
+            AssertConditionMet(num < max, "{0} is larger than {1}. {2}".FormatWith(num, max, additionalMessage), ++stackTraceDepth);
         }
 
         //to be put where a correct run shouldn't reach
