@@ -78,8 +78,8 @@ namespace Assets.Scripts.TacticalBattleScene
             var hexSize = greenHex.renderer.bounds.size;
 
             // reset the global state's tactical battle information
-            var state = GlobalState.TacticalBattle;
-            GlobalState.TacticalBattle = null;
+            var state = GlobalState.Instance.TacticalBattle;
+            GlobalState.Instance.TacticalBattle = null;
 
             var target = 2 * state.AmountOfHexes - 1;
 
@@ -197,11 +197,10 @@ namespace Assets.Scripts.TacticalBattleScene
         // initiate all relevant classes and create a new global state if there's no current one
         private void InitiateGlobalState()
         {
-            //TODO - replace with exception throwing when we remove the direct access to level generation
             HexReactor.Init();
-            GlobalState.Init();
 
-            if (GlobalState.TacticalBattle == null)
+            //TODO - replace with exception throwing when we remove the direct access to level generation
+            if (GlobalState.Instance.TacticalBattle == null)
             {
                 var state = new TacticalBattleInformation
                     {
@@ -209,11 +208,11 @@ namespace Assets.Scripts.TacticalBattleScene
                             "default map size",
                             FileAccessor.TerrainGeneration),
                         EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4)
-                            .Union(GlobalState.StrategicMap == null
+                            .Union(GlobalState.Instance.StrategicMap == null
                                        ? CreateMechs(Loyalty.Player, 4)
-                                       : CreateMechs(GlobalState.StrategicMap.State.EquippedEntities, Loyalty.Player))
+                                       : CreateMechs(GlobalState.Instance.StrategicMap.State.EquippedEntities, Loyalty.Player))
                     };
-                GlobalState.TacticalBattle = state;
+                GlobalState.Instance.TacticalBattle = state;
             }
         }
 

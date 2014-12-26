@@ -19,11 +19,12 @@ namespace Assets.Scripts.InterSceneCommunication
         // Entities with set equipment - those will be used in battle
         public List<EquippedEntity> EquippedEntities { get; private set; }
 
-        public PlayerState()
+        public PlayerState(string playerName)
         {
             AvailableSystems = new List<SubsystemTemplate>();
             AvailableEntities = new List<SpecificEntity>();
             EquippedEntities = new List<EquippedEntity>();
+            Name = playerName;
         }
     }
 }

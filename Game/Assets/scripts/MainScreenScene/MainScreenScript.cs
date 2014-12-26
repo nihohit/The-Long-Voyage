@@ -37,7 +37,7 @@ namespace Assets.Scripts.MainScreenScene
 
             if (GUI.Button(new Rect(m_sliderWidth - 40, m_buttonHeight, 80, 20), "StartGame"))
             {
-                GlobalState.TacticalBattle.AmountOfHexes = m_sliderValue;
+                GlobalState.Instance.TacticalBattle.AmountOfHexes = m_sliderValue;
                 Application.LoadLevel("TacticalBattleScene");
             }
         }

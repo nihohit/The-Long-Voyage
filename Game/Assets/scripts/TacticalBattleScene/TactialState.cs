@@ -185,7 +185,7 @@ namespace Assets.Scripts.TacticalBattleScene
         private static void EndBattle()
         {
             HexEffect.Clear();
-            GlobalState.BattleSummary = new EndBattleSummary(
+            GlobalState.Instance.BattleSummary = new EndBattleSummary(
                 GetSurvivingEntities(),
                 GetSalvagedEntities(),
                 GetSalvagedEquipment());

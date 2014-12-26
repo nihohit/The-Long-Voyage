@@ -39,19 +39,17 @@ namespace Assets.Scripts.StrategicGameScene
 
             InitGlobalState();
 
-            m_currentLocation = GlobalState.StrategicMap.CurrentLocation;
-
-
+            m_currentLocation = GlobalState.Instance.StrategicMap.CurrentLocation;
 
             // if we're after a battle, add the battle salvage to our eqiupment
-            if (GlobalState.BattleSummary != null)
+            if (GlobalState.Instance.BattleSummary != null)
             {
-                var battleResult = GlobalState.BattleSummary;
-                GlobalState.BattleSummary = null;
-                GlobalState.StrategicMap.State.AvailableEntities.AddRange(battleResult.SalvagedEntities);
-                GlobalState.StrategicMap.State.AvailableSystems.AddRange(battleResult.SalvagedSystems);
-                GlobalState.StrategicMap.State.EquippedEntities.Clear();
-                GlobalState.StrategicMap.State.EquippedEntities.AddRange(battleResult.SurvivingEntities);
+                var battleResult = GlobalState.Instance.BattleSummary;
+                GlobalState.Instance.BattleSummary = null;
+                GlobalState.Instance.StrategicMap.State.AvailableEntities.AddRange(battleResult.SalvagedEntities);
+                GlobalState.Instance.StrategicMap.State.AvailableSystems.AddRange(battleResult.SalvagedSystems);
+                GlobalState.Instance.StrategicMap.State.EquippedEntities.Clear();
+                GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(battleResult.SurvivingEntities);
             }
 
             if (m_currentLocation.DoneChoosing)
@@ -116,28 +114,28 @@ namespace Assets.Scripts.StrategicGameScene
             InventoryButton.onClick.AddListener(() => Application.LoadLevel("InventoryScene"));
         }
 
+        // TODO - remove when this scene won't be accessed directly.
         private void InitGlobalState()
         {
-            if (GlobalState.StrategicMap == null)
+            if (GlobalState.Instance.ActiveGame)
             {
-                var playerState = new PlayerState();
-
-                var currentLocation = new Location(new LocationTemplate(
-                        "This is a check",
-                        new[]
-                            {
-                                new PlayerActionChoiceTemplate("First action", 1, ChoiceResults.None, "Nothing happend"),
-                                new PlayerActionChoiceTemplate("Lose mech", 1, ChoiceResults.LoseMech, "You lost a mech"),
-                                new PlayerActionChoiceTemplate("Get Mech", 1, ChoiceResults.GetMech, "You got a mech"),
-                            }),
-                    null);
-
-                GlobalState.StrategicMap = new StrategicMapInformation()
-                                               {
-                                                   CurrentLocation = currentLocation,
-                                                   State = playerState,
-                                               };
+                return;
             }
+
+            var currentLocation = new Location(
+                new LocationTemplate(
+                    "This is a check",
+                    new[]
+                        {
+                            new PlayerActionChoiceTemplate("First action", 1, ChoiceResults.None, "Nothing happend"),
+                            new PlayerActionChoiceTemplate("Lose mech", 1, ChoiceResults.LoseMech, "You lost a mech"),
+                            new PlayerActionChoiceTemplate("Get Mech", 1, ChoiceResults.GetMech, "You got a mech"),
+                        }),
+                null);
+
+            GlobalState.Instance.StartNewGame("Default");
+            GlobalState.Instance.StrategicMap.CurrentLocation = currentLocation;
+            GlobalState.Instance.DefaultInitialization();
         }
     }
 }

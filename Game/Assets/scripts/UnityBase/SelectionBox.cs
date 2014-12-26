@@ -22,6 +22,8 @@ namespace Assets.Scripts.UnityBase
 
         protected static ITextureHandler<T> s_textureHandler;
 
+        protected static object s_sharedLock = new object();
+
         #endregion fields
 
         #region properties

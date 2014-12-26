@@ -1,12 +1,9 @@
-﻿using System.Linq;
-using Assets.Scripts.InterSceneCommunication;
-using Assets.Scripts.LogicBase;
+﻿using Assets.Scripts.InterSceneCommunication;
 using Assets.Scripts.UnityBase;
 using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
 {
-    using Assets.Scripts.Base;
 
     /*
      * inventory screen specifications -
@@ -23,43 +20,20 @@ namespace Assets.Scripts.InventoryScreen
         // Use this for initialization
         private void Start()
         {
-            if (GlobalState.StrategicMap == null)
-            {
-                GlobalState.Init();
-                GlobalState.StrategicMap = new StrategicMapInformation { State = new PlayerState() };
-            }
+            InitializeSelectionBoxes();
 
-            if (GlobalState.StrategicMap.State.AvailableEntities.None())
-            {
-                var mechTemplate = EntityTemplateStorage.Instance.GetConfiguration("StandardMech");
-                for (int i = 0; i < 2; i++)
-                {
-                    GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
-                }
-                mechTemplate = EntityTemplateStorage.Instance.GetConfiguration("ScoutMech");
-                for (int i = 0; i < 2; i++)
-                {
-                    GlobalState.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
-                }
-                var systems = SubsystemTemplateStorage.Instance.GetAllConfigurations().ToArray();
-                for (int i = 0; i < 6; i++)
-                {
-                    for (int j = 0; j < 3; j++)
-                    {
-                        GlobalState.StrategicMap.State.AvailableSystems.Add(systems[i]);
-                    }
-                }
-            }
-
-            var textureHandler = new InventoryTextureHandler();
-            EntitySelectionBoxScript.TryAcquireEntities();
-            EntitySelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableEntities, textureHandler);
-            SystemSelectionBoxScript.Init(GlobalState.StrategicMap.State.AvailableSystems, textureHandler);
-
-            var buttonObject = ((GameObject)Instantiate(Resources.Load("CircularButton"), Vector3.zero, Quaternion.identity));
+            var buttonObject = (GameObject)Instantiate(Resources.Load("CircularButton"), Vector3.zero, Quaternion.identity);
             buttonObject.transform.localScale = new Vector3(0.3f, 0.3f, 1);
             var button = buttonObject.GetComponent<SimpleButton>();
             button.ClickableAction = () => Application.LoadLevel("StrategicMapScene");
+        }
+
+        private void InitializeSelectionBoxes()
+        {
+            var textureHandler = GlobalState.Instance.StrategicMap.InventoryTextureHandler;
+            EntitySelectionBoxScript.TryAcquireEntities();
+            EntitySelectionBoxScript.Init(GlobalState.Instance.StrategicMap.State.AvailableEntities, textureHandler);
+            SystemSelectionBoxScript.Init(GlobalState.Instance.StrategicMap.State.AvailableSystems, textureHandler);
         }
     }
 }

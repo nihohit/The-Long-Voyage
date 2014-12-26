@@ -59,16 +59,16 @@ namespace Assets.Scripts.InventoryScreen
         private void TryGetEntity()
         {
             //locking a shared object
-            lock (s_textureHandler)
+            lock (s_sharedLock)
             {
-                var firstEntity = GlobalState.StrategicMap.State.EquippedEntities.FirstOrDefault();
+                var firstEntity = GlobalState.Instance.StrategicMap.State.EquippedEntities.FirstOrDefault();
                 if (firstEntity == null)
                 {
                     s_equippedEntitiesWaiting = false;
                     return;
                 }
 
-                GlobalState.StrategicMap.State.EquippedEntities.Remove(firstEntity);
+                GlobalState.Instance.StrategicMap.State.EquippedEntities.Remove(firstEntity);
                 SelectedItem = firstEntity.InternalEntity;
                 var systemsArray = firstEntity.Subsystems.ToArray();
                 var selectionBoxesArray = m_systems.ToArray();
@@ -83,9 +83,9 @@ namespace Assets.Scripts.InventoryScreen
         {
             if (SelectedItem != null)
             {
-                lock (GlobalState.StrategicMap)
+                lock (GlobalState.Instance.StrategicMap)
                 {
-                    GlobalState.StrategicMap.State.EquippedEntities.Add(
+                    GlobalState.Instance.StrategicMap.State.EquippedEntities.Add(
                         new EquippedEntity(SelectedItem, m_systems.Select(systemBox => systemBox.SelectedItem)));
                 }
             }
