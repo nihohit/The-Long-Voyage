@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Base;
 using Assets.Scripts.InterSceneCommunication;
 using Assets.Scripts.LogicBase;
+using Assets.Scripts.UnityBase;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -161,7 +162,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             var reactor = CreateHex(nextPosition, hexCoordinates, woodHex);
             reactor.Conditions = TraversalConditions.Broken;
-            var terrainEntity = ((GameObject)Instantiate(Resources.Load("TerrainEntity"), transform.position, Quaternion.identity)).GetComponent<TerrainEntity>();
+            var terrainEntity = UnityHelper.Instantiate<TerrainEntity>(transform.position);
             reactor.Content = terrainEntity;
             terrainEntity.Init(m_terrainEntities.GetConfiguration(configurationName));
             return reactor;
@@ -169,6 +170,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private HexReactor CreateHex(Vector3 nextPosition, Vector2 hexCoordinates, GameObject prefab)
         {
+            //TODO - remove usage of prefab and use UnityHelper instead
             var hex = (GameObject)Instantiate(prefab, nextPosition, Quaternion.identity);
             var reactor = hex.GetComponent<HexReactor>();
             reactor.Init(hexCoordinates);
@@ -234,7 +236,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             return equippedEntities.Select(equippedEntity =>
                 {
-                    var entity = ((GameObject)Instantiate(Resources.Load("MovingEntity"), transform.position, Quaternion.identity)).GetComponent<ActiveEntity>();
+                    var entity = (ActiveEntity)UnityHelper.Instantiate<MovingEntity>(transform.position);
                     entity.Init(equippedEntity.InternalEntity,
                        loyalty,
                        equippedEntity.Subsystems);

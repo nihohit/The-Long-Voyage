@@ -20,7 +20,7 @@ namespace Assets.Scripts.InventoryScreen
         public override void Awake()
         {
             base.Awake();
-            m_markedTexture = ((GameObject)Instantiate(Resources.Load("Marker"), Vector3.zero, Quaternion.identity)).GetComponent<MarkerScript>();
+            m_markedTexture = UnityHelper.Instantiate<MarkerScript>();
             m_markedTexture.Unmark();
         }
 

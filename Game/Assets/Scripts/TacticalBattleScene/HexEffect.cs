@@ -64,7 +64,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public static void Create(HexEffectTemplate hexEffectTemplate, HexReactor hex)
         {
-            var newEffect = ((GameObject)Instantiate(Resources.Load("HexEffect"), hex.transform.position, Quaternion.identity)).GetComponent<HexEffect>();
+            var newEffect = UnityHelper.Instantiate<HexEffect>(hex.transform.position);
             newEffect.Init(hexEffectTemplate, hex);
             s_effects.Add(newEffect);
             TacticalState.TextureManager.UpdateHexEffectTexture(hexEffectTemplate, newEffect.GetComponent<SpriteRenderer>());

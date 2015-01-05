@@ -50,10 +50,10 @@ namespace Assets.Scripts.TacticalBattleScene
             Name = buttonName;
 
             // create a new button for the action, set it to appear when the mouse is over the hex and to trigger the action when clicked
-            var command = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("CircularButton"), position, Quaternion.identity));
-            command.name = name;
-            TacticalState.TextureManager.UpdateButtonTexture(buttonName, command.GetComponent<SpriteRenderer>());
-            m_button = command.GetComponent<SimpleButton>();
+            var button = UnityHelper.Instantiate<SimpleButton>(position, "CircularButton");
+            m_button = button;
+            button.gameObject.name = name;
+            TacticalState.TextureManager.UpdateButtonTexture(buttonName, button.GetComponent<SpriteRenderer>());
             m_button.ClickableAction = Commit;
             m_button.OnMouseOverAction = () => targetedHex.OnMouseOverAction();
             m_button.OnMouseExitAction = () => targetedHex.OnMouseExitAction();
@@ -306,7 +306,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             var from = ActingEntity.transform.position;
             var to = TargetedHex.transform.position;
-            var shot = ((GameObject)GameObject.Instantiate(Resources.Load("Shot"), from, Quaternion.identity)).GetComponent<Shot>(); ;
+            var shot = UnityHelper.Instantiate<Shot>(from);
             m_button.Renderer.sortingOrder = 1;
             shot.Init(to, from, Name,
                 () =>

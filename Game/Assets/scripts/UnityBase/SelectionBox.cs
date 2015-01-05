@@ -166,12 +166,12 @@ namespace Assets.Scripts.UnityBase
             }
         }
 
-        // initializes a button, place it in its location, and return the updated location for the next button
+        // initializes a button, place it in its location, and return the updated LocationScript for the next button
         private Vector3 CreateButton(T item, Vector3 currentPosition, out IUnityButton button, bool buttonsGoingDown)
         {
-            var buttonObject = ((GameObject)Instantiate(Resources.Load("CircularButton"), currentPosition, Quaternion.identity));
-            button = buttonObject.GetComponent<SimpleButton>();
-            button.Scale = new Vector3(0.1f, 0.1f, 0.1f);
+            var buttonObject = UnityHelper.Instantiate<SimpleButton>(currentPosition, "CircularButton");
+            buttonObject.Scale = new Vector3(0.1f, 0.1f, 0.1f);
+            button = buttonObject;
             TextureHandler.ReplaceTexture(button.Renderer, GetTexture(item), "selection button");
             button.ClickableAction = () => SelectedItem = item;
             if (buttonsGoingDown)

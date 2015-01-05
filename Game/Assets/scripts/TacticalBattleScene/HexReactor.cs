@@ -653,9 +653,9 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             if (marker == null)
             {
-                var markerObject = ((GameObject)Instantiate(Resources.Load(markerName), Vector3.zero, Quaternion.identity));
-                marker = markerObject.GetComponent<MarkerScript>();
-                markerObject.gameObject.name = "{0} on {1}".FormatWith(markerName, this);
+                var markerTemp = UnityHelper.Instantiate<MarkerScript>(markerName);
+                markerTemp.gameObject.name = "{0} on {1}".FormatWith(markerName, this);
+                marker = markerTemp;
             }
             marker.Mark(transform.position);
             return marker;

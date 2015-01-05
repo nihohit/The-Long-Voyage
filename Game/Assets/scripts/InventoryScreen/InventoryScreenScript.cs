@@ -22,9 +22,8 @@ namespace Assets.Scripts.InventoryScreen
         {
             InitializeSelectionBoxes();
 
-            var buttonObject = (GameObject)Instantiate(Resources.Load("CircularButton"), Vector3.zero, Quaternion.identity);
-            buttonObject.transform.localScale = new Vector3(0.3f, 0.3f, 1);
-            var button = buttonObject.GetComponent<SimpleButton>();
+            var button = UnityHelper.Instantiate<SimpleButton>("CircularButton");
+            button.gameObject.transform.localScale = new Vector3(0.3f, 0.3f, 1);
             button.ClickableAction = () => Application.LoadLevel("StrategicMapScene");
         }
 

@@ -43,7 +43,7 @@ namespace Assets.Scripts.InventoryScreen
         {
             base.Awake();
             ClickableAction = CheckIfClickIsOnUI(ClickableAction);
-            m_markedTexture = ((GameObject)Instantiate(Resources.Load("Marker"), Vector3.zero, Quaternion.identity)).GetComponent<MarkerScript>();
+            m_markedTexture = UnityHelper.Instantiate<MarkerScript>();
             m_markedTexture.Unmark();
         }
 
@@ -149,8 +149,8 @@ namespace Assets.Scripts.InventoryScreen
                         position = new Vector3(center.x - scaledSize.x / 3.5f, center.y - scaledSize.y / 4, 0);
                         break;
                 }
-                var systemBox = ((GameObject)MonoBehaviour.Instantiate(Resources.Load("SystemSelectionBox"), position, Quaternion.identity));
-                yield return systemBox.GetComponent<SystemSelectionBoxScript>();
+
+                yield return UnityHelper.Instantiate<SystemSelectionBoxScript>(position);
             }
         }
 
