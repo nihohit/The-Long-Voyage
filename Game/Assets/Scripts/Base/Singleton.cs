@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FacebookApplication
+namespace Assets.Scripts.Base
 {
     using System.Reflection;
 

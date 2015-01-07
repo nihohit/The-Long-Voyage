@@ -9,7 +9,7 @@ namespace Assets.Scripts.LogicBase
     /// Immutable templates for usable systems, and a static factory intializer.
     /// </summary>
     //TODO - how many operations per round does a system have? do we allow unlimited usage?
-    public class SubsystemTemplate : IIdentifiable
+    public class SubsystemTemplate : IIdentifiable<string>
     {
         #region properties
 
@@ -103,9 +103,9 @@ namespace Assets.Scripts.LogicBase
 
     #region SubsystemTemplateStorage
 
-    public class SubsystemTemplateStorage : ConfigurationStorage<SubsystemTemplate, SubsystemTemplateStorage>
+    public sealed class SubsystemTemplateStorage : ConfigurationStorage<SubsystemTemplate, SubsystemTemplateStorage>
     {
-        public SubsystemTemplateStorage()
+        private SubsystemTemplateStorage()
             : base("Subsystems")
         { }
 

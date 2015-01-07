@@ -25,6 +25,12 @@ namespace Assets.Scripts.Base
             }
         }
 
+        public T ConvertToObject(Dictionary<string, object> item)
+        {
+            m_currentDictionary = item;
+            return ConvertCurrentItemToObject();
+        }
+
         #endregion public methods
 
         #region private methods
@@ -71,12 +77,6 @@ namespace Assets.Scripts.Base
             return result;
         }
 
-        private T ConvertToObject(Dictionary<string, object> item)
-        {
-            m_currentDictionary = item;
-            return ConvertCurrentItemToObject();
-        }
-
         protected abstract T ConvertCurrentItemToObject();
 
         #endregion private methods
@@ -88,14 +88,13 @@ namespace Assets.Scripts.Base
 
     // A storage class for configurations of type Tconfiguration
     public abstract class ConfigurationStorage<TConfiguration, TStorageType>
-        where TConfiguration : IIdentifiable
-        where TStorageType : ConfigurationStorage<TConfiguration, TStorageType>, new()
+        where TConfiguration : IIdentifiable<string>
+        where TStorageType : ConfigurationStorage<TConfiguration, TStorageType>
     {
         #region fields
 
         private readonly IDictionary<string, TConfiguration> m_configurationsDictionary;
         private readonly string m_fileName;
-        private static readonly TStorageType s_instance = new TStorageType();
 
         #endregion fields
 
@@ -103,7 +102,7 @@ namespace Assets.Scripts.Base
         {
             get
             {
-                return s_instance;
+                return Singleton<TStorageType>.Instance;
             }
         }
 

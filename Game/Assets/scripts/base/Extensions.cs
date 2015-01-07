@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace Assets.Scripts.Base
 {
-    public interface IIdentifiable
+    public interface IIdentifiable<T>
     {
-        string Name { get; }
+        T Name { get; }
     }
 
     /// <summary>

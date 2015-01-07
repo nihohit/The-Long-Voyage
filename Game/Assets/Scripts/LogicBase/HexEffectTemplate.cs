@@ -4,7 +4,7 @@ namespace Assets.Scripts.LogicBase
 {
     #region HexEffectTemplate
 
-    public class HexEffectTemplate : IIdentifiable
+    public class HexEffectTemplate : IIdentifiable<string>
     {
         #region properties
 
@@ -35,9 +35,9 @@ namespace Assets.Scripts.LogicBase
 
     #region HexEffectTemplateStorage
 
-    public class HexEffectTemplateStorage : ConfigurationStorage<HexEffectTemplate, HexEffectTemplateStorage>
+    public sealed class HexEffectTemplateStorage : ConfigurationStorage<HexEffectTemplate, HexEffectTemplateStorage>
     {
-        public HexEffectTemplateStorage()
+        private HexEffectTemplateStorage()
             : base("HexEffects")
         { }
 

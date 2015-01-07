@@ -4,8 +4,7 @@
     using System.Linq;
 
     using Assets.Scripts.LogicBase;
-
-    using FacebookApplication;
+    using Assets.Scripts.Base;
 
     /// <summary>
     /// A static class, accessible from anywhere in the code, containing all cross-scene information.

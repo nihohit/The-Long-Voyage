@@ -15,8 +15,6 @@ namespace Assets.Scripts.TacticalBattleScene
     {
         #region private members
 
-        private readonly TerrainEntityTemplateStorage m_terrainEntities = new TerrainEntityTemplateStorage();
-
         //HACK - to be deleted.
         private readonly List<HexReactor> m_emptyHexes = new List<HexReactor>();
 
@@ -164,7 +162,7 @@ namespace Assets.Scripts.TacticalBattleScene
             reactor.Conditions = TraversalConditions.Broken;
             var terrainEntity = UnityHelper.Instantiate<TerrainEntity>(transform.position);
             reactor.Content = terrainEntity;
-            terrainEntity.Init(m_terrainEntities.GetConfiguration(configurationName));
+            terrainEntity.Init(TerrainEntityTemplateStorage.Instance.GetConfiguration(configurationName));
             return reactor;
         }
 

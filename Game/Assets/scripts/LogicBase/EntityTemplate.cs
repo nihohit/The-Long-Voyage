@@ -10,7 +10,7 @@ namespace Assets.Scripts.LogicBase
     /// </summary>
     //TODO - we can create different levels (regular/active/moving) of templates for the different entities. Not sure it's needed now
     //TODO - if we'll want entities with fixed systems, we'll need to add their templates here and merge them in the entity constructor
-    public class EntityTemplate : IIdentifiable
+    public class EntityTemplate : IIdentifiable<string>
     {
         #region properties
 
@@ -110,9 +110,9 @@ namespace Assets.Scripts.LogicBase
 
     #region EntityTemplateStorage
 
-    public class EntityTemplateStorage : ConfigurationStorage<EntityTemplate, EntityTemplateStorage>
+    public sealed class EntityTemplateStorage : ConfigurationStorage<EntityTemplate, EntityTemplateStorage>
     {
-        public EntityTemplateStorage()
+        private EntityTemplateStorage()
             : base("MovingEntities")
         { }
 
@@ -153,9 +153,9 @@ namespace Assets.Scripts.LogicBase
 
     #region TerrainEntityTemplateStorage
 
-    public class TerrainEntityTemplateStorage : ConfigurationStorage<EntityTemplate, TerrainEntityTemplateStorage>
+    public sealed class TerrainEntityTemplateStorage : ConfigurationStorage<EntityTemplate, TerrainEntityTemplateStorage>
     {
-        public TerrainEntityTemplateStorage()
+        private TerrainEntityTemplateStorage()
             : base("TerrainEntities")
         { }
 
