@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.InterSceneCommunication;
-using Assets.Scripts.Base;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Scripts.StrategicGameScene
@@ -11,17 +11,19 @@ namespace Assets.Scripts.StrategicGameScene
     {
         #region private fields
 
-        private Location m_currentLocation;
-
-        private string m_chosenDecision = null;
+        private LocationScript m_currentLocation;
 
         private List<Button> m_choiceButtonList;
 
-        #endregion
+        private IEnumerable<GameObject> m_nextLocations;
+
+        #endregion private fields
 
         #region properties
 
+        // ReSharper disable InconsistentNaming
         public GameObject TextPanel;
+
         public Button InventoryButton;
         public Button Choice1Button;
         public Button Choice2Button;
@@ -29,8 +31,9 @@ namespace Assets.Scripts.StrategicGameScene
         public Button Choice4Button;
         public Button DoneButton;
         public Text LocationText;
+        // ReSharper restore InconsistentNaming
 
-        #endregion
+        #endregion properties
 
         // Use this for initialization
         private void Start()
@@ -52,26 +55,34 @@ namespace Assets.Scripts.StrategicGameScene
                 GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(battleResult.SurvivingEntities);
             }
 
-            if (m_currentLocation.DoneChoosing)
+            if (m_currentLocation.DoneDisplayingContent)
             {
                 RemoveTextualUI();
             }
             else
             {
-                SetupTextualUI();
+                this.SetupTextualGui();
             }
         }
 
-        private void SetupTextualUI()
+        private void SetupTextualGui()
         {
             InventoryButton.gameObject.SetActive(false);
+
+            if (m_currentLocation.Template.Choices == null)
+            {
+                RemoveChoices();
+                return;
+            }
+
             DoneButton.gameObject.SetActive(false);
             LocationText.text = m_currentLocation.Template.Message;
 
-            Assert.EqualOrGreater(m_choiceButtonList.Count, m_currentLocation.Template.Choices.Count(),
-                "There are more location options then buttons.\n options: {0}".FormatWith(
-                string.Join("\n",
-                    m_currentLocation.Template.Choices.Select(choice => choice.Description).ToArray())));
+            Assert.EqualOrGreater(
+                m_choiceButtonList.Count,
+                m_currentLocation.Template.Choices.Count(),
+                "There are more LocationScript options then buttons.\n options: {0}".FormatWith(
+                    string.Join("\n", m_currentLocation.Template.Choices.Select(choice => choice.Description).ToArray())));
 
             for (int i = 0; i < m_currentLocation.Template.Choices.Count(); i++)
             {
@@ -84,8 +95,6 @@ namespace Assets.Scripts.StrategicGameScene
             {
                 m_choiceButtonList[i].gameObject.SetActive(false);
             }
-
-            DoneButton.onClick.AddListener(this.RemoveTextualUI);
         }
 
         private void SetButton(Button button, PlayerActionChoice choice)
@@ -97,21 +106,37 @@ namespace Assets.Scripts.StrategicGameScene
 
         private void Choose(string choiceMessage)
         {
-            m_chosenDecision = choiceMessage;
+            LocationText.text = choiceMessage;
+            RemoveChoices();
+        }
+
+        private void RemoveChoices()
+        {
             foreach (var button in m_choiceButtonList)
             {
                 button.gameObject.SetActive(false);
             }
 
             DoneButton.gameObject.SetActive(true);
-            LocationText.text = choiceMessage;
+            DoneButton.onClick.AddListener(this.RemoveTextualUI);
         }
 
         private void RemoveTextualUI()
         {
+            m_currentLocation.DoneDisplayingContent = true;
             TextPanel.SetActive(false);
             InventoryButton.gameObject.SetActive(true);
             InventoryButton.onClick.AddListener(() => Application.LoadLevel("InventoryScene"));
+            //AddNextLocations();
+        }
+
+        private void AddNextLocations()
+        {
+            foreach (var nextLocation in m_currentLocation.NextLocations)
+            {
+                nextLocation.Seen();
+                //nextLocation.
+            }
         }
 
         // TODO - remove when this scene won't be accessed directly.
@@ -122,14 +147,21 @@ namespace Assets.Scripts.StrategicGameScene
                 return;
             }
 
-            var currentLocation = new Location(
+            CreateLocations();
+        }
+
+        private void CreateLocations()
+        {
+            var currentLocation = LocationScript.CreateLocationScript(
+                Vector2.zero,
                 new LocationTemplate(
+                    "Check",
                     "This is a check",
-                    new[]
-                        {
-                            new PlayerActionChoiceTemplate("First action", 1, ChoiceResults.None, "Nothing happend"),
-                            new PlayerActionChoiceTemplate("Lose mech", 1, ChoiceResults.LoseMech, "You lost a mech"),
-                            new PlayerActionChoiceTemplate("Get Mech", 1, ChoiceResults.GetMech, "You got a mech"),
+                    new[]{
+                            new ChoiceTemplate("First action", ChoiceResults.None, "Nothing happend"),
+                            new ChoiceTemplate("Lose mech", ChoiceResults.LoseMech, "You lost a mech"),
+                            new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
+                            new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
                         }),
                 null);
 
