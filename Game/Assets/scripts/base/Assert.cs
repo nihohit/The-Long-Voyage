@@ -34,7 +34,7 @@ namespace Assets.Scripts.Base
             AssertConditionMet(num < max, "{0} is larger than {1}. {2}".FormatWith(num, max, additionalMessage), ++stackTraceDepth);
         }
 
-        //to be put where a correct run shouldn't reach
+        // to be put where a correct run shouldn't reach
         public static void UnreachableCode(string message = "", int stackTraceDepth = 1)
         {
             AssertConditionMet(false, "unreachable code: {0}".FormatWith(message), ++stackTraceDepth);

@@ -66,7 +66,7 @@ namespace Assets.Scripts.StrategicGameScene
 
     public sealed class LocationTemplateConfigurationStorage : ConfigurationStorage<LocationTemplate, LocationTemplateConfigurationStorage>
     {
-        public LocationTemplateConfigurationStorage()
+        private LocationTemplateConfigurationStorage()
             : base("Locations")
         { }
 
@@ -84,18 +84,31 @@ namespace Assets.Scripts.StrategicGameScene
                 return new LocationTemplate(
                     TryGetValueAndFail<string>("Name"),
                     TryGetValueAndFail<string>("Description"),
-                    GetChoices(TryGetValueOrSetDefaultValue<IEnumerable<Dictionary<string, object>>>("Choices", null))
+                    GetChoices(TryGetValueOrSetDefaultValue<IEnumerable<object>>("Choices", null)).Materialize()
                     );
             }
 
-            private IEnumerable<ChoiceTemplate> GetChoices(IEnumerable<Dictionary<string, object>> unParsedChoices)
+            private IEnumerable<ChoiceTemplate> GetChoices(object unParsedChoices)
             {
                 if (unParsedChoices == null)
                 {
                     return null;
                 }
 
-                return unParsedChoices.Select(choice => m_choiceParser.ConvertToObject(choice));
+                var choices = unParsedChoices as IEnumerable<object>;
+
+                Assert.NotNull(choices, "'Choices' part in location isn't an array.");
+
+                return this.ParseChoices(choices);
+            }
+
+            private IEnumerable<ChoiceTemplate> ParseChoices(IEnumerable<object> choices)
+            {
+                foreach (var choiceAsDictionary in choices.Select(choice => choice as Dictionary<string, object>))
+                {
+                    Assert.NotNull(choiceAsDictionary, "A certain choice isn't a dictionary.");
+                    yield return this.m_choiceParser.ConvertToObject(choiceAsDictionary);
+                }
             }
 
             private class ChoiceTemplateJSONParser : JSONParser<ChoiceTemplate>
@@ -103,9 +116,9 @@ namespace Assets.Scripts.StrategicGameScene
                 protected override ChoiceTemplate ConvertCurrentItemToObject()
                 {
                     return new ChoiceTemplate(
-                        TryGetValueAndFail<string>("ResultsDescription"),
-                        TryGetValueAndFail<ChoiceResults>("Result"),
-                        TryGetValueAndFail<string>("Description")
+                        TryGetValueAndFail<string>("Description"),
+                        TryGetValueOrSetDefaultValue<ChoiceResults>("Result", ChoiceResults.None),
+                        TryGetValueAndFail<string>("ResultsDescription")
                         );
                 }
             }

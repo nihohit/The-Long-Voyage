@@ -192,13 +192,16 @@ namespace Assets.Scripts.TacticalBattleScene
             base.Destroy();
             m_actions.ForEach(action => action.Destroy());
             m_actions = null;
-            m_detectedHexes.Clear();
+            if (m_detectedHexes != null)
+            {
+                m_detectedHexes.Clear();
+            }
             m_systems = null;
         }
 
         private IEnumerable<HexReactor> FindSeenHexes()
         {
-            //TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
+            // TODO - we might be able to make this somewhat more efficient by combining the sight & radar raycasts, but we should first make sure that it is needed.
             return Hex.RaycastAndResolveHexes(
                 0,
                 Template.SightRange,
@@ -211,7 +214,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         private IEnumerable<HexReactor> FindRadarHexes()
         {
-            var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.enabled);
+            var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.enabled).ToList();
             inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
             var results = Hex.RaycastAndResolveEntities(0, Template.RadarRange, (hex) => hex.Content != null, true);
             inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);

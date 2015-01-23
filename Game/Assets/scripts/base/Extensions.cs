@@ -161,7 +161,7 @@ namespace Assets.Scripts.Base
 
                 if (values != null)
                 {
-                    hash = values.Aggregate(hash, (current, currentObject) => current*c_multiplier + (currentObject != null ? currentObject.GetHashCode() : 0));
+                    hash = values.Aggregate(hash, (current, currentObject) => current * c_multiplier + (currentObject != null ? currentObject.GetHashCode() : 0));
                 }
 
                 return hash;

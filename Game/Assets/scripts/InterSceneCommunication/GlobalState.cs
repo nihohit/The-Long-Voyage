@@ -1,10 +1,8 @@
 ﻿namespace Assets.Scripts.InterSceneCommunication
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using Assets.Scripts.LogicBase;
     using Assets.Scripts.Base;
+    using Assets.Scripts.LogicBase;
+    using System.Linq;
 
     /// <summary>
     /// A static class, accessible from anywhere in the code, containing all cross-scene information.

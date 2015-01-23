@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.Base;
-using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
 using System;
 using System.Collections.Generic;
@@ -365,5 +364,5 @@ namespace Assets.Scripts.TacticalBattleScene
         }
     }
 
-    #endregion
+    #endregion ActionComparerByName
 }

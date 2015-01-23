@@ -8,7 +8,13 @@ namespace Assets.Scripts.StrategicGameScene
 {
     public class LocationScript : MonoBehaviour
     {
+        #region fields
+
         private bool m_seen;
+
+        #endregion fields
+
+        #region properties
 
         public LocationTemplate Template { get; private set; }
 
@@ -18,8 +24,9 @@ namespace Assets.Scripts.StrategicGameScene
 
         public bool DoneDisplayingContent { get; set; }
 
-        public void Display()
-        { }
+        #endregion properties
+
+        #region public methods
 
         public static LocationScript CreateLocationScript(
             Vector2 coordinates,
@@ -30,6 +37,23 @@ namespace Assets.Scripts.StrategicGameScene
             newLocation.Init(template, nextLocations);
             return newLocation;
         }
+
+        public void Display()
+        { }
+
+        public bool WasSeen()
+        {
+            return m_seen;
+        }
+
+        public void Seen()
+        {
+            m_seen = true;
+        }
+
+        #endregion public methods
+
+        #region private methods
 
         private void Init(LocationTemplate template, IEnumerable<LocationScript> nextLocations)
         {
@@ -44,14 +68,6 @@ namespace Assets.Scripts.StrategicGameScene
             Choices = Template.Choices.Select(choice => new PlayerActionChoice(choice)).Materialize();
         }
 
-        public bool WasSeen()
-        {
-            return m_seen;
-        }
-
-        public void Seen()
-        {
-            m_seen = true;
-        }
+        #endregion private methods
     }
 }

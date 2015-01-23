@@ -1,0 +1,22 @@
+[
+    {
+        "Name": "BasicEncounter",
+        "Description": "This is just a basic encounter",
+        "Choices": [
+            {
+                "Description": "Pretend to care",
+                "ResultsDescription": "You pretend to care. You succeed and are rewarded!",
+                "Result": 8
+            },
+            {
+                "Description": "Pretend not to care",
+                "ResultsDescription": "You pretend not to care. You fail!"
+            },
+            {
+                "Description": "Attack the darkness!",
+                "ResultsDescription": "ATTACK!",
+                "Result": 1
+            },
+        ]
+    }
+]

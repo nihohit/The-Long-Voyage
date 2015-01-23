@@ -78,11 +78,14 @@ namespace Assets.Scripts.StrategicGameScene
             DoneButton.gameObject.SetActive(false);
             LocationText.text = m_currentLocation.Template.Message;
 
+            var options = string.Join(
+                "\n",
+                m_currentLocation.Template.Choices.Select(choice => choice.Description).ToArray());
+
             Assert.EqualOrGreater(
                 m_choiceButtonList.Count,
                 m_currentLocation.Template.Choices.Count(),
-                "There are more LocationScript options then buttons.\n options: {0}".FormatWith(
-                    string.Join("\n", m_currentLocation.Template.Choices.Select(choice => choice.Description).ToArray())));
+                "There are more LocationScript options then buttons.\n options: {0}".FormatWith(options));
 
             for (int i = 0; i < m_currentLocation.Template.Choices.Count(); i++)
             {
@@ -154,6 +157,10 @@ namespace Assets.Scripts.StrategicGameScene
         {
             var currentLocation = LocationScript.CreateLocationScript(
                 Vector2.zero,
+                LocationTemplateConfigurationStorage.Instance.GetConfiguration("BasicEncounter"),
+                null);
+                /*LocationScript.CreateLocationScript(
+                Vector2.zero,
                 new LocationTemplate(
                     "Check",
                     "This is a check",
@@ -163,7 +170,7 @@ namespace Assets.Scripts.StrategicGameScene
                             new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
                             new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
                         }),
-                null);
+                null);*/
 
             GlobalState.Instance.StartNewGame("Default");
             GlobalState.Instance.StrategicMap.CurrentLocation = currentLocation;
