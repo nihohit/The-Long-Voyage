@@ -16,11 +16,11 @@ namespace Assets.Scripts.StrategicGameScene
 
         #region properties
 
-        public LocationTemplate Template { get; private set; }
+        public EncounterTemplate Encounter { get; private set; }
 
         public IEnumerable<LocationScript> NextLocations { get; private set; }
 
-        public IEnumerable<PlayerActionChoice> Choices { get; private set; }
+        public IEnumerable<ChoiceTemplate> Choices { get; private set; }
 
         public bool DoneDisplayingContent { get; set; }
 
@@ -30,7 +30,7 @@ namespace Assets.Scripts.StrategicGameScene
 
         public static LocationScript CreateLocationScript(
             Vector2 coordinates,
-            LocationTemplate template,
+            EncounterTemplate template,
             IEnumerable<LocationScript> nextLocations)
         {
             LocationScript newLocation = UnityHelper.Instantiate<LocationScript>(coordinates);
@@ -55,17 +55,17 @@ namespace Assets.Scripts.StrategicGameScene
 
         #region private methods
 
-        private void Init(LocationTemplate template, IEnumerable<LocationScript> nextLocations)
+        private void Init(EncounterTemplate template, IEnumerable<LocationScript> nextLocations)
         {
-            Template = template;
+            Encounter = template;
             NextLocations = nextLocations;
 
-            if (Template.Choices == null)
+            if (Encounter.Choices == null)
             {
                 return;
             }
 
-            Choices = Template.Choices.Select(choice => new PlayerActionChoice(choice)).Materialize();
+            Choices = Encounter.Choices;
         }
 
         #endregion private methods

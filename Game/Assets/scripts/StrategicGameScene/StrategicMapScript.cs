@@ -61,56 +61,57 @@ namespace Assets.Scripts.StrategicGameScene
             }
             else
             {
-                this.SetupTextualGui();
+                this.SetupTextualGui(m_currentLocation.Encounter);
             }
         }
 
-        private void SetupTextualGui()
+        private void SetupTextualGui(EncounterTemplate encounter)
         {
             InventoryButton.gameObject.SetActive(false);
 
-            if (m_currentLocation.Template.Choices == null)
+            if (encounter.Choices == null)
             {
                 RemoveChoices();
                 return;
             }
 
             DoneButton.gameObject.SetActive(false);
-            LocationText.text = m_currentLocation.Template.Message;
+            LocationText.text = encounter.Message;
 
             var options = string.Join(
                 "\n",
-                m_currentLocation.Template.Choices.Select(choice => choice.Description).ToArray());
+                encounter.Choices.Select(choice => choice.Description).ToArray());
 
             Assert.EqualOrGreater(
                 m_choiceButtonList.Count,
-                m_currentLocation.Template.Choices.Count(),
+                encounter.Choices.Count(),
                 "There are more LocationScript options then buttons.\n options: {0}".FormatWith(options));
 
-            for (int i = 0; i < m_currentLocation.Template.Choices.Count(); i++)
+            for (int i = 0; i < encounter.Choices.Count(); i++)
             {
                 var button = m_choiceButtonList[i];
+
                 var choice = m_currentLocation.Choices.ElementAt(i);
                 SetButton(button, choice);
             }
 
-            for (int i = m_currentLocation.Template.Choices.Count(); i < m_choiceButtonList.Count; i++)
+            for (int i = encounter.Choices.Count(); i < m_choiceButtonList.Count; i++)
             {
                 m_choiceButtonList[i].gameObject.SetActive(false);
             }
         }
 
-        private void SetButton(Button button, PlayerActionChoice choice)
+        private void SetButton(Button button, ChoiceTemplate choice)
         {
-            button.onClick.AddListener(() => Choose(choice.Choose()));
+            button.onClick.AddListener(() => Choose(choice));
             var buttonText = button.GetComponentInChildren<Text>();
-            buttonText.text = choice.Template.Description;
+            buttonText.text = choice.Description;
         }
 
-        private void Choose(string choiceMessage)
+        private void Choose(ChoiceTemplate choiceTemplate)
         {
-            LocationText.text = choiceMessage;
             RemoveChoices();
+            LocationText.text = choiceTemplate.ResultsDescription;
         }
 
         private void RemoveChoices()
@@ -159,18 +160,18 @@ namespace Assets.Scripts.StrategicGameScene
                 Vector2.zero,
                 LocationTemplateConfigurationStorage.Instance.GetConfiguration("BasicEncounter"),
                 null);
-                /*LocationScript.CreateLocationScript(
-                Vector2.zero,
-                new LocationTemplate(
-                    "Check",
-                    "This is a check",
-                    new[]{
-                            new ChoiceTemplate("First action", ChoiceResults.None, "Nothing happend"),
-                            new ChoiceTemplate("Lose mech", ChoiceResults.LoseMech, "You lost a mech"),
-                            new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
-                            new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
-                        }),
-                null);*/
+            /*LocationScript.CreateLocationScript(
+            Vector2.zero,
+            new LocationTemplate(
+                "Check",
+                "This is a check",
+                new[]{
+                        new ChoiceTemplate("First action", ChoiceResults.None, "Nothing happend"),
+                        new ChoiceTemplate("Lose mech", ChoiceResults.LoseMech, "You lost a mech"),
+                        new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
+                        new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
+                    }),
+            null);*/
 
             GlobalState.Instance.StartNewGame("Default");
             GlobalState.Instance.StrategicMap.CurrentLocation = currentLocation;

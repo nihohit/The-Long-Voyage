@@ -1,11 +1,10 @@
 ﻿using Assets.Scripts.Base;
-
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Assets.Scripts.StrategicGameScene
 {
-    public class LocationTemplate : IIdentifiable<string>
+    public class EncounterTemplate : IIdentifiable<string>
     {
         public string Name { get; private set; }
 
@@ -13,7 +12,7 @@ namespace Assets.Scripts.StrategicGameScene
 
         public IEnumerable<ChoiceTemplate> Choices { get; private set; }
 
-        public LocationTemplate(string name, string message, IEnumerable<ChoiceTemplate> choices)
+        public EncounterTemplate(string name, string message, IEnumerable<ChoiceTemplate> choices)
         {
             Name = name;
             Message = message;
@@ -23,24 +22,6 @@ namespace Assets.Scripts.StrategicGameScene
             }
 
             Choices = choices.Materialize();
-            const int maxChoices = 4;
-            Assert.EqualOrLesser(Choices.Count(), maxChoices,
-                "Too many choices in LocationScript {0}. Maximum allowed is {1}".FormatWith(Message, maxChoices));
-        }
-    }
-
-    public class PlayerActionChoice
-    {
-        public ChoiceTemplate Template { get; private set; }
-
-        public PlayerActionChoice(ChoiceTemplate template)
-        {
-            Template = template;
-        }
-
-        public string Choose()
-        {
-            return Template.ResultsDescription;
         }
     }
 
@@ -64,28 +45,28 @@ namespace Assets.Scripts.StrategicGameScene
         }
     }
 
-    public sealed class LocationTemplateConfigurationStorage : ConfigurationStorage<LocationTemplate, LocationTemplateConfigurationStorage>
+    public sealed class LocationTemplateConfigurationStorage : ConfigurationStorage<EncounterTemplate, LocationTemplateConfigurationStorage>
     {
         private LocationTemplateConfigurationStorage()
             : base("Locations")
-        { }
-
-        protected override JSONParser<LocationTemplate> GetParser()
         {
-            return new LocationTemplateJSONParser();
         }
 
-        private class LocationTemplateJSONParser : JSONParser<LocationTemplate>
+        protected override JSONParser<EncounterTemplate> GetParser()
         {
-            private ChoiceTemplateJSONParser m_choiceParser = new ChoiceTemplateJSONParser();
+            return new LocationTemplateJsonParser();
+        }
 
-            protected override LocationTemplate ConvertCurrentItemToObject()
+        private class LocationTemplateJsonParser : JSONParser<EncounterTemplate>
+        {
+            private readonly ChoiceTemplateJsonParser r_choiceParser = new ChoiceTemplateJsonParser();
+
+            protected override EncounterTemplate ConvertCurrentItemToObject()
             {
-                return new LocationTemplate(
+                return new EncounterTemplate(
                     TryGetValueAndFail<string>("Name"),
                     TryGetValueAndFail<string>("Description"),
-                    GetChoices(TryGetValueOrSetDefaultValue<IEnumerable<object>>("Choices", null)).Materialize()
-                    );
+                    GetChoices(TryGetValueOrSetDefaultValue<IEnumerable<object>>("Choices", null)).Materialize());
             }
 
             private IEnumerable<ChoiceTemplate> GetChoices(object unParsedChoices)
@@ -107,19 +88,18 @@ namespace Assets.Scripts.StrategicGameScene
                 foreach (var choiceAsDictionary in choices.Select(choice => choice as Dictionary<string, object>))
                 {
                     Assert.NotNull(choiceAsDictionary, "A certain choice isn't a dictionary.");
-                    yield return this.m_choiceParser.ConvertToObject(choiceAsDictionary);
+                    yield return this.r_choiceParser.ConvertToObject(choiceAsDictionary);
                 }
             }
 
-            private class ChoiceTemplateJSONParser : JSONParser<ChoiceTemplate>
+            private class ChoiceTemplateJsonParser : JSONParser<ChoiceTemplate>
             {
                 protected override ChoiceTemplate ConvertCurrentItemToObject()
                 {
                     return new ChoiceTemplate(
                         TryGetValueAndFail<string>("Description"),
-                        TryGetValueOrSetDefaultValue<ChoiceResults>("Result", ChoiceResults.None),
-                        TryGetValueAndFail<string>("ResultsDescription")
-                        );
+                        TryGetValueOrSetDefaultValue("Result", ChoiceResults.None),
+                        TryGetValueAndFail<string>("ResultsDescription"));
                 }
             }
         }
