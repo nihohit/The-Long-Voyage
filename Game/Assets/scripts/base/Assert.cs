@@ -57,7 +57,7 @@ namespace Assets.Scripts.Base
 
         public static void StringNotNullOrEmpty(string str, string variableName, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(!String.IsNullOrEmpty(str), "\'{0}\' is null or empty. {1}".FormatWith(variableName, additionalMessage), ++stackTraceDepth);
+            AssertConditionMet(!string.IsNullOrEmpty(str), "\'{0}\' is null or empty. {1}".FormatWith(variableName, additionalMessage), ++stackTraceDepth);
         }
 
         public static void AreEqual(object a, object b, string additionalMessage = "", int stackTraceDepth = 1)
@@ -65,7 +65,7 @@ namespace Assets.Scripts.Base
             AssertConditionMet(a.Equals(b), "{0} isn't equal to {1}. {2}".FormatWith(a, b, additionalMessage), ++stackTraceDepth);
         }
 
-        //the core assert check
+        // the core assert check
         public static void AssertConditionMet(bool condition, string message, int stackTraceDepth = 1)
         {
             if (!condition)
@@ -76,7 +76,7 @@ namespace Assets.Scripts.Base
 
         internal static void NotNullOrEmpty(string name, string variableName, string additionalMessage = "", int stackTraceDepth = 1)
         {
-            AssertConditionMet(!String.IsNullOrEmpty(name), "{0} was null or empty. {1}".FormatWith(variableName, additionalMessage), ++stackTraceDepth);
+            AssertConditionMet(!string.IsNullOrEmpty(name), "{0} was null or empty. {1}".FormatWith(variableName, additionalMessage), ++stackTraceDepth);
         }
 
         internal static void IsEmpty<T>(IEnumerable<T> list, string variableName, string additionalMessage = "", int stackTraceDepth = 1)

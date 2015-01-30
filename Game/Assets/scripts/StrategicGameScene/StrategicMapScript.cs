@@ -7,15 +7,15 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts.StrategicGameScene
 {
+    using Assets.Scripts.UnityBase;
+
     public class StrategicMapScript : MonoBehaviour
     {
         #region private fields
 
-        private LocationScript m_currentLocation;
+        private LocationInformation m_currentLocation;
 
         private List<Button> m_choiceButtonList;
-
-        private IEnumerable<GameObject> m_nextLocations;
 
         #endregion private fields
 
@@ -31,6 +31,8 @@ namespace Assets.Scripts.StrategicGameScene
         public Button Choice4Button;
         public Button DoneButton;
         public Text LocationText;
+        public MarkerScript Marker;
+
         // ReSharper restore InconsistentNaming
 
         #endregion properties
@@ -55,12 +57,13 @@ namespace Assets.Scripts.StrategicGameScene
                 GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(battleResult.SurvivingEntities);
             }
 
-            if (m_currentLocation.DoneDisplayingContent)
+            if (m_currentLocation.WasVisited)
             {
                 RemoveTextualUI();
             }
             else
             {
+                m_currentLocation.WasVisited = true;
                 this.SetupTextualGui(m_currentLocation.Encounter);
             }
         }
@@ -91,7 +94,7 @@ namespace Assets.Scripts.StrategicGameScene
             {
                 var button = m_choiceButtonList[i];
 
-                var choice = m_currentLocation.Choices.ElementAt(i);
+                var choice = m_currentLocation.Encounter.Choices.ElementAt(i);
                 SetButton(button, choice);
             }
 
@@ -127,20 +130,57 @@ namespace Assets.Scripts.StrategicGameScene
 
         private void RemoveTextualUI()
         {
-            m_currentLocation.DoneDisplayingContent = true;
             TextPanel.SetActive(false);
             InventoryButton.gameObject.SetActive(true);
             InventoryButton.onClick.AddListener(() => Application.LoadLevel("InventoryScene"));
-            //AddNextLocations();
+            DisplayNextLocations(m_currentLocation, new HashSet<LocationInformation>());
+            Marker.Mark(m_currentLocation.Coordinates);
         }
 
-        private void AddNextLocations()
+        private void DisplayNextLocations(LocationInformation currentLocation, HashSet<LocationInformation> locationInformations)
         {
-            foreach (var nextLocation in m_currentLocation.NextLocations)
+            if (!currentLocation.WasVisited)
             {
-                nextLocation.Seen();
-                //nextLocation.
+                return;
             }
+
+            if (locationInformations.None())
+            {
+                LocationScript.CreateLocationScript(currentLocation);
+            }
+
+            locationInformations.Add(currentLocation);
+
+            foreach (var location in currentLocation.ConnectedLocations)
+            {
+                // TODO: if we want to avoid double lines, we ca add an order, or name the objects and check
+                var lineRenderer = new GameObject().AddComponent<LineRenderer>();
+                lineRenderer.SetVertexCount(2);
+                lineRenderer.SetPosition(0, location.Coordinates);
+                lineRenderer.SetPosition(1, currentLocation.Coordinates);
+                lineRenderer.SetColors(Color.black, Color.black);
+                lineRenderer.SetWidth(0.1f, 0.1f);
+                Material whiteDiffuseMat = new Material(Shader.Find("Sprites/Default"));
+                lineRenderer.material = whiteDiffuseMat;
+
+                if (!locationInformations.Contains(location))
+                {
+                    var nextLocation = LocationScript.CreateLocationScript(location);
+                    if (m_currentLocation.ConnectedLocations.Contains(location))
+                    {
+                        nextLocation.ClickableAction = () => MoveToLocation(nextLocation.Information);
+                    }
+
+                    DisplayNextLocations(location, locationInformations);
+                }
+            }
+        }
+
+        private void MoveToLocation(LocationInformation locationInformation)
+        {
+            Debug.Log("clicked");
+            GlobalState.Instance.StrategicMap.CurrentLocation = locationInformation;
+            Application.LoadLevel("StrategicMapScene");
         }
 
         // TODO - remove when this scene won't be accessed directly.
@@ -156,22 +196,7 @@ namespace Assets.Scripts.StrategicGameScene
 
         private void CreateLocations()
         {
-            var currentLocation = LocationScript.CreateLocationScript(
-                Vector2.zero,
-                LocationTemplateConfigurationStorage.Instance.GetConfiguration("BasicEncounter"),
-                null);
-            /*LocationScript.CreateLocationScript(
-            Vector2.zero,
-            new LocationTemplate(
-                "Check",
-                "This is a check",
-                new[]{
-                        new ChoiceTemplate("First action", ChoiceResults.None, "Nothing happend"),
-                        new ChoiceTemplate("Lose mech", ChoiceResults.LoseMech, "You lost a mech"),
-                        new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
-                        new ChoiceTemplate("Get Mech", ChoiceResults.GetMech, "You got a mech"),
-                    }),
-            null);*/
+            var currentLocation = new StrategicMapGenerator().GenerateStrategicMap();
 
             GlobalState.Instance.StartNewGame("Default");
             GlobalState.Instance.StrategicMap.CurrentLocation = currentLocation;

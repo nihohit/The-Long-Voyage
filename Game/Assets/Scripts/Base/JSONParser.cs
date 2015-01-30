@@ -6,6 +6,7 @@ namespace Assets.Scripts.Base
 {
     #region JSONParser
 
+    // TODO - possible to use ObjectConstructor in all parsers?
     public abstract class JSONParser<T>
     {
         private Dictionary<string, object> m_currentDictionary;
@@ -21,7 +22,7 @@ namespace Assets.Scripts.Base
                 var items = Json.Deserialize(fileAsString) as IEnumerable<object>;
                 Assert.NotNull(items, "items");
                 var itemsAsDictionaries = items.Select(item => item as Dictionary<string, object>);
-                return itemsAsDictionaries.Select(item => ConvertToObject(item)).Materialize();
+                return itemsAsDictionaries.Select(dict => ConvertToObject(dict)).Materialize();
             }
         }
 
@@ -62,18 +63,19 @@ namespace Assets.Scripts.Base
             {
                 throw new ValueNotFoundException(propertyName, typeof(T));
             }
+
             return result;
         }
 
         // Check a dictionary representation of a class for a property and return a default value if it can't be found.
-        protected TValue TryGetValueOrSetDefaultValue<TValue>
-            (string propertyName, TValue defaultValue)
+        protected TValue TryGetValueOrSetDefaultValue<TValue>(string propertyName, TValue defaultValue)
         {
             TValue result;
             if (!TryGetValue(propertyName, out result))
             {
                 result = defaultValue;
             }
+
             return result;
         }
 
@@ -93,8 +95,8 @@ namespace Assets.Scripts.Base
     {
         #region fields
 
-        private readonly IDictionary<string, TConfiguration> m_configurationsDictionary;
-        private readonly string m_fileName;
+        private readonly IDictionary<string, TConfiguration> r_configurationsDictionary;
+        private readonly string r_fileName;
 
         #endregion fields
 
@@ -108,13 +110,13 @@ namespace Assets.Scripts.Base
 
         #region constructor
 
-        protected ConfigurationStorage(string fileName)
+        protected ConfigurationStorage(string fileName, JSONParser<TConfiguration> parser)
         {
-            m_fileName = "Config/{0}.json".FormatWith(fileName);
-            var parser = GetParser();
-            m_configurationsDictionary = parser.GetConfigurations(m_fileName).
-                ToDictionary(configuration => configuration.Name,
-                             configuration => configuration);
+            this.r_fileName = "Config/{0}.json".FormatWith(fileName);
+            this.r_configurationsDictionary =
+                parser.GetConfigurations(this.r_fileName).ToDictionary(
+                    configuration => configuration.Name,
+                    configuration => configuration);
         }
 
         #endregion constructor
@@ -126,9 +128,9 @@ namespace Assets.Scripts.Base
         {
             TConfiguration template;
 
-            if (!m_configurationsDictionary.TryGetValue(configurationName, out template))
+            if (!this.r_configurationsDictionary.TryGetValue(configurationName, out template))
             {
-                throw new KeyNotFoundException("Configuration {0} not found in file {1}.".FormatWith(configurationName, m_fileName));
+                throw new KeyNotFoundException("Configuration {0} not found in file {1}.".FormatWith(configurationName, this.r_fileName));
             }
 
             return template;
@@ -137,16 +139,10 @@ namespace Assets.Scripts.Base
         // return all parsed configurations
         public IEnumerable<TConfiguration> GetAllConfigurations()
         {
-            return m_configurationsDictionary.Values.Materialize();
+            return this.r_configurationsDictionary.Values.Materialize();
         }
 
         #endregion public methods
-
-        #region abstract methods
-
-        protected abstract JSONParser<TConfiguration> GetParser();
-
-        #endregion abstract methods
     }
 
     #endregion ConfigurationStorage

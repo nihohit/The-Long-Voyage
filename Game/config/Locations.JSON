@@ -4,18 +4,18 @@
         "Description": "This is just a basic encounter",
         "Choices": [
             {
-                "Description": "Pretend to care",
-                "ResultsDescription": "You pretend to care. You succeed and are rewarded!",
-                "Result": 8
+                "description": "Pretend to care",
+                "resultDescription": "You pretend to care. You succeed and are rewarded!",
+                "results": 8
             },
             {
-                "Description": "Pretend not to care",
-                "ResultsDescription": "You pretend not to care. You fail!"
+                "description": "Pretend not to care",
+                "resultDescription": "You pretend not to care. You fail!"
             },
             {
-                "Description": "Attack the darkness!",
-                "ResultsDescription": "ATTACK!",
-                "Result": 1
+                "description": "Attack the darkness!",
+                "resultDescription": "ATTACK!",
+                "results": 1
             },
         ]
     }

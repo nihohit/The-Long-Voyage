@@ -1,5 +1,5 @@
-﻿using System;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
+using System;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -96,7 +96,7 @@ namespace Assets.Scripts.LogicBase
             return "{0}_Template".FormatWith(Name);
         }
 
-        #endregion
+        #endregion object overrides
     }
 
     #endregion SubsystemTemplate
@@ -106,12 +106,8 @@ namespace Assets.Scripts.LogicBase
     public sealed class SubsystemTemplateStorage : ConfigurationStorage<SubsystemTemplate, SubsystemTemplateStorage>
     {
         private SubsystemTemplateStorage()
-            : base("Subsystems")
-        { }
-
-        protected override JSONParser<SubsystemTemplate> GetParser()
+            : base("Subsystems", new SubsystemTemplateParser())
         {
-            return new SubsystemTemplateParser();
         }
 
         #region SubsystemTemplateParser

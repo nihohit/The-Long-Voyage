@@ -37,7 +37,7 @@ namespace Assets.Scripts.StrategicGameScene
 
         #endregion properties
 
-        public ChoiceTemplate(string description, ChoiceResults results, string resultDescription)
+        public ChoiceTemplate(string description, string resultDescription, ChoiceResults results = ChoiceResults.None)
         {
             Result = results;
             ResultsDescription = resultDescription;
@@ -48,19 +48,12 @@ namespace Assets.Scripts.StrategicGameScene
     public sealed class LocationTemplateConfigurationStorage : ConfigurationStorage<EncounterTemplate, LocationTemplateConfigurationStorage>
     {
         private LocationTemplateConfigurationStorage()
-            : base("Locations")
+            : base("Locations", new LocationTemplateJsonParser())
         {
-        }
-
-        protected override JSONParser<EncounterTemplate> GetParser()
-        {
-            return new LocationTemplateJsonParser();
         }
 
         private class LocationTemplateJsonParser : JSONParser<EncounterTemplate>
         {
-            private readonly ChoiceTemplateJsonParser r_choiceParser = new ChoiceTemplateJsonParser();
-
             protected override EncounterTemplate ConvertCurrentItemToObject()
             {
                 return new EncounterTemplate(
@@ -69,16 +62,12 @@ namespace Assets.Scripts.StrategicGameScene
                     GetChoices(TryGetValueOrSetDefaultValue<IEnumerable<object>>("Choices", null)).Materialize());
             }
 
-            private IEnumerable<ChoiceTemplate> GetChoices(object unParsedChoices)
+            private IEnumerable<ChoiceTemplate> GetChoices(IEnumerable<object> choices)
             {
-                if (unParsedChoices == null)
+                if (choices == null)
                 {
                     return null;
                 }
-
-                var choices = unParsedChoices as IEnumerable<object>;
-
-                Assert.NotNull(choices, "'Choices' part in location isn't an array.");
 
                 return this.ParseChoices(choices);
             }
@@ -88,18 +77,9 @@ namespace Assets.Scripts.StrategicGameScene
                 foreach (var choiceAsDictionary in choices.Select(choice => choice as Dictionary<string, object>))
                 {
                     Assert.NotNull(choiceAsDictionary, "A certain choice isn't a dictionary.");
-                    yield return this.r_choiceParser.ConvertToObject(choiceAsDictionary);
-                }
-            }
+                    yield return ObjectConstructor.ParseObject<ChoiceTemplate>(choiceAsDictionary);
 
-            private class ChoiceTemplateJsonParser : JSONParser<ChoiceTemplate>
-            {
-                protected override ChoiceTemplate ConvertCurrentItemToObject()
-                {
-                    return new ChoiceTemplate(
-                        TryGetValueAndFail<string>("Description"),
-                        TryGetValueOrSetDefaultValue("Result", ChoiceResults.None),
-                        TryGetValueAndFail<string>("ResultsDescription"));
+                    // this.r_choiceParser.ConvertToObject(choiceAsDictionary);
                 }
             }
         }

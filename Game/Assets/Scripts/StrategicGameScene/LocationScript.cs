@@ -1,12 +1,9 @@
-﻿using Assets.Scripts.Base;
-using Assets.Scripts.UnityBase;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Assets.Scripts.UnityBase;
 using UnityEngine;
 
 namespace Assets.Scripts.StrategicGameScene
 {
-    public class LocationScript : MonoBehaviour
+    public class LocationScript : SimpleButton
     {
         #region fields
 
@@ -16,30 +13,19 @@ namespace Assets.Scripts.StrategicGameScene
 
         #region properties
 
-        public EncounterTemplate Encounter { get; private set; }
-
-        public IEnumerable<LocationScript> NextLocations { get; private set; }
-
-        public IEnumerable<ChoiceTemplate> Choices { get; private set; }
-
-        public bool DoneDisplayingContent { get; set; }
+        public LocationInformation Information { get; set; }
 
         #endregion properties
 
         #region public methods
 
         public static LocationScript CreateLocationScript(
-            Vector2 coordinates,
-            EncounterTemplate template,
-            IEnumerable<LocationScript> nextLocations)
+            LocationInformation information)
         {
-            LocationScript newLocation = UnityHelper.Instantiate<LocationScript>(coordinates);
-            newLocation.Init(template, nextLocations);
+            LocationScript newLocation = UnityHelper.Instantiate<LocationScript>(information.Coordinates);
+            newLocation.Information = information;
             return newLocation;
         }
-
-        public void Display()
-        { }
 
         public bool WasSeen()
         {
@@ -52,22 +38,5 @@ namespace Assets.Scripts.StrategicGameScene
         }
 
         #endregion public methods
-
-        #region private methods
-
-        private void Init(EncounterTemplate template, IEnumerable<LocationScript> nextLocations)
-        {
-            Encounter = template;
-            NextLocations = nextLocations;
-
-            if (Encounter.Choices == null)
-            {
-                return;
-            }
-
-            Choices = Encounter.Choices;
-        }
-
-        #endregion private methods
     }
 }

@@ -1,5 +1,5 @@
-﻿using System;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
+using System;
 
 namespace Assets.Scripts.LogicBase
 {
@@ -113,12 +113,8 @@ namespace Assets.Scripts.LogicBase
     public sealed class EntityTemplateStorage : ConfigurationStorage<EntityTemplate, EntityTemplateStorage>
     {
         private EntityTemplateStorage()
-            : base("MovingEntities")
-        { }
-
-        protected override JSONParser<EntityTemplate> GetParser()
+            : base("MovingEntities", new EntityTemplateParser())
         {
-            return new EntityTemplateParser();
         }
 
         #region EntityTemplateParser
@@ -156,12 +152,8 @@ namespace Assets.Scripts.LogicBase
     public sealed class TerrainEntityTemplateStorage : ConfigurationStorage<EntityTemplate, TerrainEntityTemplateStorage>
     {
         private TerrainEntityTemplateStorage()
-            : base("TerrainEntities")
-        { }
-
-        protected override JSONParser<EntityTemplate> GetParser()
+            : base("TerrainEntities", new TerrainEntityTemplateParser())
         {
-            return new TerrainEntityTemplateParser();
         }
 
         #region TerrainEntityTemplateParser

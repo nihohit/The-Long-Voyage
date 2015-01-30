@@ -119,7 +119,10 @@ namespace Assets.Scripts.Base
 
         public static TVal Get<TKey, TVal>(this IDictionary<TKey, TVal> dict, TKey key, string dictionaryName = "")
         {
-            return dict[key];
+            TVal value;
+            Assert.AssertConditionMet(dict.TryGetValue(key, out value), "{0} not found in {1}".FormatWith(key, dictionaryName), 2);
+
+            return value;
         }
 
         // Converts an IEnumerator to IEnumerable

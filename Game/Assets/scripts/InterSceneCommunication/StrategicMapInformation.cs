@@ -11,7 +11,7 @@ namespace Assets.Scripts.InterSceneCommunication
     {
         public PlayerState State { get; private set; }
 
-        public LocationScript CurrentLocation { get; set; }
+        public LocationInformation CurrentLocation { get; set; }
 
         public InventoryTextureHandler InventoryTextureHandler { get; private set; }
 

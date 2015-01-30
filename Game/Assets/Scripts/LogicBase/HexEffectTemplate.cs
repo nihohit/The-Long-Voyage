@@ -38,12 +38,8 @@ namespace Assets.Scripts.LogicBase
     public sealed class HexEffectTemplateStorage : ConfigurationStorage<HexEffectTemplate, HexEffectTemplateStorage>
     {
         private HexEffectTemplateStorage()
-            : base("HexEffects")
-        { }
-
-        protected override JSONParser<HexEffectTemplate> GetParser()
+            : base("HexEffects", new HexEffectTemplateParser())
         {
-            return new HexEffectTemplateParser();
         }
 
         #region HexEffectTemplateParser
