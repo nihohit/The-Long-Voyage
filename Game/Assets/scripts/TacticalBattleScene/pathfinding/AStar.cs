@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Assets.Scripts.Base;
-using Assets.Scripts.LogicBase;
 
 namespace Assets.Scripts.TacticalBattleScene.PathFinding
 {
@@ -27,8 +27,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
         public static Dictionary<HexReactor, MovementAction> FindAllAvailableHexes(HexReactor entry, double availableDistance, MovementType movementType)
         {
             Assert.NotNull(entry, "entry hex");
-            var movingEntity = entry.Content as MovingEntity;
-            Assert.NotNull(movingEntity, "moving entity in entry hex");
+            var movingEntity = entry.Content.SafeCast<MovingEntity>("moving entity in entry hex");
             var dict = new Dictionary<HexReactor, MovementAction>();
             //no heuristic here - we want accurate results
             var internalState = GenerateInternalState(entry, new AStarConfiguration(movementType, check => 0));
@@ -47,7 +46,7 @@ namespace Assets.Scripts.TacticalBattleScene.PathFinding
                     dict.Add(current.ChosenHex,
                              dict.TryGetValue(current.Parent.ChosenHex, out action)
                                  ? new MovementAction(action, current.ChosenHex, current.GValue)
-                                 : new MovementAction(movingEntity, new[] {current.ChosenHex}, current.GValue));
+                                 : new MovementAction(movingEntity, new[] { current.ChosenHex }, current.GValue));
                 }
                 foreach (var neighbour in current.ChosenHex.GetNeighbours())
                 {

@@ -6,8 +6,7 @@ namespace Assets.Scripts.Base
 {
     #region JSONParser
 
-    // TODO - possible to use ObjectConstructor in all parsers?
-    public abstract class JSONParser<T>
+    public sealed class JsonParser<T>
     {
         private Dictionary<string, object> m_currentDictionary;
 
@@ -19,10 +18,9 @@ namespace Assets.Scripts.Base
             using (var fileReader = new StreamReader("{0}".FormatWith(fileName)))
             {
                 var fileAsString = fileReader.ReadToEnd();
-                var items = Json.Deserialize(fileAsString) as IEnumerable<object>;
-                Assert.NotNull(items, "items");
+                var items = Json.Deserialize(fileAsString).SafeCast<IEnumerable<object>>("items");
                 var itemsAsDictionaries = items.Select(item => item as Dictionary<string, object>);
-                return itemsAsDictionaries.Select(dict => ConvertToObject(dict)).Materialize();
+                return itemsAsDictionaries.Select(item => this.ConvertToObject(item)).Materialize();
             }
         }
 
@@ -36,50 +34,10 @@ namespace Assets.Scripts.Base
 
         #region private methods
 
-        // Check a dictionary representation of a class for a property value.
-        private bool TryGetValue<TValue>(string propertyName, out TValue result)
+        private T ConvertCurrentItemToObject()
         {
-            result = default(TValue);
-            object value;
-            if (!m_currentDictionary.TryGetValue(propertyName, out value))
-            {
-                return false;
-            }
-
-            if (!(value is TValue) && (typeof(TValue).IsEnum && !(value is int)))
-            {
-                throw new WrongValueType(propertyName, typeof(TValue), value.GetType());
-            }
-
-            result = (TValue)value;
-            return true;
+            return ObjectConstructor.ParseObject<T>(m_currentDictionary);
         }
-
-        // Check a dictionary representation of a class for a property value and throw an exception if it can't be found.
-        protected TValue TryGetValueAndFail<TValue>(string propertyName)
-        {
-            TValue result;
-            if (!TryGetValue(propertyName, out result))
-            {
-                throw new ValueNotFoundException(propertyName, typeof(T));
-            }
-
-            return result;
-        }
-
-        // Check a dictionary representation of a class for a property and return a default value if it can't be found.
-        protected TValue TryGetValueOrSetDefaultValue<TValue>(string propertyName, TValue defaultValue)
-        {
-            TValue result;
-            if (!TryGetValue(propertyName, out result))
-            {
-                result = defaultValue;
-            }
-
-            return result;
-        }
-
-        protected abstract T ConvertCurrentItemToObject();
 
         #endregion private methods
     }
@@ -89,9 +47,8 @@ namespace Assets.Scripts.Base
     #region ConfigurationStorage
 
     // A storage class for configurations of type Tconfiguration
-    public abstract class ConfigurationStorage<TConfiguration, TStorageType>
+    public sealed class ConfigurationStorage<TConfiguration>
         where TConfiguration : IIdentifiable<string>
-        where TStorageType : ConfigurationStorage<TConfiguration, TStorageType>
     {
         #region fields
 
@@ -100,19 +57,12 @@ namespace Assets.Scripts.Base
 
         #endregion fields
 
-        public static TStorageType Instance
-        {
-            get
-            {
-                return Singleton<TStorageType>.Instance;
-            }
-        }
-
         #region constructor
 
-        protected ConfigurationStorage(string fileName, JSONParser<TConfiguration> parser)
+        public ConfigurationStorage(string fileName)
         {
             this.r_fileName = "Config/{0}.json".FormatWith(fileName);
+            var parser = new JsonParser<TConfiguration>();
             this.r_configurationsDictionary =
                 parser.GetConfigurations(this.r_fileName).ToDictionary(
                     configuration => configuration.Name,

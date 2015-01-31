@@ -260,20 +260,19 @@ namespace Assets.Scripts.TacticalBattleScene
 
         protected override void AffectEntity()
         {
-            var movingEntity = ActingEntity as MovingEntity;
-            Assert.NotNull(movingEntity, "{0} should be a Moving Entity".FormatWith(ActingEntity));
-            Assert.EqualOrLesser(m_cost, movingEntity.AvailableSteps,
-                 "{0} should have enough movement steps available. Its condition is {1}".
-                    FormatWith(ActingEntity, ActingEntity.FullState()));
+            var movingEntity = ActingEntity.SafeCast<MovingEntity>("ActingEntity");
+            Assert.EqualOrLesser(
+                m_cost,
+                movingEntity.AvailableSteps,
+                "{0} should have enough movement steps available. Its condition is {1}".FormatWith(
+                    ActingEntity,
+                    ActingEntity.FullState()));
             movingEntity.AvailableSteps -= m_cost;
         }
 
         public override bool NecessaryConditions()
         {
-            var movingEntity = ActingEntity as MovingEntity;
-            Assert.NotNull(movingEntity,
-               "{0} should be a Moving Entity".
-                   FormatWith(ActingEntity));
+            var movingEntity = ActingEntity.SafeCast<MovingEntity>("ActingEntity");
             return m_cost <= movingEntity.AvailableSteps;
         }
 

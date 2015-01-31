@@ -1,14 +1,14 @@
 ﻿using Assets.Scripts.Base;
-using System;
 
 namespace Assets.Scripts.LogicBase
 {
+    using Assets.Scripts.InterSceneCommunication;
+
     #region SubsystemTemplate
 
     /// <summary>
     /// Immutable templates for usable systems, and a static factory intializer.
     /// </summary>
-    //TODO - how many operations per round does a system have? do we allow unlimited usage?
     public class SubsystemTemplate : IIdentifiable<string>
     {
         #region properties
@@ -43,20 +43,21 @@ namespace Assets.Scripts.LogicBase
 
         #endregion properties
 
-        #region constructor and initializer
+        #region constructor
 
-        public SubsystemTemplate(int ammo,
+        public SubsystemTemplate(
                                 double energyCost,
                                 double heatGenerated,
-                                int minRange,
                                 int maxRange,
-                                DeliveryMethod deliveryMethod,
                                 string name,
                                 EntityEffectType effectType,
                                 double effectStrength,
-                                TargetingType targetingType,
-                                string hexEffectName,
-                                int i_ActionsPerTurn)
+                                int minRange = 0,
+                                DeliveryMethod deliveryMethod = DeliveryMethod.Direct,
+                                TargetingType targetingType = TargetingType.Enemy,
+                                string hexEffect = "",
+                                int ammo = -1,
+                                int actionsPerTurn = 1)
         {
             MinRange = minRange;
             MaxRange = maxRange;
@@ -68,14 +69,14 @@ namespace Assets.Scripts.LogicBase
             EnergyCost = energyCost;
             MaxAmmo = ammo;
             HeatGenerated = heatGenerated;
-            this.ActionsPerTurn = i_ActionsPerTurn;
-            if (!String.IsNullOrEmpty(hexEffectName))
+            this.ActionsPerTurn = actionsPerTurn;
+            if (!string.IsNullOrEmpty(hexEffect))
             {
-                HexEffect = HexEffectTemplateStorage.Instance.GetConfiguration(hexEffectName);
+                HexEffect = GlobalState.Instance.Configurations.HexEffects.GetConfiguration(hexEffect);
             }
         }
 
-        #endregion constructor and initializer
+        #endregion constructor
 
         #region object overrides
 
@@ -100,40 +101,4 @@ namespace Assets.Scripts.LogicBase
     }
 
     #endregion SubsystemTemplate
-
-    #region SubsystemTemplateStorage
-
-    public sealed class SubsystemTemplateStorage : ConfigurationStorage<SubsystemTemplate, SubsystemTemplateStorage>
-    {
-        private SubsystemTemplateStorage()
-            : base("Subsystems", new SubsystemTemplateParser())
-        {
-        }
-
-        #region SubsystemTemplateParser
-
-        private class SubsystemTemplateParser : JSONParser<SubsystemTemplate>
-        {
-            protected override SubsystemTemplate ConvertCurrentItemToObject()
-            {
-                return new SubsystemTemplate(
-                    TryGetValueOrSetDefaultValue<int>("Ammo", -1),
-                    TryGetValueAndFail<float>("EnergyCost"),
-                    TryGetValueAndFail<float>("HeatGenerated"),
-                    TryGetValueOrSetDefaultValue<int>("MinRange", 0),
-                    TryGetValueAndFail<int>("MaxRange"),
-                    TryGetValueOrSetDefaultValue<DeliveryMethod>("DeliveryMethod", DeliveryMethod.Direct),
-                    TryGetValueAndFail<string>("Name"),
-                    TryGetValueAndFail<EntityEffectType>("EffectType"),
-                    TryGetValueAndFail<float>("EffectStrength"),
-                    TryGetValueOrSetDefaultValue<TargetingType>("TargetingType", TargetingType.Enemy),
-                    TryGetValueOrSetDefaultValue<string>("HexEffect", null),
-                    TryGetValueOrSetDefaultValue<int>("ActionsPerTurn", 1));
-            }
-        }
-
-        #endregion SubsystemTemplateParser
-    }
-
-    #endregion SubsystemTemplateStorage
 }

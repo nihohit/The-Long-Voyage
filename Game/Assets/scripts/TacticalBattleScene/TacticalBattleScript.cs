@@ -162,13 +162,13 @@ namespace Assets.Scripts.TacticalBattleScene
             reactor.Conditions = TraversalConditions.Broken;
             var terrainEntity = UnityHelper.Instantiate<TerrainEntity>(transform.position);
             reactor.Content = terrainEntity;
-            terrainEntity.Init(TerrainEntityTemplateStorage.Instance.GetConfiguration(configurationName));
+            terrainEntity.Init(GlobalState.Instance.Configurations.TerrainEntities.GetConfiguration(configurationName));
             return reactor;
         }
 
         private HexReactor CreateHex(Vector3 nextPosition, Vector2 hexCoordinates, GameObject prefab)
         {
-            //TODO - remove usage of prefab and use UnityHelper instead
+            // TODO - remove usage of prefab and use UnityHelper instead
             var hex = (GameObject)Instantiate(prefab, nextPosition, Quaternion.identity);
             var reactor = hex.GetComponent<HexReactor>();
             reactor.Init(hexCoordinates);
@@ -222,8 +222,8 @@ namespace Assets.Scripts.TacticalBattleScene
             return CreateMechs(
                 Enumerable.Range(0, number).Select(num =>
                 {
-                    var template = EntityTemplateStorage.Instance.GetAllConfigurations().ChooseRandomValue();
-                    var systems = SubsystemTemplateStorage.Instance.GetAllConfigurations().ChooseRandomValues(template.SystemSlots);
+                    var template = GlobalState.Instance.Configurations.ActiveEntities.GetAllConfigurations().ChooseRandomValue();
+                    var systems = GlobalState.Instance.Configurations.Subsystems.GetAllConfigurations().ChooseRandomValues(template.SystemSlots);
                     return new EquippedEntity(new SpecificEntity(template), systems);
                 }),
                 loyalty);

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Assets.Scripts.Base
 {
-    public interface IIdentifiable<T>
+    public interface IIdentifiable<out T>
     {
         T Name { get; }
     }
@@ -15,24 +15,36 @@ namespace Assets.Scripts.Base
     /// </summary>
     public static class MyExtensions
     {
-        public static String FormatWith(this string str, params object[] formattingInfo)
+        public static T SafeCast<T>(this object obj, string name) where T : class
         {
-            return String.Format(str, formattingInfo);
-        }
+            var result = obj as T;
 
-        //try to get a value out of a dictionary, and if it doesn't exist, create it by a given method
-        public static TValue TryGetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue> itemCreationMethod)
-        {
-            TValue result;
-            if (!dict.TryGetValue(key, out result))
-            {
-                result = itemCreationMethod();
-                dict.Add(key, result);
-            }
+            Assert.NotNull(result, name, "Tried to cast {0} to {1}".FormatWith(obj.GetType(), typeof(T)));
+
             return result;
         }
 
-        //removes from both sets the common elements.
+        public static string FormatWith(this string str, params object[] formattingInfo)
+        {
+            return string.Format(str, formattingInfo);
+        }
+
+        // try to get a value out of a dictionary, and if it doesn't exist, create it by a given method
+        public static TValue TryGetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dict, TKey key, Func<TValue> itemCreationMethod)
+        {
+            TValue result;
+            if (dict.TryGetValue(key, out result))
+            {
+                return result;
+            }
+
+            result = itemCreationMethod();
+            dict.Add(key, result);
+
+            return result;
+        }
+
+        // removes from both sets the common elements.
         public static void ExceptOnBoth<T>(this HashSet<T> thisSet, HashSet<T> otherSet)
         {
             thisSet.SymmetricExceptWith(otherSet);
@@ -40,7 +52,7 @@ namespace Assets.Scripts.Base
             thisSet.ExceptWith(otherSet);
         }
 
-        //converts degrees to radians
+        // converts degrees to radians
         public static float DegreesToRadians(this float degrees)
         {
             return (float)Math.PI * degrees / 180;
@@ -58,7 +70,7 @@ namespace Assets.Scripts.Base
             return enumerable.Select(item => item).Materialize();
         }
 
-        //returns an enumerable with all values of an enumerator
+        // returns an enumerable with all values of an enumerator
         public static IEnumerable<T> GetValues<T>()
         {
             return (T[])Enum.GetValues(typeof(T));
@@ -75,21 +87,27 @@ namespace Assets.Scripts.Base
             return Randomiser.Shuffle(group);
         }
 
-        //this function ensures that a given enumeration materializes
+        // this function ensures that a given enumeration materializes
         public static IEnumerable<T> Materialize<T>(this IEnumerable<T> enumerable)
         {
-            if (enumerable is ICollection<T>) return enumerable;
+            if (enumerable is ICollection<T>)
+            {
+                return enumerable;
+            }
+
             return enumerable.ToList();
         }
 
         public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)
         {
-            if (enumerable != null)
+            if (enumerable == null)
             {
-                foreach (var val in enumerable)
-                {
-                    op(val);
-                }
+                return;
+            }
+
+            foreach (var val in enumerable)
+            {
+                op(val);
             }
         }
 
@@ -141,6 +159,7 @@ namespace Assets.Scripts.Base
             {
                 return enumerator.ToEnumerable().Union(other.ToEnumerable()).GetEnumerator();
             }
+
             return enumerator;
         }
 
@@ -158,13 +177,17 @@ namespace Assets.Scripts.Base
 
         public static int GetHashCode(params object[] values)
         {
-            unchecked // Overflow is fine, just wrap
+            unchecked
             {
+                // Overflow is fine, just wrap
                 int hash = c_initialHash;
 
                 if (values != null)
                 {
-                    hash = values.Aggregate(hash, (current, currentObject) => current * c_multiplier + (currentObject != null ? currentObject.GetHashCode() : 0));
+                    hash = values.Aggregate(
+                        hash,
+                        (current, currentObject) =>
+                            (current * c_multiplier) + (currentObject != null ? currentObject.GetHashCode() : 0));
                 }
 
                 return hash;
@@ -185,6 +208,7 @@ namespace Assets.Scripts.Base
         }
 
         public void Reset()
-        { }
+        {
+        }
     }
 }

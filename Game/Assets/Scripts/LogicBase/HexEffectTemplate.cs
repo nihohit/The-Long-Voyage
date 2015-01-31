@@ -2,8 +2,6 @@
 
 namespace Assets.Scripts.LogicBase
 {
-    #region HexEffectTemplate
-
     public class HexEffectTemplate : IIdentifiable<string>
     {
         #region properties
@@ -30,34 +28,4 @@ namespace Assets.Scripts.LogicBase
 
         #endregion constructors
     }
-
-    #endregion HexEffectTemplate
-
-    #region HexEffectTemplateStorage
-
-    public sealed class HexEffectTemplateStorage : ConfigurationStorage<HexEffectTemplate, HexEffectTemplateStorage>
-    {
-        private HexEffectTemplateStorage()
-            : base("HexEffects", new HexEffectTemplateParser())
-        {
-        }
-
-        #region HexEffectTemplateParser
-
-        private class HexEffectTemplateParser : JSONParser<HexEffectTemplate>
-        {
-            protected override HexEffectTemplate ConvertCurrentItemToObject()
-            {
-                return new HexEffectTemplate(
-                    TryGetValueAndFail<string>("Name"),
-                    TryGetValueAndFail<EntityEffectType>("EffectType"),
-                    TryGetValueAndFail<float>("Power"),
-                    TryGetValueAndFail<int>("Duration"));
-            }
-        }
-
-        #endregion HexEffectTemplateParser
-    }
-
-    #endregion HexEffectTemplateStorage
 }

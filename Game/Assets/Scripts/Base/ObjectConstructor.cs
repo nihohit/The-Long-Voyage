@@ -4,6 +4,8 @@ using System.Linq;
 
 namespace Assets.Scripts.Base
 {
+    using System.Reflection;
+
     #region ConstructorBasedJSONParser
 
     public static class ObjectConstructor
@@ -19,10 +21,12 @@ namespace Assets.Scripts.Base
         {
             var constructor = type.GetConstructors().First();
             var parameters = new object[constructor.GetParameters().Count()];
-            var objectAsDictionary = parsedObject as IDictionary<string, object>;
-            var index = 0;
+            var objectAsDictionary = parsedObject.SafeCast<IDictionary<string, object>>("parsedObject");
 
-            Assert.NotNull(objectAsDictionary, "objectAsDictionary");
+            objectAsDictionary = new Dictionary<string, object>(
+                objectAsDictionary,
+                StringComparer.InvariantCultureIgnoreCase);
+            var index = 0;
 
             foreach (var param in constructor.GetParameters())
             {
@@ -52,6 +56,15 @@ namespace Assets.Scripts.Base
                 {
                     parameters[index] = obj;
                 }
+                else if (param.ParameterType.IsGenericType && param.ParameterType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                {
+                    Type underlyingType = param.ParameterType.GetGenericArguments()[0];
+                    var method = typeof(ObjectConstructor).GetMethod(
+                        "ParseEnumerable",
+                        BindingFlags.NonPublic | BindingFlags.Static);
+                    method = method.MakeGenericMethod(underlyingType);
+                    parameters[index] = method.Invoke(null, new[] { obj });
+                }
                 else
                 {
                     parameters[index] = ParseObject(obj, param.ParameterType);
@@ -61,6 +74,13 @@ namespace Assets.Scripts.Base
             }
 
             return constructor.Invoke(parameters);
+        }
+
+        private static IEnumerable<TValue> ParseEnumerable<TValue>(object enumerable)
+        {
+            var objectAsEnumerable = enumerable.SafeCast<IEnumerable<object>>("enumerable");
+
+            return objectAsEnumerable.Select(item => ParseObject<TValue>(item));
         }
 
         #endregion public methods

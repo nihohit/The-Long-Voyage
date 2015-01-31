@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace Assets.Scripts.StrategicGameScene
 {
+    using Assets.Scripts.InterSceneCommunication;
+
     using UnityEngine;
 
     #region StrategicMapGenerator
@@ -16,7 +18,7 @@ namespace Assets.Scripts.StrategicGameScene
             Vector2 currentLocation = new Vector2(377, 370);
             LocationInformation first = new LocationInformation(
                 currentLocation,
-                LocationTemplateConfigurationStorage.Instance.GetAllConfigurations().ChooseRandomValue(),
+                GlobalState.Instance.Configurations.Encounters.GetAllConfigurations().ChooseRandomValue(),
                 new List<LocationInformation>());
 
             var dict = new Dictionary<Vector2, LocationInformation>();
@@ -38,7 +40,7 @@ namespace Assets.Scripts.StrategicGameScene
                 location,
                 () => new LocationInformation(
                         location,
-                        LocationTemplateConfigurationStorage.Instance.GetAllConfigurations().ChooseRandomValue(),
+                        GlobalState.Instance.Configurations.Encounters.GetAllConfigurations().ChooseRandomValue(),
                         new List<LocationInformation>()));
 
             var newVector = new Vector2(location.x + 3, location.y - 1);
@@ -56,7 +58,7 @@ namespace Assets.Scripts.StrategicGameScene
                 location,
                 () => new LocationInformation(
                         location,
-                        LocationTemplateConfigurationStorage.Instance.GetAllConfigurations().ChooseRandomValue(),
+                        GlobalState.Instance.Configurations.Encounters.GetAllConfigurations().ChooseRandomValue(),
                         new List<LocationInformation>()));
 
             ((List<LocationInformation>)first.ConnectedLocations).Add(second);

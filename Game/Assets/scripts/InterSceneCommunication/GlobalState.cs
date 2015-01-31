@@ -9,18 +9,34 @@
     /// </summary>
     public class GlobalState
     {
+        public static GlobalState Instance
+        {
+            get
+            {
+                return Singleton<GlobalState>.Instance;
+            }
+        }
+
         public TacticalBattleInformation TacticalBattle { get; set; }
 
         public StrategicMapInformation StrategicMap { get; private set; }
 
         public EndBattleSummary BattleSummary { get; set; }
 
-        public bool ActiveGame { get { return StrategicMap != null; } }
+        public Configurations Configurations { get; private set; }
 
-        public static GlobalState Instance { get { return Singleton<GlobalState>.Instance; } }
+        public bool ActiveGame
+        {
+            get
+            {
+                return StrategicMap != null;
+            }
+        }
 
         private GlobalState()
-        { }
+        {
+            Configurations = new Configurations();
+        }
 
         public void StartNewGame(string playerName)
         {
@@ -31,19 +47,19 @@
 
         public void DefaultInitialization()
         {
-            var mechTemplate = EntityTemplateStorage.Instance.GetConfiguration("StandardMech");
+            var mechTemplate = Configurations.ActiveEntities.GetConfiguration("StandardMech");
             for (int i = 0; i < 2; i++)
             {
                 StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
             }
 
-            mechTemplate = EntityTemplateStorage.Instance.GetConfiguration("ScoutMech");
+            mechTemplate = Configurations.ActiveEntities.GetConfiguration("ScoutMech");
             for (int i = 0; i < 2; i++)
             {
                 StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
             }
 
-            var systems = SubsystemTemplateStorage.Instance.GetAllConfigurations().ToArray();
+            var systems = Configurations.Subsystems.GetAllConfigurations().ToArray();
             for (int i = 0; i < 6; i++)
             {
                 for (int j = 0; j < 3; j++)
