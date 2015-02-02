@@ -190,7 +190,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         ///
         public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<EntityReactor> entitiesSeenByTeam)
         {
-            //initiate relevant information
+            // initiate relevant information
             var potentialTargets = entitiesSeenByTeam.Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
             var minRange = 10000;
             var maxRange = 0;
@@ -208,17 +208,17 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                 currentHexValue = EvaluateHexValue(actingEntity.Hex, potentialTargets, movingEntity, minRange, maxRange);
             }
 
-            //evaluate each action. We're shuffling the actions so that there will be no preference based on order of examination.
+            // evaluate each action. We're shuffling the actions so that there will be no preference based on order of examination.
             foreach (var action in actingEntity.Actions)
             {
-                //TODO - possible to create an AI usage hint enumerator, which will say whether a given system should be used on friendlies or enemies, weakend or strong, etc.
+                // TODO - possible to create an AI usage hint enumerator, which will say whether a given system should be used on friendlies or enemies, weakend or strong, etc.
                 var evaluatedAction = new EvaluatedAction { Action = action };
                 var systemAction = action as OperateSystemAction;
                 var movementAction = action as MovementAction;
 
                 if (systemAction != null)
                 {
-                    //TODO - implicit assumption that all system actions are against entities.
+                    // TODO - implicit assumption that all system actions are against entities.
                     var target = systemAction.TargetedHex.Content;
                     if (target != null && target.Loyalty != Loyalty.Inactive)
                     {
@@ -226,6 +226,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
                         //Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
                     }
+
                     evaluatedAction.NecessaryConditions = () => !actingEntity.Destroyed() && !target.Destroyed();
 
                     evaluatedAction.AchievedGoal = CreateAchievedGoal(systemAction);
@@ -233,16 +234,18 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                 else if (movementAction != null)
                 {
                     var targetHex = movementAction.TargetedHex;
+
                     // in scouting mode, just go to the most distant hex
                     if (potentialTargets.None(target => target.Loyalty != actingEntity.Loyalty))
                     {
-                        //TODO - a better solution would choose a hex by how many new hexes can be seen from it
+                        // TODO - a better solution would choose a hex by how many new hexes can be seen from it
                         evaluatedAction.EvaluatedPriority = movementAction.TargetedHex.Distance(actingEntity.Hex);
                     }
-                    // evaluate by targets and what can be done to them
                     else
                     {
-                        //the value of a hex is compared to that of the current location.
+                        // evaluate by targets and what can be done to them
+                        // the value of a hex is compared to that of the current location.
+                        // TODO - evaluate hex effects
                         evaluatedAction.EvaluatedPriority = EvaluateHexValue(movementAction.TargetedHex, potentialTargets, movingEntity, minRange, maxRange) - currentHexValue;
                     }
                     evaluatedAction.NecessaryConditions = () => targetHex.Content == null;

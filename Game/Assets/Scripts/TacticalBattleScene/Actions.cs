@@ -42,7 +42,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         #region constructor
 
-        protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position, HexReactor targetedHex, String name)
+        protected PotentialAction(ActiveEntity entity, string buttonName, Vector3 position, HexReactor targetedHex, string name)
         {
             Callback = () => { };
             Destroyed = false;
@@ -109,7 +109,7 @@ namespace Assets.Scripts.TacticalBattleScene
         public virtual void Commit()
         {
             StartCommit();
-            Act(EndCommit);
+            Act(Callback);
         }
 
         public override string ToString()
@@ -129,45 +129,46 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public override int GetHashCode()
         {
-            return Hasher.GetHashCode(m_name,
+            return Hasher.GetHashCode(
+                m_name,
                 TargetedHex,
                 ActingEntity,
                 m_button);
         }
 
-        //represents the necessary conditions for the action to exist
-        public abstract bool NecessaryConditions();
-
         #endregion public methods
 
         #region private methods
 
-        //affects the acting entity with the action's costs
+        private void StartCommit()
+        {
+            // Debug.Log("{0} start commit".FormatWith(this));
+            Assert.AssertConditionMet(!Destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
+            AffectEntity();
+
+            foreach (var action in ActingEntity.Actions.Where(action => !action.NecessaryConditions()))
+            {
+                action.Destroy();
+            }
+
+            // makes it display all buttons;
+            TacticalState.SelectedHex = TacticalState.SelectedHex;
+        }
+
+        #endregion private methods
+
+        #region abstract methods
+
+        // represents the necessary conditions for the action to exist
+        public abstract bool NecessaryConditions();
+
+        // affects the acting entity with the action's costs
         protected abstract void AffectEntity();
 
         // This is the actual action
         protected abstract void Act(Action callback);
 
-        private void StartCommit()
-        {
-            //Debug.Log("{0} start commit".FormatWith(this));
-            Assert.AssertConditionMet(!Destroyed, "Action {0} was operated after being destroyed".FormatWith(this));
-            AffectEntity();
-        }
-
-        private void EndCommit()
-        {
-            //Debug.Log("{0} end commit".FormatWith(this));
-            foreach (var action in ActingEntity.Actions.Where(action => !action.NecessaryConditions()))
-            {
-                action.Destroy();
-            }
-            //makes it display all buttons;
-            TacticalState.SelectedHex = TacticalState.SelectedHex;
-            Callback();
-        }
-
-        #endregion private methods
+        #endregion abstract methods
     }
 
     #endregion PotentialAction
@@ -288,14 +289,14 @@ namespace Assets.Scripts.TacticalBattleScene
     /// </summary>
     public class OperateSystemAction : PotentialAction
     {
-        private readonly Action m_action;
+        private readonly Action r_action;
 
         public Subsystem System { get; private set; }
 
         public OperateSystemAction(ActiveEntity actingEntity, HexOperation effect, Subsystem subsystem, HexReactor targetedHex) :
             base(actingEntity, subsystem.Template.Name, (Vector2)targetedHex.Position, targetedHex, "{0} Operate {1} on {2}".FormatWith(actingEntity, subsystem.Template.Name, targetedHex))
         {
-            m_action = () => effect(targetedHex);
+            this.r_action = () => effect(targetedHex);
             System = subsystem;
             RemoveDisplay();
         }
@@ -305,20 +306,25 @@ namespace Assets.Scripts.TacticalBattleScene
             var from = ActingEntity.transform.position;
             var to = TargetedHex.transform.position;
             var shot = UnityHelper.Instantiate<Shot>(from);
+            System.Act();
             m_button.Renderer.sortingOrder = 1;
-            shot.Init(to, from, Name,
+            shot.Init(
+                to,
+                from,
+                Name,
                 () =>
                 {
-                    m_action();
+                    this.r_action();
                     callback();
                 });
         }
 
         protected override void AffectEntity()
         {
-            Assert.EqualOrLesser(System.Template.EnergyCost, ActingEntity.CurrentEnergy,
-               "{0} should have enough energy available. Its condition is {1}".
-                                FormatWith(ActingEntity, ActingEntity.FullState()));
+            Assert.EqualOrLesser(
+                System.Template.EnergyCost,
+                ActingEntity.CurrentEnergy,
+                "{0} should have enough energy available. Its condition is {1}".FormatWith(ActingEntity, ActingEntity.FullState()));
             ActingEntity.CurrentEnergy -= System.Template.EnergyCost;
             ActingEntity.CurrentHeat += System.Template.HeatGenerated;
         }

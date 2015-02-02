@@ -9,12 +9,12 @@ namespace Assets.Scripts.TacticalBattleScene
     /// </summary>
     public class Shot : MonoBehaviour
     {
+        private const double c_minDistance = 0.2;
+
         private bool m_started;
         private Vector2 m_movementFraction;
         private Vector3 m_endPoint;
         private Action m_callback;
-
-        private const double c_minDistance = 0.2;
 
         public void Init(Vector2 to, Vector2 from, string shotName, Action callback)
         {
@@ -25,7 +25,7 @@ namespace Assets.Scripts.TacticalBattleScene
             var differenceVector = to - from;
             gameObject.transform.Rotate(differenceVector.ToRotationVector());
 
-            //TODO - movement speed is not a constant for different shots. Use code from here - http://www.attiliocarotenuto.com/83-articles-tutorials/unity/292-unity-3-moving-a-npc-along-a-path
+            // TODO - movement speed is not a constant for different shots. Use code from here - http://www.attiliocarotenuto.com/83-articles-tutorials/unity/292-unity-3-moving-a-npc-along-a-path
             m_movementFraction = differenceVector / 30;
             TacticalState.TextureManager.UpdateShotTexture(shotName, GetComponent<SpriteRenderer>());
         }
@@ -38,7 +38,11 @@ namespace Assets.Scripts.TacticalBattleScene
         // Update is called once per frame
         private void Update()
         {
-            if (!m_started) return;
+            if (!m_started)
+            {
+                return;
+            }
+
             transform.position = m_movementFraction + (Vector2)transform.position;
             if (m_endPoint.Distance(transform.position) < c_minDistance)
             {

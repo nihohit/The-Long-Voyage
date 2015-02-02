@@ -62,8 +62,6 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public void Effect(HexReactor targetHex)
         {
-            Assert.Greater(m_actionsThisTurn, 0, "No actions left.");
-
             if (Template.Effect != EntityEffectType.None && targetHex.Content != null)
             {
                 targetHex.Content.Affect(Template.EffectStrength, Template.Effect);
@@ -72,19 +70,6 @@ namespace Assets.Scripts.TacticalBattleScene
             if (this.r_hexEffectTemplate != null)
             {
                 HexEffect.Create(this.r_hexEffectTemplate, targetHex);
-            }
-
-            m_actionsThisTurn--;
-
-            if (this.m_ammo <= 0)
-            {
-                return;
-            }
-
-            --this.m_ammo;
-            if (this.m_ammo == 0)
-            {
-                this.m_workingCondition = SystemCondition.OutOfAmmo;
             }
         }
 
@@ -130,6 +115,24 @@ namespace Assets.Scripts.TacticalBattleScene
             // if we can't operate the system, return no actions
             Assert.AssertConditionMet(Operational(), "System {0} can't act now".FormatWith(this));
             return TargetsInRange().Select(targetedHex => CreateAction(targetedHex, dict));
+        }
+
+        public void Act()
+        {
+            Assert.Greater(m_actionsThisTurn, 0, "No actions left.");
+
+            m_actionsThisTurn--;
+
+            if (this.m_ammo <= 0)
+            {
+                return;
+            }
+
+            --this.m_ammo;
+            if (this.m_ammo == 0)
+            {
+                this.m_workingCondition = SystemCondition.OutOfAmmo;
+            }
         }
 
         #endregion public methods
