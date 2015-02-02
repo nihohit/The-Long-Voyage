@@ -18,9 +18,9 @@ namespace Assets.Scripts.TacticalBattleScene
         public virtual void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<SubsystemTemplate> systems)
         {
             Assert.EqualOrGreater(entity.Template.SystemSlots, systems.Count(), "more systems than system slots.");
-            Assert.IsNull(m_systems, "m_systems", "Entity was already initialised.");
+            Assert.IsNull(Systems, "Systems", "Entity was already initialised.");
             Init(entity, loyalty);
-            m_systems = systems.Where(template => template != null).Select(template => new Subsystem(template, this)).ToList();
+            Systems = systems.Where(template => template != null).Select(template => new Subsystem(template, this)).ToList();
             CurrentEnergy = Template.MaxEnergy;
             m_tempMaxEnergy = Template.MaxEnergy;
             Shield = Template.MaxShields;
@@ -31,8 +31,6 @@ namespace Assets.Scripts.TacticalBattleScene
         #region private fields
 
         private HashSet<HexReactor> m_detectedHexes;
-
-        private IEnumerable<Subsystem> m_systems;
 
         private IEnumerable<PotentialAction> m_actions;
 
@@ -60,7 +58,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public double CurrentHeat { get; set; }
 
-        public IEnumerable<Subsystem> Systems { get { return m_systems.Where(system => system.Operational()); } }
+        public IEnumerable<Subsystem> Systems { get; private set; }
 
         #endregion Properties
 
@@ -87,7 +85,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             var whatTheEntitySeesNow = FindSeenHexes();
             var whatTheEntitySeesNowInRadar = FindRadarHexes().Except(whatTheEntitySeesNow);
-            //Debug.Log("{0} is setting seen hexes".FormatWith(Name));
+            // Debug.Log("{0} is setting seen hexes".FormatWith(Name));
 
             if (SeenHexes != null)
             {
@@ -151,15 +149,20 @@ namespace Assets.Scripts.TacticalBattleScene
             if (m_tempMaxEnergy <= 0 || CurrentHeat >= Template.MaxHeat)
             {
                 Debug.Log("{0} shuts down.".FormatWith(FullState()));
+
                 // reset state & mark as shutdown for the turn
-                if (CurrentHeat >= Template.MaxHeat) CurrentHeat = 0;
+                if (CurrentHeat >= Template.MaxHeat)
+                {
+                    CurrentHeat = 0;
+                }
+
                 m_tempMaxEnergy = Template.MaxEnergy;
                 m_wasShutDown = true;
                 return false;
             }
 
             Debug.Log("{0} starts its system".FormatWith(Name));
-            m_systems.ForEach(system => system.StartTurn());
+            Systems.ForEach(system => system.StartTurn());
 
             m_wasShutDown = false;
             m_tempMaxEnergy = Template.MaxEnergy;
@@ -175,7 +178,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public override bool Destroyed()
         {
-            return base.Destroyed() || m_systems.None(system => system.Operational()) || ((m_tempMaxEnergy <= 0 || CurrentHeat >= Template.MaxHeat) && m_wasShutDown);
+            return base.Destroyed() || Systems.None(system => system.Operational()) || ((m_tempMaxEnergy <= 0 || CurrentHeat >= Template.MaxHeat) && m_wasShutDown);
         }
 
         public bool ShutDown()
@@ -196,7 +199,7 @@ namespace Assets.Scripts.TacticalBattleScene
             {
                 m_detectedHexes.Clear();
             }
-            m_systems = null;
+            Systems = null;
         }
 
         private IEnumerable<HexReactor> FindSeenHexes()
@@ -251,9 +254,9 @@ namespace Assets.Scripts.TacticalBattleScene
             CurrentHeat += heatDamage;
             m_tempMaxEnergy -= energyDamage;
 
-            if (m_systems.Any(system => system.Operational()))
+            if (Systems.Any(system => system.Operational()))
             {
-                m_systems.Where(system => system.Operational()).ChooseRandomValue().Hit(damageType, physicalDamage + energyDamage);
+                Systems.Where(system => system.Operational()).ChooseRandomValue().Hit(damageType, physicalDamage + energyDamage);
             }
 
             base.InternalDamage(physicalDamage, EntityEffectType.PhysicalDamage);
@@ -269,7 +272,7 @@ namespace Assets.Scripts.TacticalBattleScene
             }
 
             var dict = new Dictionary<HexReactor, List<OperateSystemAction>>();
-            var results = m_systems.Where(system => system.CanOperateNow())
+            var results = Systems.Where(system => system.CanOperateNow())
                 .SelectMany(system => system.ActionsInRange(dict)).Materialize();
 
             foreach (var hex in dict.Keys)

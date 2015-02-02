@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
 {
-
     /*
      * inventory screen specifications -
      * empty boxes across the screen, with a scrollbar at the side which shows the available (unequipped) mechs and systems.

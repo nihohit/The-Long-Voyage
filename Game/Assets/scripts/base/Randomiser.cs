@@ -9,26 +9,26 @@ namespace Assets.Scripts.Base
     /// </summary>
     public static class Randomiser
     {
-        private static readonly Random s_staticRandom = new Random();
+        private static readonly Random sr_staticRandom = new Random();
 
         public static int Next()
         {
-            return s_staticRandom.Next();
+            return sr_staticRandom.Next();
         }
 
         public static int Next(int maxValue)
         {
-            return s_staticRandom.Next(maxValue);
+            return sr_staticRandom.Next(maxValue);
         }
 
         public static int Next(int minValue, int maxValue)
         {
-            return s_staticRandom.Next(minValue, maxValue);
+            return sr_staticRandom.Next(minValue, maxValue);
         }
 
         public static double NextDouble()
         {
-            return s_staticRandom.NextDouble();
+            return sr_staticRandom.NextDouble();
         }
 
         public static double NextDouble(double max)
@@ -38,18 +38,18 @@ namespace Assets.Scripts.Base
 
         public static double NextDouble(double min, double max)
         {
-            return min + s_staticRandom.NextDouble() * (max - min);
+            return min + (sr_staticRandom.NextDouble() * (max - min));
         }
 
-        //See if random sample comes lower than the given chance
+        // See if random sample comes lower than the given chance
         public static bool ProbabilityCheck(double chance)
         {
             Assert.EqualOrLesser(chance, 1, "we can't have a probablity higher than 1");
             Assert.EqualOrGreater(chance, 0, "we can't have a probablity lower than 0");
-            return (NextDouble() <= chance);
+            return NextDouble() <= chance;
         }
 
-        //choose a single value out of a collection
+        // choose a single value out of a collection
         public static T ChooseValue<T>(IEnumerable<T> group)
         {
             Assert.NotNull(group, "group");
@@ -58,19 +58,21 @@ namespace Assets.Scripts.Base
             foreach (T element in group)
             {
                 count++;
-                if (s_staticRandom.Next(count) == 0)
+                if (sr_staticRandom.Next(count) == 0)
                 {
                     current = element;
                 }
             }
+
             if (count == 0)
             {
                 throw new InvalidOperationException("Sequence was empty");
             }
+
             return current;
         }
 
-        //choose several values out of a collection
+        // choose several values out of a collection
         public static IEnumerable<T> ChooseValues<T>(IEnumerable<T> group, int amount)
         {
             return Shuffle(group).Take(amount);
@@ -83,7 +85,7 @@ namespace Assets.Scripts.Base
 
             for (int i = 0; i < buffer.Count; i++)
             {
-                int j = s_staticRandom.Next(i, buffer.Count);
+                int j = sr_staticRandom.Next(i, buffer.Count);
                 yield return buffer[j];
                 buffer[j] = buffer[i];
             }
@@ -108,10 +110,9 @@ namespace Assets.Scripts.Base
         /// <typeparam name="T"></typeparam>
         private class WeightedValuesChooser<T>
         {
-            private List<Node> GenerateHeap(IDictionary<T, double> dictionary)
+            private List<Node> GenerateHeap(IEnumerable<KeyValuePair<T, double>> dictionary)
             {
-                var nodes = new List<Node>();
-                nodes.Add(null);
+                var nodes = new List<Node> { null };
 
                 nodes.AddRange(dictionary.Select(pair => new Node(pair.Value, pair.Key, pair.Value)));
 
@@ -154,7 +155,7 @@ namespace Assets.Scripts.Base
                 return card;
             }
 
-            public IEnumerable<T> ChooseWeightedValues(IDictionary<T, double> dictionary, int amount)
+            public IEnumerable<T> ChooseWeightedValues(IEnumerable<KeyValuePair<T, double>> dictionary, int amount)
             {
                 var values = new List<T>();
 

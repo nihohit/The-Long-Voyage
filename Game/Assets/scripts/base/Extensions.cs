@@ -19,7 +19,7 @@ namespace Assets.Scripts.Base
         {
             var result = obj as T;
 
-            Assert.NotNull(result, name, "Tried to cast {0} to {1}".FormatWith(obj.GetType(), typeof(T)));
+            Assert.NotNull(result, name, "Tried to cast {0} to {1}".FormatWith(obj, typeof(T)), 3);
 
             return result;
         }
@@ -161,6 +161,11 @@ namespace Assets.Scripts.Base
             }
 
             return enumerator;
+        }
+
+        public static string ToJoinedString<T>(this IEnumerable<T> enumerable, string separator)
+        {
+            return string.Join(separator, enumerable.Select(item => item.ToString()).ToArray());
         }
 
         #endregion IEnumerable

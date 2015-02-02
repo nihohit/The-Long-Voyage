@@ -4,16 +4,16 @@ namespace Assets.Scripts.StrategicGameScene
 {
     internal class StrategicMapTextureHandler
     {
-        private readonly Texture r_GUIBackground;
+        private readonly Texture r_guiBackground;
 
         public StrategicMapTextureHandler()
         {
-            r_GUIBackground = Resources.Load<Texture2D>("StrategicMapUI/LocationMessageBackground");
+            this.r_guiBackground = Resources.Load<Texture2D>("StrategicMapUI/LocationMessageBackground");
         }
 
         internal UnityEngine.Texture GetUIBackground()
         {
-            return r_GUIBackground;
+            return this.r_guiBackground;
         }
     }
 }

@@ -14,28 +14,28 @@ namespace Assets.Scripts.Base
         /// <summary>
         /// The dummy object used for locking.
         /// </summary>
-        private static object s_LockObj;
+        private static object s_lockObj;
 
         /// <summary>
         /// The single instance of the target class.
         /// </summary>
         /// <remarks>
-        /// The volatile keyword makes sure to remove any compiler optimization that could make concurrent 
+        /// The volatile keyword makes sure to remove any compiler optimization that could make concurrent
         /// threads reach a race condition with the double-checked lock pattern used in the Instance property.
         /// See http://www.bluebytesoftware.com/blog/PermaLink,guid,543d89ad-8d57-4a51-b7c9-a821e3992bf6.aspx
         /// </remarks>
-        private static volatile T s_Instance;
+        private static volatile T s_instance;
 
         /// <summary>
         /// Type-initializer to prevent type to be marked with beforefieldinit.
         /// </summary>
         /// <remarks>
-        /// This simply makes sure that static fields initialization occurs 
+        /// This simply makes sure that static fields initialization occurs
         /// when Instance is called the first time and not before.
         /// </remarks>
         static Singleton()
         {
-            s_LockObj = new object();
+            s_lockObj = new object();
         }
 
         /// <summary>
@@ -45,16 +45,16 @@ namespace Assets.Scripts.Base
         {
             get
             {
-                if (s_Instance != null)
+                if (s_instance != null)
                 {
-                    return s_Instance;
+                    return s_instance;
                 }
 
-                lock (s_LockObj)
+                lock (s_lockObj)
                 {
-                    if (s_Instance != null)
+                    if (s_instance != null)
                     {
-                        return s_Instance;
+                        return s_instance;
                     }
 
                     // Binding flags exclude public and static constructors.
@@ -66,10 +66,10 @@ namespace Assets.Scripts.Base
                         throw new Exception(string.Format("A private or protected constructor is missing for '{0}'.", typeof(T).Name));
                     }
 
-                    s_Instance = constructor.Invoke(null) as T;
+                    s_instance = constructor.Invoke(null) as T;
                 }
 
-                return s_Instance;
+                return s_instance;
             }
         }
     }

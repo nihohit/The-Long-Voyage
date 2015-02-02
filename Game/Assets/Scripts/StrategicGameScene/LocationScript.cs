@@ -1,5 +1,4 @@
 ﻿using Assets.Scripts.UnityBase;
-using UnityEngine;
 
 namespace Assets.Scripts.StrategicGameScene
 {
@@ -22,7 +21,7 @@ namespace Assets.Scripts.StrategicGameScene
         public static LocationScript CreateLocationScript(
             LocationInformation information)
         {
-            LocationScript newLocation = UnityHelper.Instantiate<LocationScript>(information.Coordinates);
+            var newLocation = UnityHelper.Instantiate<LocationScript>(information.Coordinates);
             newLocation.Information = information;
             return newLocation;
         }

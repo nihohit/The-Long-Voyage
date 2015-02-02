@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.InterSceneCommunication;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
@@ -17,8 +17,8 @@ namespace Assets.Scripts.InventoryScreen
     {
         #region fields
 
+        private static bool s_equippedEntitiesWaiting;
         private IEnumerable<SystemSelectionBoxScript> m_systems;
-        private static bool s_equippedEntitiesWaiting = false;
 
         #endregion fields
 
@@ -53,12 +53,13 @@ namespace Assets.Scripts.InventoryScreen
             {
                 TryGetEntity();
             }
+
             base.Update();
         }
 
         private void TryGetEntity()
         {
-            //locking a shared object
+            // locking a shared object
             lock (s_sharedLock)
             {
                 var firstEntity = GlobalState.Instance.StrategicMap.State.EquippedEntities.FirstOrDefault();
@@ -97,6 +98,7 @@ namespace Assets.Scripts.InventoryScreen
             {
                 return s_textureHandler.GetNullTexture();
             }
+
             return s_textureHandler.GetTexture(item);
         }
 
@@ -108,6 +110,7 @@ namespace Assets.Scripts.InventoryScreen
                 m_systems.ForEach(system => system.DestroyGameObject());
                 m_systems = null;
             }
+
             if (item == null)
             {
                 m_markedTexture.Unmark();
@@ -133,20 +136,20 @@ namespace Assets.Scripts.InventoryScreen
                 Vector3 position = default(Vector3);
                 switch (i)
                 {
-                    case (0):
-                        position = new Vector3(center.x + scaledSize.x / 3.5f, center.y + scaledSize.y / 4, 0);
+                    case 0:
+                        position = new Vector3(center.x + (scaledSize.x / 3.5f), center.y + (scaledSize.y / 4), 0);
                         break;
 
-                    case (1):
-                        position = new Vector3(center.x + scaledSize.x / 3.5f, center.y - scaledSize.y / 4, 0);
+                    case 1:
+                        position = new Vector3(center.x + (scaledSize.x / 3.5f), center.y - (scaledSize.y / 4), 0);
                         break;
 
-                    case (2):
-                        position = new Vector3(center.x, center.y - scaledSize.y / 4, 0);
+                    case 2:
+                        position = new Vector3(center.x, center.y - (scaledSize.y / 4), 0);
                         break;
 
-                    case (3):
-                        position = new Vector3(center.x - scaledSize.x / 3.5f, center.y - scaledSize.y / 4, 0);
+                    case 3:
+                        position = new Vector3(center.x - (scaledSize.x / 3.5f), center.y - (scaledSize.y / 4), 0);
                         break;
                 }
 
@@ -160,8 +163,8 @@ namespace Assets.Scripts.InventoryScreen
             var size = gameObject.GetComponent<BoxCollider2D>().size;
             var scale = transform.localScale;
             var scaledSize = new Vector2(size.x * scale.x, size.y * scale.y);
-            var leftMostEdge = center.x - scaledSize.x / 4;
-            var upperMostEdge = center.y + scaledSize.y / 4;
+            var leftMostEdge = center.x - (scaledSize.x / 4);
+            var upperMostEdge = center.y + (scaledSize.y / 4);
             return new Vector3(leftMostEdge, upperMostEdge, 0);
         }
 

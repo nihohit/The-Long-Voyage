@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Assets.Scripts.LogicBase;
+﻿using Assets.Scripts.LogicBase;
+using System.Collections.Generic;
 
 namespace Assets.Scripts.InterSceneCommunication
 {
@@ -19,12 +19,19 @@ namespace Assets.Scripts.InterSceneCommunication
         // Entities with set equipment - those will be used in battle
         public List<EquippedEntity> EquippedEntities { get; private set; }
 
+        /// <summary>
+        /// TODO - enter a limited list of factions
+        /// the relation the player has with the different factions
+        /// </summary>
+        public Dictionary<string, double> Relations { get; private set; }
+
         public PlayerState(string playerName)
         {
             AvailableSystems = new List<SubsystemTemplate>();
             AvailableEntities = new List<SpecificEntity>();
             EquippedEntities = new List<EquippedEntity>();
             Name = playerName;
+            Relations = new Dictionary<string, double>();
         }
     }
 }

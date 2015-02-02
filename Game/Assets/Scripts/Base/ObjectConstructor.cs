@@ -19,6 +19,11 @@ namespace Assets.Scripts.Base
 
         private static object ParseObject(object parsedObject, Type type)
         {
+            if (parsedObject == null)
+            {
+                return null;
+            }
+
             var constructor = type.GetConstructors().First();
             var parameters = new object[constructor.GetParameters().Count()];
             var objectAsDictionary = parsedObject.SafeCast<IDictionary<string, object>>("parsedObject");
@@ -34,7 +39,7 @@ namespace Assets.Scripts.Base
 
                 if (!objectAsDictionary.TryGetValue(param.Name, out obj))
                 {
-                    if (param.DefaultValue != null)
+                    if (param.IsOptional)
                     {
                         obj = param.DefaultValue;
                     }

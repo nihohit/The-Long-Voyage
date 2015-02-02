@@ -6,8 +6,8 @@ namespace Assets.Scripts.LogicBase
 
     /// <summary>
     /// Immutable representation of an entity of a certain type, and a static factory constructor.
+    /// TODO - if we'll want entities with fixed systems, we'll need to add their templates here and merge them in the entity constructor
     /// </summary>
-    // TODO - if we'll want entities with fixed systems, we'll need to add their templates here and merge them in the entity constructor
     public class EntityTemplate : IIdentifiable<string>
     {
         #region properties

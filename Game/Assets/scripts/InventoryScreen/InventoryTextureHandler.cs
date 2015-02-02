@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
@@ -13,7 +13,7 @@ namespace Assets.Scripts.InventoryScreen
     {
         #region fields
 
-        private readonly Dictionary<string, Texture2D> m_buttonTextures;
+        private readonly Dictionary<string, Texture2D> r_buttonTextures;
 
         #endregion fields
 
@@ -21,7 +21,7 @@ namespace Assets.Scripts.InventoryScreen
 
         public InventoryTextureHandler()
         {
-            m_buttonTextures = GetDictionary("SystemsUI");
+            this.r_buttonTextures = GetDictionary("SystemsUI");
         }
 
         #endregion constructor
@@ -35,7 +35,7 @@ namespace Assets.Scripts.InventoryScreen
 
         public void UpdateMarkerTexture(SubsystemTemplate item, SpriteRenderer renderer)
         {
-            UpdateTexture(item.Name, renderer, m_buttonTextures, "button textures");
+            UpdateTexture(item.Name, renderer, this.r_buttonTextures, "button textures");
         }
 
         public Texture2D GetTexture(SpecificEntity ent)
@@ -45,12 +45,12 @@ namespace Assets.Scripts.InventoryScreen
 
         public Texture2D GetTexture(SubsystemTemplate system)
         {
-            return m_buttonTextures.Get(system.Name, "button textures");
+            return this.r_buttonTextures.Get(system.Name, "button textures");
         }
 
         public Texture2D GetNullTexture()
         {
-            return m_buttonTextures.Get("Null");
+            return this.r_buttonTextures.Get("Null");
         }
 
         #endregion public methods

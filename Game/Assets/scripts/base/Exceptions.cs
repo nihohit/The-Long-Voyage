@@ -19,12 +19,12 @@ namespace Assets.Scripts.Base
     [Serializable]
     public class AssertedException : Exception
     {
-        private int m_stackTraceDepth;
+        private readonly int r_stackTraceDepth;
 
         public AssertedException(string message, int stackTraceDepth)
             : base("Condition wasn't met : {0}".FormatWith(message))
         {
-            m_stackTraceDepth = stackTraceDepth;
+            this.r_stackTraceDepth = stackTraceDepth;
         }
 
         public override string StackTrace
@@ -33,10 +33,11 @@ namespace Assets.Scripts.Base
             {
                 var oldStackTRace = base.StackTrace.Split(Environment.NewLine.ToCharArray());
                 var newStackTrace = string.Empty;
-                for (int i = oldStackTRace.Length - 1; i > m_stackTraceDepth; i--)
+                for (int i = oldStackTRace.Length - 1; i > this.r_stackTraceDepth; i--)
                 {
                     newStackTrace = "{0}{1}{2}".FormatWith(oldStackTRace[i], Environment.NewLine, newStackTrace);
                 }
+
                 return newStackTrace;
             }
         }

@@ -12,7 +12,7 @@ namespace Assets.Scripts.Base
     {
         #region static dictionaries
 
-        private static readonly Dictionary<string, Dictionary<string, string>> s_navigator = new Dictionary<string, Dictionary<string, string>>();
+        private static readonly Dictionary<string, Dictionary<string, string>> sr_navigator = new Dictionary<string, Dictionary<string, string>>();
 
         #endregion static dictionaries
 
@@ -26,7 +26,7 @@ namespace Assets.Scripts.Base
         public static object GetStringProperty(string str, FileAccessor access)
         {
             CheckAndInit();
-            return s_navigator.Get(access.ToString(), "File Handler navigator").Get(str.ToLower(), "{0} dictionary".FormatWith(access));
+            return sr_navigator.Get(access.ToString(), "File Handler navigator").Get(str.ToLower(), "{0} dictionary".FormatWith(access));
         }
 
         public static Int32 GetIntProperty(string str, FileAccessor access)
@@ -46,7 +46,7 @@ namespace Assets.Scripts.Base
         private static void ReadFromFile(string str)
         {
             var dict = new Dictionary<string, string>();
-            s_navigator.Add(str, dict);
+            sr_navigator.Add(str, dict);
             char[] delimiters = { '=' };
             string[] text = System.IO.File.ReadAllLines("config/{0}.ini".FormatWith(str));
             foreach (string entry in text)
@@ -66,9 +66,9 @@ namespace Assets.Scripts.Base
 
         private static void CheckAndInit()
         {
-            lock (s_navigator)
+            lock (sr_navigator)
             {
-                if (s_navigator.Count == 0)
+                if (sr_navigator.Count == 0)
                 {
                     ReadFiles(Enum.GetNames(typeof(FileAccessor)));
                 }

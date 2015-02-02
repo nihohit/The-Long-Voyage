@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Assets.Scripts.LogicBase;
+﻿using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Assets.Scripts.InventoryScreen
@@ -30,6 +30,7 @@ namespace Assets.Scripts.InventoryScreen
             {
                 return s_textureHandler.GetNullTexture();
             }
+
             return s_textureHandler.GetTexture(item);
         }
 

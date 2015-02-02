@@ -4,18 +4,45 @@
         "Message": "This is just a basic encounter",
         "Choices": [
             {
-                "Message": "Pretend to care",
-                "resultMessage": "You pretend to care. You succeed and are rewarded!",
-                "results": 8
+                "Message": "Do nothing",
+				"result": 
+				{
+					"message" : "You do nothing"
+				}
             },
             {
-                "Message": "Pretend not to care",
-                "resultMessage": "You pretend not to care. You fail!"
+                "Message": "Affect relations positively",
+                "result": 
+				{
+					"result" : "AffectRelations",
+					"message" : "You make better relations",
+					"key" : "flogiston",
+					"value" : 10
+				}
             },
             {
-                "Message": "Attack the darkness!",
-                "resultMessage": "ATTACK!",
-                "results": "Fight"
+                "Message": "Affect relations negatively",
+                "result": 
+				{
+					"result" : "AffectRelations",
+					"message" : "You make worse relations",
+					"key" : "flogiston",
+					"value" : -10
+				}
+            },
+            {
+                "Message": "Use relations!",
+                "result": 
+				{
+					"message" : "You fight"
+					"result": "Fight"
+				}
+				"condition" : 
+				{
+					"condition" : "RelationsWith",
+					"key" : "flogiston",
+					"value" : 20.0,
+				}
             },
         ]
     }

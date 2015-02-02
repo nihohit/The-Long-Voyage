@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts.LogicBase
 {
-    //the logic behind the numbering is that the addition of this enumerator and MovementType gives the following result - if the value is between 0-5, no movement penalty. above 4 - slow, above 6 - impossible
+    // the logic behind the numbering is that the addition of this enumerator and MovementType gives the following result - if the value is between 0-5, no movement penalty. above 4 - slow, above 6 - impossible
     public enum MovementType { Crawler = 3, Walker = 2, Hover = 1, Flyer = 0, Unmoving = Int32.MaxValue }
 
     [Flags]
@@ -35,6 +35,6 @@ namespace Assets.Scripts.LogicBase
     // The possible effects of a system
     public enum EntityEffectType { None = 0, EmpDamage = 1, HeatDamage = 2, IncendiaryDamage = 3, PhysicalDamage = 4 }
 
-    //to be filled with all different factions
+    // to be filled with all different factions
     public enum Loyalty { Player, EnemyArmy, Monsters, Bandits, Inactive, Friendly }
 }

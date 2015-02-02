@@ -81,9 +81,7 @@ namespace Assets.Scripts.StrategicGameScene
             DoneButton.gameObject.SetActive(false);
             LocationText.text = encounter.Message;
 
-            var options = string.Join(
-                "\n",
-                encounter.Choices.Select(choice => choice.Description).ToArray());
+            var options = encounter.Choices.Select(choice => choice.Description).ToJoinedString("\n");
 
             Assert.EqualOrGreater(
                 m_choiceButtonList.Count,
@@ -114,7 +112,32 @@ namespace Assets.Scripts.StrategicGameScene
         private void Choose(ChoiceTemplate choiceTemplate)
         {
             RemoveChoices();
-            LocationText.text = choiceTemplate.ResultsDescription;
+            HandleResult(choiceTemplate.Result);
+        }
+
+        private void HandleResult(ChoiceResult choiceResult)
+        {
+            LocationText.text = choiceResult.Message;
+            if (choiceResult.Result.HasFlag(ChoiceResultType.AffectRelations))
+            {
+                AffectRelations(choiceResult.Key, choiceResult.Value);
+            }
+
+            if (choiceResult.Result.HasFlag(ChoiceResultType.Fight))
+            {
+                DoneButton.onClick.AddListener(() => this.StartBattle());
+            }
+        }
+
+        private void StartBattle()
+        {
+            Application.LoadLevel("TacticalBattleScene");
+        }
+
+        private void AffectRelations(string faction, double affect)
+        {
+            GlobalState.Instance.StrategicMap.State.Relations[faction] =
+                GlobalState.Instance.StrategicMap.State.Relations.TryGetOrAdd(faction, () => 0) + affect;
         }
 
         private void RemoveChoices()
@@ -160,7 +183,7 @@ namespace Assets.Scripts.StrategicGameScene
                 lineRenderer.SetPosition(1, currentLocation.Coordinates);
                 lineRenderer.SetColors(Color.black, Color.black);
                 lineRenderer.SetWidth(0.1f, 0.1f);
-                Material whiteDiffuseMat = new Material(Shader.Find("Sprites/Default"));
+                var whiteDiffuseMat = new Material(Shader.Find("Sprites/Default"));
                 lineRenderer.material = whiteDiffuseMat;
 
                 if (!locationInformations.Contains(location))
@@ -178,7 +201,7 @@ namespace Assets.Scripts.StrategicGameScene
 
         private void MoveToLocation(LocationInformation locationInformation)
         {
-            Debug.Log("clicked");
+            Debug.Log("Moving to {0}".FormatWith(locationInformation));
             GlobalState.Instance.StrategicMap.CurrentLocation = locationInformation;
             Application.LoadLevel("StrategicMapScene");
         }

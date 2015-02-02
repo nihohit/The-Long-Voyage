@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Assets.Scripts.StrategicGameScene
 {
+    using Assets.Scripts.Base;
+
     using UnityEngine;
 
     #region LocationInformation
@@ -34,6 +34,15 @@ namespace Assets.Scripts.StrategicGameScene
         }
 
         #endregion constructors
+
+        public override string ToString()
+        {
+            return "{0} at {1}, {2} visited, {3}".FormatWith(
+                Encounter,
+                Coordinates,
+                WasVisited ? "was" : "wasn't",
+                WasSeen ? "Seen" : "unseen");
+        }
     }
 
     #endregion LocationInformation

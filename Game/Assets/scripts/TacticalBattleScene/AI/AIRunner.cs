@@ -1,9 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.TacticalBattleScene.PathFinding;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene.AI
@@ -195,11 +195,12 @@ namespace Assets.Scripts.TacticalBattleScene.AI
             var minRange = 10000;
             var maxRange = 0;
 
-            foreach (var system in actingEntity.Systems)
+            foreach (var system in actingEntity.Systems.Where(system => system.Operational()))
             {
                 maxRange = Math.Max(maxRange, system.Template.MaxRange);
                 minRange = Math.Min(minRange, system.Template.MinRange);
             }
+
             var movingEntity = actingEntity as MovingEntity;
             var currentHexValue = 0.0;
             if (movingEntity != null)
@@ -285,7 +286,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                 var distance = evaluatedHex.Distance(target.Hex);
                 if (distance >= minRange && distance <= maxRange)
                 {
-                    result += movingEntity.Systems
+                    result += movingEntity.Systems.Where(system => system.Operational())
                         .Where(system => evaluatedHex.CanAffect(target.Hex, system.Template.DeliveryMethod, minRange, maxRange))
                         .Sum(system => EvaluateSystemEffect(system.Template, target));
                 }
