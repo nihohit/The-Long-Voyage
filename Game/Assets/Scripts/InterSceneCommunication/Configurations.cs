@@ -1,6 +1,7 @@
 ﻿namespace Assets.Scripts.InterSceneCommunication
 {
     using Assets.Scripts.Base;
+    using Assets.Scripts.Base.JsonParsing;
     using Assets.Scripts.LogicBase;
     using Assets.Scripts.StrategicGameScene;
 
@@ -19,6 +20,8 @@
         private ConfigurationStorage<SubsystemTemplate> m_subsystems;
 
         private ConfigurationStorage<EncounterTemplate> m_encounters;
+
+        private ConfigurationStorage<ScenarioTemplate> m_scenarios;
 
         #endregion fields
 
@@ -86,6 +89,19 @@
                 }
 
                 return m_encounters;
+            }
+        }
+
+        public ConfigurationStorage<ScenarioTemplate> Scenarios
+        {
+            get
+            {
+                if (m_scenarios == null)
+                {
+                    m_scenarios = new ConfigurationStorage<ScenarioTemplate>("Scenarios");
+                }
+
+                return m_scenarios;
             }
         }
 

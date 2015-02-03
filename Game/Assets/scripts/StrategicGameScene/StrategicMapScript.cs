@@ -214,6 +214,11 @@ namespace Assets.Scripts.StrategicGameScene
                 return;
             }
 
+            GlobalState.Instance.StartNewGame("Default");
+
+            var scenario = GlobalState.Instance.Configurations.Scenarios.GetAllConfigurations().First();
+            GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(scenario.Mechs);
+
             CreateLocations();
         }
 
@@ -221,7 +226,6 @@ namespace Assets.Scripts.StrategicGameScene
         {
             var currentLocation = new StrategicMapGenerator().GenerateStrategicMap();
 
-            GlobalState.Instance.StartNewGame("Default");
             GlobalState.Instance.StrategicMap.CurrentLocation = currentLocation;
             GlobalState.Instance.DefaultInitialization();
         }

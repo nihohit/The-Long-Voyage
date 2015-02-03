@@ -1,0 +1,29 @@
+[
+    {
+        "Name": "StandardBeginning",
+        "encounter": "BasicEncounter",
+        "mechs": 
+        [
+            {
+                "entity" :  {
+                    "template": "StandardMech"
+                },
+                "subsystems" : [
+                    "Emp",
+                    "Laser",
+                    "Missile"
+                ]
+            },
+            {
+                "entity" :  {
+                    "template": "ScoutMech"
+                },
+                "subsystems" : [
+                    "Emp",
+                    "Laser",
+                    "Missile"
+                ]
+            }
+        ]
+    }
+]

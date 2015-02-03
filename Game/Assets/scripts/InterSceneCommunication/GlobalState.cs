@@ -47,16 +47,14 @@
 
         public void DefaultInitialization()
         {
-            var mechTemplate = Configurations.ActiveEntities.GetConfiguration("StandardMech");
             for (int i = 0; i < 2; i++)
             {
-                StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
+                StrategicMap.State.AvailableEntities.Add(new SpecificEntity("StandardMech"));
             }
 
-            mechTemplate = Configurations.ActiveEntities.GetConfiguration("ScoutMech");
             for (int i = 0; i < 2; i++)
             {
-                StrategicMap.State.AvailableEntities.Add(new SpecificEntity(mechTemplate));
+                StrategicMap.State.AvailableEntities.Add(new SpecificEntity("ScoutMech"));
             }
 
             var systems = Configurations.Subsystems.GetAllConfigurations().ToArray();

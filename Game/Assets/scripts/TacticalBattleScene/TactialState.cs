@@ -192,27 +192,27 @@ namespace Assets.Scripts.TacticalBattleScene
             Application.LoadLevel("StrategicMapScene");
         }
 
-        //returns all player controlled active entities, with all of their undestroyed equipment
+        // returns all player controlled active entities, with all of their undestroyed equipment
         private static IEnumerable<EquippedEntity> GetSurvivingEntities()
         {
             return s_activeEntities.Where(ent => ent.Loyalty == Loyalty.Player)
-                //TODO - handle variants
-                .Select(ent => new EquippedEntity(new SpecificEntity(ent.Template),
+                // TODO - handle variants
+                .Select(ent => new EquippedEntity(new SpecificEntity(ent.Template.Name),
                                                   ent.Systems.Where(system => system.OperationalCondition != SystemCondition.Destroyed)
-                                                  .Select(system => system.Template)));
+                                                  .Select(system => system.Template.Name)));
         }
 
-        //return a random sample of destroyed entities as salvage
+        // return a random sample of destroyed entities as salvage
         private static IEnumerable<SpecificEntity> GetSalvagedEntities()
         {
             Debug.Log("{0} entities were destroyed".FormatWith(s_destroyedEntities.Count));
-            //TODO - the way they were destroyed should affect the chance of salvage
-            //TODO - handle variants
+            // TODO - the way they were destroyed should affect the chance of salvage
+            // TODO - handle variants
             return s_destroyedEntities.Where(ent => Randomiser.ProbabilityCheck(0.5))
-                .Select(ent => new SpecificEntity(ent.Template));
+                .Select(ent => new SpecificEntity(ent.Template.Name));
         }
 
-        //return a random sample of undestroyed equipment from destroyed entities as salvage
+        // return a random sample of undestroyed equipment from destroyed entities as salvage
         private static IEnumerable<SubsystemTemplate> GetSalvagedEquipment()
         {
             Debug.Log("{0} systems are salvageable".FormatWith(s_destroyedEntities.SelectMany(ent => ent.Systems)

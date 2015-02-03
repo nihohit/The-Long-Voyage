@@ -27,14 +27,14 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace Assets.Scripts.Base
+namespace Assets.Scripts.Base.JsonParsing
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text;
+
     // Example usage:
     //
     //  using UnityEngine;
@@ -122,7 +122,7 @@ namespace Assets.Scripts.Base
 
             private Parser(string jsonString)
             {
-                json = new StringReader(jsonString);
+                this.json = new StringReader(jsonString);
             }
 
             public static object Parse(string jsonString)
@@ -135,8 +135,8 @@ namespace Assets.Scripts.Base
 
             public void Dispose()
             {
-                json.Dispose();
-                json = null;
+                this.json.Dispose();
+                this.json = null;
             }
 
             private Dictionary<string, object> ParseObject()
@@ -144,12 +144,12 @@ namespace Assets.Scripts.Base
                 Dictionary<string, object> table = new Dictionary<string, object>();
 
                 // ditch opening brace
-                json.Read();
+                this.json.Read();
 
                 // {
                 while (true)
                 {
-                    switch (NextToken)
+                    switch (this.NextToken)
                     {
                         case TOKEN.NONE:
                             return null;
@@ -161,22 +161,22 @@ namespace Assets.Scripts.Base
 
                         default:
                             // name
-                            string name = ParseString();
+                            string name = this.ParseString();
                             if (name == null)
                             {
                                 return null;
                             }
 
                             // :
-                            if (NextToken != TOKEN.COLON)
+                            if (this.NextToken != TOKEN.COLON)
                             {
                                 return null;
                             }
                             // ditch the colon
-                            json.Read();
+                            this.json.Read();
 
                             // value
-                            table[name] = ParseValue();
+                            table[name] = this.ParseValue();
                             break;
                     }
                 }
@@ -187,13 +187,13 @@ namespace Assets.Scripts.Base
                 List<object> array = new List<object>();
 
                 // ditch opening bracket
-                json.Read();
+                this.json.Read();
 
                 // [
                 var parsing = true;
                 while (parsing)
                 {
-                    TOKEN nextToken = NextToken;
+                    TOKEN nextToken = this.NextToken;
 
                     switch (nextToken)
                     {
@@ -207,7 +207,7 @@ namespace Assets.Scripts.Base
                             break;
 
                         default:
-                            object value = ParseByToken(nextToken);
+                            object value = this.ParseByToken(nextToken);
 
                             array.Add(value);
                             break;
@@ -219,8 +219,8 @@ namespace Assets.Scripts.Base
 
             private object ParseValue()
             {
-                TOKEN nextToken = NextToken;
-                return ParseByToken(nextToken);
+                TOKEN nextToken = this.NextToken;
+                return this.ParseByToken(nextToken);
             }
 
             private object ParseByToken(TOKEN token)
@@ -228,16 +228,16 @@ namespace Assets.Scripts.Base
                 switch (token)
                 {
                     case TOKEN.STRING:
-                        return ParseString();
+                        return this.ParseString();
 
                     case TOKEN.NUMBER:
-                        return ParseNumber();
+                        return this.ParseNumber();
 
                     case TOKEN.CURLY_OPEN:
-                        return ParseObject();
+                        return this.ParseObject();
 
                     case TOKEN.SQUARED_OPEN:
-                        return ParseArray();
+                        return this.ParseArray();
 
                     case TOKEN.TRUE:
                         return true;
@@ -259,18 +259,18 @@ namespace Assets.Scripts.Base
                 char c;
 
                 // ditch opening quote
-                json.Read();
+                this.json.Read();
 
                 bool parsing = true;
                 while (parsing)
                 {
-                    if (json.Peek() == -1)
+                    if (this.json.Peek() == -1)
                     {
                         parsing = false;
                         break;
                     }
 
-                    c = NextChar;
+                    c = this.NextChar;
                     switch (c)
                     {
                         case '"':
@@ -278,13 +278,13 @@ namespace Assets.Scripts.Base
                             break;
 
                         case '\\':
-                            if (json.Peek() == -1)
+                            if (this.json.Peek() == -1)
                             {
                                 parsing = false;
                                 break;
                             }
 
-                            c = NextChar;
+                            c = this.NextChar;
                             switch (c)
                             {
                                 case '"':
@@ -318,7 +318,7 @@ namespace Assets.Scripts.Base
 
                                     for (int i = 0; i < 4; i++)
                                     {
-                                        hex[i] = NextChar;
+                                        hex[i] = this.NextChar;
                                     }
 
                                     s.Append((char)Convert.ToInt32(new string(hex), 16));
@@ -337,7 +337,7 @@ namespace Assets.Scripts.Base
 
             private object ParseNumber()
             {
-                string number = NextWord;
+                string number = this.NextWord;
 
                 if (number.IndexOf('.') == -1)
                 {
@@ -353,11 +353,11 @@ namespace Assets.Scripts.Base
 
             private void EatWhitespace()
             {
-                while (Char.IsWhiteSpace(PeekChar))
+                while (Char.IsWhiteSpace(this.PeekChar))
                 {
-                    json.Read();
+                    this.json.Read();
 
-                    if (json.Peek() == -1)
+                    if (this.json.Peek() == -1)
                     {
                         break;
                     }
@@ -368,7 +368,7 @@ namespace Assets.Scripts.Base
             {
                 get
                 {
-                    return Convert.ToChar(json.Peek());
+                    return Convert.ToChar(this.json.Peek());
                 }
             }
 
@@ -376,7 +376,7 @@ namespace Assets.Scripts.Base
             {
                 get
                 {
-                    return Convert.ToChar(json.Read());
+                    return Convert.ToChar(this.json.Read());
                 }
             }
 
@@ -386,11 +386,11 @@ namespace Assets.Scripts.Base
                 {
                     StringBuilder word = new StringBuilder();
 
-                    while (!IsWordBreak(PeekChar))
+                    while (!IsWordBreak(this.PeekChar))
                     {
-                        word.Append(NextChar);
+                        word.Append(this.NextChar);
 
-                        if (json.Peek() == -1)
+                        if (this.json.Peek() == -1)
                         {
                             break;
                         }
@@ -404,31 +404,31 @@ namespace Assets.Scripts.Base
             {
                 get
                 {
-                    EatWhitespace();
+                    this.EatWhitespace();
 
-                    if (json.Peek() == -1)
+                    if (this.json.Peek() == -1)
                     {
                         return TOKEN.NONE;
                     }
 
-                    switch (PeekChar)
+                    switch (this.PeekChar)
                     {
                         case '{':
                             return TOKEN.CURLY_OPEN;
 
                         case '}':
-                            json.Read();
+                            this.json.Read();
                             return TOKEN.CURLY_CLOSE;
 
                         case '[':
                             return TOKEN.SQUARED_OPEN;
 
                         case ']':
-                            json.Read();
+                            this.json.Read();
                             return TOKEN.SQUARED_CLOSE;
 
                         case ',':
-                            json.Read();
+                            this.json.Read();
                             return TOKEN.COMMA;
 
                         case '"':
@@ -451,7 +451,7 @@ namespace Assets.Scripts.Base
                             return TOKEN.NUMBER;
                     }
 
-                    switch (NextWord)
+                    switch (this.NextWord)
                     {
                         case "false":
                             return TOKEN.FALSE;
@@ -484,7 +484,7 @@ namespace Assets.Scripts.Base
 
             private Serializer()
             {
-                builder = new StringBuilder();
+                this.builder = new StringBuilder();
             }
 
             public static string Serialize(object obj)
@@ -504,31 +504,31 @@ namespace Assets.Scripts.Base
 
                 if (value == null)
                 {
-                    builder.Append("null");
+                    this.builder.Append("null");
                 }
                 else if ((asStr = value as string) != null)
                 {
-                    SerializeString(asStr);
+                    this.SerializeString(asStr);
                 }
                 else if (value is bool)
                 {
-                    builder.Append((bool)value ? "true" : "false");
+                    this.builder.Append((bool)value ? "true" : "false");
                 }
                 else if ((asList = value as IList) != null)
                 {
-                    SerializeArray(asList);
+                    this.SerializeArray(asList);
                 }
                 else if ((asDict = value as IDictionary) != null)
                 {
-                    SerializeObject(asDict);
+                    this.SerializeObject(asDict);
                 }
                 else if (value is char)
                 {
-                    SerializeString(new string((char)value, 1));
+                    this.SerializeString(new string((char)value, 1));
                 }
                 else
                 {
-                    SerializeOther(value);
+                    this.SerializeOther(value);
                 }
             }
 
@@ -536,29 +536,29 @@ namespace Assets.Scripts.Base
             {
                 bool first = true;
 
-                builder.Append('{');
+                this.builder.Append('{');
 
                 foreach (object e in obj.Keys)
                 {
                     if (!first)
                     {
-                        builder.Append(',');
+                        this.builder.Append(',');
                     }
 
-                    SerializeString(e.ToString());
-                    builder.Append(':');
+                    this.SerializeString(e.ToString());
+                    this.builder.Append(':');
 
-                    SerializeValue(obj[e]);
+                    this.SerializeValue(obj[e]);
 
                     first = false;
                 }
 
-                builder.Append('}');
+                this.builder.Append('}');
             }
 
             private void SerializeArray(IList anArray)
             {
-                builder.Append('[');
+                this.builder.Append('[');
 
                 bool first = true;
 
@@ -566,20 +566,20 @@ namespace Assets.Scripts.Base
                 {
                     if (!first)
                     {
-                        builder.Append(',');
+                        this.builder.Append(',');
                     }
 
-                    SerializeValue(obj);
+                    this.SerializeValue(obj);
 
                     first = false;
                 }
 
-                builder.Append(']');
+                this.builder.Append(']');
             }
 
             private void SerializeString(string str)
             {
-                builder.Append('\"');
+                this.builder.Append('\"');
 
                 char[] charArray = str.ToCharArray();
                 foreach (var c in charArray)
@@ -587,49 +587,49 @@ namespace Assets.Scripts.Base
                     switch (c)
                     {
                         case '"':
-                            builder.Append("\\\"");
+                            this.builder.Append("\\\"");
                             break;
 
                         case '\\':
-                            builder.Append("\\\\");
+                            this.builder.Append("\\\\");
                             break;
 
                         case '\b':
-                            builder.Append("\\b");
+                            this.builder.Append("\\b");
                             break;
 
                         case '\f':
-                            builder.Append("\\f");
+                            this.builder.Append("\\f");
                             break;
 
                         case '\n':
-                            builder.Append("\\n");
+                            this.builder.Append("\\n");
                             break;
 
                         case '\r':
-                            builder.Append("\\r");
+                            this.builder.Append("\\r");
                             break;
 
                         case '\t':
-                            builder.Append("\\t");
+                            this.builder.Append("\\t");
                             break;
 
                         default:
                             int codepoint = Convert.ToInt32(c);
                             if ((codepoint >= 32) && (codepoint <= 126))
                             {
-                                builder.Append(c);
+                                this.builder.Append(c);
                             }
                             else
                             {
-                                builder.Append("\\u");
-                                builder.Append(codepoint.ToString("x4"));
+                                this.builder.Append("\\u");
+                                this.builder.Append(codepoint.ToString("x4"));
                             }
                             break;
                     }
                 }
 
-                builder.Append('\"');
+                this.builder.Append('\"');
             }
 
             private void SerializeOther(object value)
@@ -639,7 +639,7 @@ namespace Assets.Scripts.Base
                 // Previously floats and doubles lost precision too.
                 if (value is float)
                 {
-                    builder.Append(((float)value).ToString("R"));
+                    this.builder.Append(((float)value).ToString("R"));
                 }
                 else if (value is int
                     || value is uint
@@ -650,16 +650,16 @@ namespace Assets.Scripts.Base
                     || value is ushort
                     || value is ulong)
                 {
-                    builder.Append(value);
+                    this.builder.Append(value);
                 }
                 else if (value is double
                     || value is decimal)
                 {
-                    builder.Append(Convert.ToDouble(value).ToString("R"));
+                    this.builder.Append(Convert.ToDouble(value).ToString("R"));
                 }
                 else
                 {
-                    SerializeString(value.ToString());
+                    this.SerializeString(value.ToString());
                 }
             }
         }

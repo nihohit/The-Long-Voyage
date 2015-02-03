@@ -2,6 +2,9 @@
 
 namespace Assets.Scripts.LogicBase
 {
+    using Assets.Scripts.Base.JsonParsing;
+    using Assets.Scripts.InterSceneCommunication;
+
     #region EntityTemplate
 
     /// <summary>
@@ -107,15 +110,16 @@ namespace Assets.Scripts.LogicBase
 
         public EntityVariant Variant { get; private set; }
 
-        public SpecificEntity(EntityTemplate template, EntityVariant variant)
+        [ChosenConstructorForParsing]
+        public SpecificEntity(string template, EntityVariant variant = EntityVariant.Regular) :
+            this(GlobalState.Instance.Configurations.ActiveEntities.GetConfiguration(template), variant)
+        {
+        }
+
+        public SpecificEntity(EntityTemplate template, EntityVariant variant = EntityVariant.Regular)
         {
             Template = template;
             Variant = variant;
-        }
-
-        public SpecificEntity(EntityTemplate template)
-            : this(template, EntityVariant.Regular)
-        {
         }
     }
 

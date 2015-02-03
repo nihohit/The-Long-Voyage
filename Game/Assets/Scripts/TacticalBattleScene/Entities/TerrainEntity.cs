@@ -3,8 +3,6 @@ using Assets.Scripts.LogicBase;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
-    #region inanimate entities
-
     /// <summary>
     /// Entities which represent natural pieces of terrain, and aren't active - just obstructions.
     /// </summary>
@@ -12,7 +10,7 @@ namespace Assets.Scripts.TacticalBattleScene
     {
         private HexReactor m_hex;
 
-        public void Init(EntityTemplate template)
+        public void Init(TerrainEntityTemplate template)
         {
             Init(new SpecificEntity(template), Loyalty.Inactive);
         }
@@ -30,7 +28,7 @@ namespace Assets.Scripts.TacticalBattleScene
             }
         }
 
-        //inanimate objects take heat damage as physical damage
+        // inanimate objects take heat damage as physical damage
         protected override void InternalDamage(double damage, EntityEffectType damageType)
         {
             if (damageType == EntityEffectType.HeatDamage || damageType == EntityEffectType.IncendiaryDamage)
@@ -40,6 +38,4 @@ namespace Assets.Scripts.TacticalBattleScene
             base.InternalDamage(damage, damageType);
         }
     }
-
-    #endregion inanimate entities
 }
