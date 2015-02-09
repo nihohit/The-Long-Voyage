@@ -199,7 +199,6 @@ namespace Assets.Scripts.TacticalBattleScene
             {
                 m_detectedHexes.Clear();
             }
-            Systems = null;
         }
 
         private IEnumerable<HexReactor> FindSeenHexes()

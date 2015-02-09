@@ -235,9 +235,10 @@ namespace Assets.Scripts.TacticalBattleScene
             return equippedEntities.Select(equippedEntity =>
                 {
                     var entity = (ActiveEntity)UnityHelper.Instantiate<MovingEntity>(transform.position);
-                    entity.Init(equippedEntity.InternalEntity,
-                       loyalty,
-                       equippedEntity.Subsystems);
+                    entity.Init(
+                        equippedEntity.InternalEntity,
+                        loyalty,
+                        equippedEntity.Subsystems);
 
                     return entity;
                 }).Materialize();

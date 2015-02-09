@@ -16,23 +16,23 @@ namespace Assets.Scripts.TacticalBattleScene
     {
         #region fields
 
+        // this is needed, since we need to enable all the entities before each radar sweep.
+        private static readonly List<EntityReactor> sr_radarableEntity = new List<EntityReactor>();
+
+        private static readonly List<ActiveEntity> sr_destroyedEntities = new List<ActiveEntity>();
+
         private static HexReactor s_selectedHex;
 
         private static LinkedList<Loyalty> s_turnOrder;
 
         private static LinkedListNode<Loyalty> s_currentTurn;
 
-        //for each entity and each hex, the available actions
+        // for each entity and each hex, the available actions
         private static HashSet<ActiveEntity> s_activeEntities;
 
         private static IEnumerable<HexReactor> s_hexes;
 
         private static Dictionary<Loyalty, IAIRunner> s_nonPlayerTeams;
-
-        //this is needed, since we need to enable all the entities before each radar sweep.
-        private static readonly List<EntityReactor> s_radarableEntity = new List<EntityReactor>();
-
-        private static readonly List<ActiveEntity> s_destroyedEntities = new List<ActiveEntity>();
 
         #endregion fields
 
@@ -58,11 +58,13 @@ namespace Assets.Scripts.TacticalBattleScene
 
                 s_selectedHex = value;
                 if (s_selectedHex != null)
+                {
                     s_selectedHex.Select();
+                }
             }
         }
 
-        public static IEnumerable<EntityReactor> RadarVisibleEntities { get { return s_radarableEntity; } }
+        public static IEnumerable<EntityReactor> RadarVisibleEntities { get { return sr_radarableEntity; } }
 
         public static Loyalty CurrentTurn { get { return s_currentTurn.Value; } }
 
@@ -74,14 +76,14 @@ namespace Assets.Scripts.TacticalBattleScene
         public static void AddRadarVisibleEntity(EntityReactor ent)
         {
             Assert.AssertConditionMet((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0, "Added entity isn't radar visible");
-            s_radarableEntity.Add(ent);
+            sr_radarableEntity.Add(ent);
         }
 
         public static void DestroyEntity(EntityReactor ent)
         {
             if ((ent.Template.Visuals & VisualProperties.AppearsOnRadar) != 0)
             {
-                s_radarableEntity.Remove(ent);
+                sr_radarableEntity.Remove(ent);
             }
             var entity = ent as ActiveEntity;
             if (entity != null)
@@ -101,12 +103,12 @@ namespace Assets.Scripts.TacticalBattleScene
         public static void EnterEntitiesAndHexes(IEnumerable<ActiveEntity> entities, IEnumerable<HexReactor> hexes)
         {
             s_activeEntities = new HashSet<ActiveEntity>(entities);
-            s_radarableEntity.Clear();
+            sr_radarableEntity.Clear();
             entities.ForEach(ent => TextureManager.UpdateEntityTexture(ent));
             var loaylties = entities.Select(ent => ent.Loyalty).Distinct();
             SetTurnOrder(loaylties);
             s_hexes = hexes;
-            s_destroyedEntities.Clear();
+            sr_destroyedEntities.Clear();
             s_nonPlayerTeams = new Dictionary<Loyalty, IAIRunner>();
             foreach (var loyalty in loaylties.Where(team => team != Loyalty.Player))
             {
@@ -134,7 +136,7 @@ namespace Assets.Scripts.TacticalBattleScene
             Debug.Log("Starting {0}'s turn.".FormatWith(CurrentTurn));
 
             // start the turn to all of this turn's group's active entities
-            thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn);
+            thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn).Materialize();
             thisTurnActiveEntities.ForEach(ent => ent.StartTurn());
             SelectedHex = null;
 
@@ -160,7 +162,7 @@ namespace Assets.Scripts.TacticalBattleScene
         private static void DestroyEntity(ActiveEntity ent)
         {
             s_activeEntities.Remove(ent);
-            s_destroyedEntities.Add(ent);
+            sr_destroyedEntities.Add(ent);
             //TODO - end battle logic
             if (ent.Loyalty == Loyalty.Player)
             {
@@ -197,27 +199,29 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             return s_activeEntities.Where(ent => ent.Loyalty == Loyalty.Player)
                 // TODO - handle variants
-                .Select(ent => new EquippedEntity(new SpecificEntity(ent.Template.Name),
-                                                  ent.Systems.Where(system => system.OperationalCondition != SystemCondition.Destroyed)
-                                                  .Select(system => system.Template.Name)));
+                .Select(ent => new EquippedEntity(
+                    new SpecificEntity(ent.Template.Name),
+                    ent.Systems.Where(system => system.OperationalCondition != SystemCondition.Destroyed)
+                        .Select(system => system.Template.Name)));
         }
 
         // return a random sample of destroyed entities as salvage
         private static IEnumerable<SpecificEntity> GetSalvagedEntities()
         {
-            Debug.Log("{0} entities were destroyed".FormatWith(s_destroyedEntities.Count));
+            Debug.Log("{0} entities were destroyed".FormatWith(sr_destroyedEntities.Count));
             // TODO - the way they were destroyed should affect the chance of salvage
             // TODO - handle variants
-            return s_destroyedEntities.Where(ent => Randomiser.ProbabilityCheck(0.5))
+            return sr_destroyedEntities.Where(ent => Randomiser.ProbabilityCheck(0.5))
                 .Select(ent => new SpecificEntity(ent.Template.Name));
         }
 
         // return a random sample of undestroyed equipment from destroyed entities as salvage
         private static IEnumerable<SubsystemTemplate> GetSalvagedEquipment()
         {
-            Debug.Log("{0} systems are salvageable".FormatWith(s_destroyedEntities.SelectMany(ent => ent.Systems)
-                .Where(system => system.OperationalCondition != SystemCondition.Destroyed).Count()));
-            return s_destroyedEntities.SelectMany(ent => ent.Systems)
+            Debug.Log("{0} systems are salvageable".FormatWith(
+                sr_destroyedEntities.SelectMany(ent => ent.Systems).Count(
+                    system => system.OperationalCondition != SystemCondition.Destroyed)));
+            return sr_destroyedEntities.SelectMany(ent => ent.Systems)
                 .Where(system => system.OperationalCondition != SystemCondition.Destroyed)
                 .Where(system => Randomiser.ProbabilityCheck(0.5)).Select(system => system.Template);
         }

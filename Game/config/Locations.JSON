@@ -41,7 +41,7 @@
 				{
 					"condition" : "RelationsWith",
 					"key" : "flogiston",
-					"value" : 20.0,
+					"value" : 0.0,
 				}
             },
         ]

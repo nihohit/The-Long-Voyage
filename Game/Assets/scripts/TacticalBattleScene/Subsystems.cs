@@ -44,6 +44,8 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public SubsystemTemplate Template { get; private set; }
 
+        public Event OutOfActionsForThisTurn;
+
         #endregion properties
 
         #region constructors

@@ -45,28 +45,6 @@
             StrategicMap = new StrategicMapInformation(playerName);
         }
 
-        public void DefaultInitialization()
-        {
-            for (int i = 0; i < 2; i++)
-            {
-                StrategicMap.State.AvailableEntities.Add(new SpecificEntity("StandardMech"));
-            }
-
-            for (int i = 0; i < 2; i++)
-            {
-                StrategicMap.State.AvailableEntities.Add(new SpecificEntity("ScoutMech"));
-            }
-
-            var systems = Configurations.Subsystems.GetAllConfigurations().ToArray();
-            for (int i = 0; i < 6; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    StrategicMap.State.AvailableSystems.Add(systems[i]);
-                }
-            }
-        }
-
         public void EndGame()
         {
             TacticalBattle = null;

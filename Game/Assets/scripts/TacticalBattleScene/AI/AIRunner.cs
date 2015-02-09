@@ -45,14 +45,8 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
         public ResultEvaluator NecessaryConditions
         {
-            get
-            {
-                return () => (m_necessaryConditions() && Action.NecessaryConditions());
-            }
-            set
-            {
-                m_necessaryConditions = value;
-            }
+            get { return () => (m_necessaryConditions() && Action.NecessaryConditions()); }
+            set { m_necessaryConditions = value; }
         }
 
         #region IComparable implementation
@@ -77,11 +71,11 @@ namespace Assets.Scripts.TacticalBattleScene.AI
     {
         #region private fields
 
-        //the evaluator which assigns a value to each potential action
-        private readonly IActionEvaluator m_actionEvaluator;
+        // the evaluator which assigns a value to each potential action
+        private readonly IActionEvaluator r_actionEvaluator;
 
         // where the evaluated actions are stored by order
-        private readonly IPriorityQueue<EvaluatedAction> m_prioritizedActions;
+        private readonly IPriorityQueue<EvaluatedAction> r_prioritizedActions;
 
         private IEnumerable<ActiveEntity> m_controlledEntities;
         private EvaluatedAction m_currentAction;
@@ -92,8 +86,8 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
         public AIRunner(IActionEvaluator evaluator)
         {
-            m_actionEvaluator = evaluator;
-            m_prioritizedActions = new PriorityQueue<EvaluatedAction>();
+            this.r_actionEvaluator = evaluator;
+            this.r_prioritizedActions = new PriorityQueue<EvaluatedAction>();
         }
 
         #endregion constructor
@@ -105,7 +99,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         public void Act(IEnumerable<ActiveEntity> controlledEntities)
         {
             m_controlledEntities = controlledEntities;
-            m_actionEvaluator.Clear();
+            this.r_actionEvaluator.Clear();
             EvaluateActions();
             NextAction();
         }
@@ -116,15 +110,18 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         private void EvaluateActions()
         {
             Debug.Log("Evaluating actions");
-            m_prioritizedActions.Clear();
+            this.r_prioritizedActions.Clear();
             m_controlledEntities.ForEach(ent => ent.ResetActions());
             var loyalty = m_controlledEntities.First().Loyalty;
             var entitiesSeen = Enumerable.Empty<EntityReactor>();
-            entitiesSeen = m_controlledEntities.Aggregate(entitiesSeen, (current, ent) => current.Union(ent.SeenHexes.Select(hex => hex.Content)
-                .Where(entity => entity != null && entity.Loyalty != loyalty)));
+            entitiesSeen = m_controlledEntities.Aggregate(
+                entitiesSeen,
+                (current, ent) => current.Union(ent.SeenHexes.Select(hex => hex.Content).Where(
+                    entity => entity != null &&
+                    entity.Loyalty != loyalty)));
             entitiesSeen = entitiesSeen.Distinct();
-            m_controlledEntities.SelectMany(ent => m_actionEvaluator.EvaluateActions(ent, entitiesSeen))
-                .ForEach(action => m_prioritizedActions.Push(action));
+            m_controlledEntities.SelectMany(ent => this.r_actionEvaluator.EvaluateActions(ent, entitiesSeen))
+                .ForEach(action => this.r_prioritizedActions.Push(action));
         }
 
         private void NextAction()
@@ -134,7 +131,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                 EvaluateActions();
             }
 
-            m_currentAction = m_prioritizedActions.Peek();
+            m_currentAction = this.r_prioritizedActions.Peek();
 
             if (m_currentAction == null || m_currentAction.EvaluatedPriority <= 0)
             {
@@ -142,7 +139,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                 return;
             }
 
-            m_prioritizedActions.Pop();
+            this.r_prioritizedActions.Pop();
 
             if (m_currentAction.NecessaryConditions())
             {
@@ -168,7 +165,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
     {
         #region fields
 
-        private readonly IEntityEvaluator m_entityEvaluator;
+        private readonly IEntityEvaluator r_entityEvaluator;
 
         #endregion fields
 
@@ -176,7 +173,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
         public SimpleEvaluator(IEntityEvaluator entityEvaluator)
         {
-            m_entityEvaluator = entityEvaluator;
+            this.r_entityEvaluator = entityEvaluator;
         }
 
         #endregion constructor
@@ -191,7 +188,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<EntityReactor> entitiesSeenByTeam)
         {
             // initiate relevant information
-            var potentialTargets = entitiesSeenByTeam.Where(ent => m_entityEvaluator.EvaluateValue(ent) > 0);
+            var potentialTargets = entitiesSeenByTeam.Where(ent => this.r_entityEvaluator.EvaluateValue(ent) > 0).Materialize();
             var minRange = 10000;
             var maxRange = 0;
 
@@ -212,57 +209,83 @@ namespace Assets.Scripts.TacticalBattleScene.AI
             foreach (var action in actingEntity.Actions)
             {
                 // TODO - possible to create an AI usage hint enumerator, which will say whether a given system should be used on friendlies or enemies, weakend or strong, etc.
-                var evaluatedAction = new EvaluatedAction { Action = action };
                 var systemAction = action as OperateSystemAction;
                 var movementAction = action as MovementAction;
 
                 if (systemAction != null)
                 {
-                    // TODO - implicit assumption that all system actions are against entities.
-                    var target = systemAction.TargetedHex.Content;
-                    if (target != null && target.Loyalty != Loyalty.Inactive)
-                    {
-                        evaluatedAction.EvaluatedPriority += EvaluateSystemEffect(systemAction.System.Template, target);
-
-                        //Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
-                    }
-
-                    evaluatedAction.NecessaryConditions = () => !actingEntity.Destroyed() && !target.Destroyed();
-
-                    evaluatedAction.AchievedGoal = CreateAchievedGoal(systemAction);
+                    yield return SetSystemAction(systemAction, actingEntity);
                 }
                 else if (movementAction != null)
                 {
-                    var targetHex = movementAction.TargetedHex;
-
-                    // in scouting mode, just go to the most distant hex
-                    if (potentialTargets.None(target => target.Loyalty != actingEntity.Loyalty))
-                    {
-                        // TODO - a better solution would choose a hex by how many new hexes can be seen from it
-                        evaluatedAction.EvaluatedPriority = movementAction.TargetedHex.Distance(actingEntity.Hex);
-                    }
-                    else
-                    {
-                        // evaluate by targets and what can be done to them
-                        // the value of a hex is compared to that of the current location.
-                        // TODO - evaluate hex effects
-                        evaluatedAction.EvaluatedPriority = EvaluateHexValue(movementAction.TargetedHex, potentialTargets, movingEntity, minRange, maxRange) - currentHexValue;
-                    }
-                    evaluatedAction.NecessaryConditions = () => targetHex.Content == null;
-                    evaluatedAction.AchievedGoal = () => true;
+                    yield return this.SetMovementAction(movementAction, movingEntity, minRange, maxRange, potentialTargets, currentHexValue);
                 }
                 else
                 {
                     throw new UnreachableCodeException("The action {0} should be of a known kind.".FormatWith(action));
                 }
-
-                yield return evaluatedAction;
             }
+        }
+
+        private EvaluatedAction SetSystemAction(OperateSystemAction systemAction, ActiveEntity actingEntity)
+        {
+            // TODO - implicit assumption that all system actions are against entities.
+            var target = systemAction.TargetedHex.Content;
+
+            var evaluatedAction = new EvaluatedAction
+            {
+                Action = systemAction,
+                NecessaryConditions = () => !actingEntity.Destroyed() && !target.Destroyed(),
+                AchievedGoal = CreateAchievedGoal(systemAction)
+            };
+
+            if (target != null && target.Loyalty != Loyalty.Inactive)
+            {
+                evaluatedAction.EvaluatedPriority += EvaluateSystemEffect(systemAction.System.Template, target);
+
+                // Debug.Log("Action {0} valued as {1}".FormatWith(systemAction.Name, evaluatedAction.EvaluatedPriority));
+            }
+
+            return evaluatedAction;
+        }
+
+        private EvaluatedAction SetMovementAction(
+            MovementAction movementAction,
+            MovingEntity movingEntity,
+            int minRange,
+            int maxRange,
+            IEnumerable<EntityReactor> potentialTargets,
+            double currentHexValue)
+        {
+            var targetHex = movementAction.TargetedHex;
+
+            var evaluatedAction = new EvaluatedAction
+            {
+                Action = movementAction,
+                NecessaryConditions = () => targetHex.Content == null,
+                AchievedGoal = () => true
+            };
+
+            // in scouting mode, just go to the most distant hex
+            if (potentialTargets.None(target => target.Loyalty != movingEntity.Loyalty))
+            {
+                // TODO - a better solution would choose a hex by how many new hexes can be seen from it
+                evaluatedAction.EvaluatedPriority = movementAction.TargetedHex.Distance(movingEntity.Hex);
+            }
+            else
+            {
+                // evaluate by targets and what can be done to them
+                // the value of a hex is compared to that of the current location.
+                // TODO - evaluate hex effects
+                evaluatedAction.EvaluatedPriority = EvaluateHexValue(movementAction.TargetedHex, potentialTargets, movingEntity, minRange, maxRange) - currentHexValue;
+            }
+
+            return evaluatedAction;
         }
 
         public void Clear()
         {
-            m_entityEvaluator.Clear();
+            this.r_entityEvaluator.Clear();
         }
 
         #endregion IActionEvaluator implementation
@@ -272,8 +295,8 @@ namespace Assets.Scripts.TacticalBattleScene.AI
             var target = systemAction.TargetedHex.Content;
             return () =>
             {
-                m_entityEvaluator.UpdateValue(target);
-                //Debug.Log("{0} achieved goal? {1} is destroyed? {2}".FormatWith(systemAction, target, target.Destroyed()));
+                this.r_entityEvaluator.UpdateValue(target);
+                // Debug.Log("{0} achieved goal? {1} is destroyed? {2}".FormatWith(systemAction, target, target.Destroyed()));
                 return target.Destroyed();
             };
         }
@@ -293,21 +316,22 @@ namespace Assets.Scripts.TacticalBattleScene.AI
                         .Where(system => evaluatedHex.CanAffect(target.Hex, system.Template.DeliveryMethod, minRange, maxRange))
                         .Sum(system => EvaluateSystemEffect(system.Template, target));
                 }
-                if (result == 0)
+
+                if (result == 0.0)
                 {
-                    //TODO - time complexity could be reduced significantly by a. feeding astar some heuristic or b. replacing a star with a heuristic
-                    result += m_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
+                    // TODO - time complexity could be reduced significantly by a. feeding astar some heuristic or b. replacing a star with a heuristic
+                    result += this.r_entityEvaluator.EvaluateValue(target) / AStar.FindPathCost(
                         evaluatedHex, target.Hex, new AStarConfiguration(movingEntity.Template.MovementMethod, hex => 0));
                 }
             }
-            //Debug.Log("Hex {0} valued as {1}".FormatWith(evaluatedHex, result));
+            // Debug.Log("Hex {0} valued as {1}".FormatWith(evaluatedHex, result));
             return result;
         }
 
         // evaluate the value of a system on a specific target
         private double EvaluateSystemEffect(SubsystemTemplate system, EntityReactor target)
         {
-            return (m_entityEvaluator.EvaluateValue(target) + system.EffectStrength) / (system.EnergyCost + system.HeatGenerated);
+            return (this.r_entityEvaluator.EvaluateValue(target) + system.EffectStrength) / (system.EnergyCost + system.HeatGenerated);
         }
     }
 
@@ -326,7 +350,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
     public class SimpleEntityEvaluator : IEntityEvaluator
     {
-        private readonly Dictionary<EntityReactor, double> m_entitiesValue = new Dictionary<EntityReactor, double>();
+        private readonly Dictionary<EntityReactor, double> r_entitiesValue = new Dictionary<EntityReactor, double>();
 
         public double EvaluateValue(EntityReactor entity)
         {
@@ -335,12 +359,17 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
         public void UpdateValue(EntityReactor entity)
         {
-            m_entitiesValue.Remove(entity);
+            if (entity == null)
+            {
+                Debug.Log("hi");
+            }
+
+            this.r_entitiesValue.Remove(entity);
         }
 
         public void Clear()
         {
-            m_entitiesValue.Clear();
+            this.r_entitiesValue.Clear();
         }
 
         private double EvaluateActiveEntity(ActiveEntity activeEntity)
@@ -348,13 +377,13 @@ namespace Assets.Scripts.TacticalBattleScene.AI
             var systemsValue = activeEntity.Systems.Where(system => system.Operational()).Sum(system => (system.Template.EffectStrength + system.Template.MaxRange - system.Template.MinRange) / (system.Template.EnergyCost + system.Template.HeatGenerated));
             var healthValue = activeEntity.Shield + activeEntity.Health - activeEntity.CurrentHeat;
             var value = systemsValue / healthValue;
-            //Debug.Log("Mech {0} is of value {1}".FormatWith(activeEntity.FullState(), systemsValue + healthValue));
+            // Debug.Log("Mech {0} is of value {1}".FormatWith(activeEntity.FullState(), systemsValue + healthValue));
             return value;
         }
 
         private double EvalueAndAddActiveEntity(ActiveEntity entity)
         {
-            return m_entitiesValue.TryGetOrAdd(entity, () => EvaluateActiveEntity(entity));
+            return this.r_entitiesValue.TryGetOrAdd(entity, () => EvaluateActiveEntity(entity));
         }
     }
 

@@ -125,6 +125,7 @@ namespace Assets.Scripts.StrategicGameScene
 
             if (choiceResult.Result.HasFlag(ChoiceResultType.Fight))
             {
+                DoneButton.onClick.RemoveAllListeners();
                 DoneButton.onClick.AddListener(() => this.StartBattle());
             }
         }
@@ -227,7 +228,6 @@ namespace Assets.Scripts.StrategicGameScene
             var currentLocation = new StrategicMapGenerator().GenerateStrategicMap();
 
             GlobalState.Instance.StrategicMap.CurrentLocation = currentLocation;
-            GlobalState.Instance.DefaultInitialization();
         }
     }
 }

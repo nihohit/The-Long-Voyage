@@ -153,6 +153,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
             // makes it display all buttons;
             TacticalState.SelectedHex = TacticalState.SelectedHex;
+            HexReactor.DisplayHoveredOverCommands();
         }
 
         #endregion private methods
@@ -294,7 +295,12 @@ namespace Assets.Scripts.TacticalBattleScene
         public Subsystem System { get; private set; }
 
         public OperateSystemAction(ActiveEntity actingEntity, HexOperation effect, Subsystem subsystem, HexReactor targetedHex) :
-            base(actingEntity, subsystem.Template.Name, (Vector2)targetedHex.Position, targetedHex, "{0} Operate {1} on {2}".FormatWith(actingEntity, subsystem.Template.Name, targetedHex))
+            base(
+                actingEntity,
+                subsystem.Template.Name,
+                (Vector2)targetedHex.Position,
+                targetedHex,
+                "{0} Operate {1} on {2}".FormatWith(actingEntity, subsystem.Template.Name, targetedHex))
         {
             this.r_action = () => effect(targetedHex);
             System = subsystem;
@@ -317,6 +323,11 @@ namespace Assets.Scripts.TacticalBattleScene
                     this.r_action();
                     callback();
                 });
+
+            if (!System.CanOperateNow())
+            {
+                this.Destroy();
+            }
         }
 
         protected override void AffectEntity()
@@ -334,7 +345,6 @@ namespace Assets.Scripts.TacticalBattleScene
             return System.CanOperateNow();
         }
 
-        //TODO - is there a more elegant way to prevent them from displaying?
         public override void DisplayAction()
         {
             if (!Destroyed)
