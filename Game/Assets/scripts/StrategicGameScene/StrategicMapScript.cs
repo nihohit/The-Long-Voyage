@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts.StrategicGameScene
 {
+    using Assets.Scripts.LogicBase;
     using Assets.Scripts.UnityBase;
 
     public class StrategicMapScript : MonoBehaviour
@@ -24,7 +25,7 @@ namespace Assets.Scripts.StrategicGameScene
         // ReSharper disable InconsistentNaming
         public GameObject TextPanel;
 
-        public Button InventoryButton;
+        public Button LoadupButton;
         public Button Choice1Button;
         public Button Choice2Button;
         public Button Choice3Button;
@@ -70,7 +71,7 @@ namespace Assets.Scripts.StrategicGameScene
 
         private void SetupTextualGui(EncounterTemplate encounter)
         {
-            InventoryButton.gameObject.SetActive(false);
+            LoadupButton.gameObject.SetActive(false);
 
             if (encounter.Choices == null)
             {
@@ -155,8 +156,7 @@ namespace Assets.Scripts.StrategicGameScene
         private void RemoveTextualUI()
         {
             TextPanel.SetActive(false);
-            InventoryButton.gameObject.SetActive(true);
-            InventoryButton.onClick.AddListener(() => Application.LoadLevel("InventoryScene"));
+            LoadupButton.gameObject.SetActive(true);
             DisplayNextLocations(m_currentLocation, new HashSet<LocationInformation>());
             Marker.Mark(m_currentLocation.Coordinates);
         }
@@ -179,6 +179,9 @@ namespace Assets.Scripts.StrategicGameScene
             {
                 // TODO: if we want to avoid double lines, we ca add an order, or name the objects and check
                 var lineRenderer = new GameObject().AddComponent<LineRenderer>();
+                lineRenderer.gameObject.name = "LineFrom {0} to {1}".FormatWith(
+                    location.Coordinates,
+                    currentLocation.Coordinates);
                 lineRenderer.SetVertexCount(2);
                 lineRenderer.SetPosition(0, location.Coordinates);
                 lineRenderer.SetPosition(1, currentLocation.Coordinates);
@@ -219,6 +222,10 @@ namespace Assets.Scripts.StrategicGameScene
 
             var scenario = GlobalState.Instance.Configurations.Scenarios.GetAllConfigurations().First();
             GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(scenario.Mechs);
+            GlobalState.Instance.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(
+                GlobalState.Instance.Configurations.ActiveEntities.GetAllConfigurations().ChooseRandomValue()));
+            GlobalState.Instance.StrategicMap.State.AvailableSystems.Add(
+                GlobalState.Instance.Configurations.Subsystems.GetAllConfigurations().ChooseRandomValue());
 
             CreateLocations();
         }

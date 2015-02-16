@@ -1,9 +1,8 @@
 ﻿using Assets.Scripts.StrategicGameScene;
+using Assets.Scripts.StrategicGameScene.LoadupScreen;
 
 namespace Assets.Scripts.InterSceneCommunication
 {
-    using Assets.Scripts.InventoryScreen;
-
     /// <summary>
     /// Information relevant to the strategic gameplay, to be passed from one encounter to the next.
     /// </summary>

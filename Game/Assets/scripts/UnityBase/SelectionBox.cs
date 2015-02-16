@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.LogicBase;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using Assets.Scripts.Base;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.UnityBase
 {
@@ -11,18 +14,16 @@ namespace Assets.Scripts.UnityBase
     /// A clickable box that offers a selection of possible items when clicked, and saves the chosen item.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public abstract class SelectionBox<T> : SimpleButton where T : class
+    public abstract class SelectionBox<T> : MonoBehaviour where T : class
     {
         #region fields
-
-        // the selected item
-        private T m_selectedItem;
-
-        protected IUnityMarker m_markedTexture;
 
         protected static ITextureHandler<T> s_textureHandler;
 
         protected static object s_sharedLock = new object();
+
+        // the selected item
+        private T m_selectedItem;
 
         #endregion fields
 
@@ -31,7 +32,10 @@ namespace Assets.Scripts.UnityBase
         // when an item is selected, all displayed options must be removed and the box's visual need to be updated.
         public virtual T SelectedItem
         {
-            get { return m_selectedItem; }
+            get
+            {
+                return m_selectedItem;
+            }
             set
             {
                 m_selectedItem = value;
@@ -45,16 +49,25 @@ namespace Assets.Scripts.UnityBase
 
         protected virtual void UpdateVisuals(T item)
         {
+            var image = transform.FindChild("Image").GetComponent<Image>();
+
             if (item == null)
             {
-                m_markedTexture.Unmark();
+                image.enabled = false;
             }
             else
             {
-                var textureRenderer = m_markedTexture.Renderer;
-                s_textureHandler.UpdateMarkerTexture(item, textureRenderer);
-                m_markedTexture.Mark(transform.position);
-                m_markedTexture.Scale = new Vector3(0.1f, 0.1f, 0.1f);
+                image.enabled = true;
+                var texture = s_textureHandler.GetTexture(item);
+                var size = Convert.ToInt32(image.sprite.bounds.size.x);
+                texture.wrapMode = TextureWrapMode.Clamp;
+
+                image.sprite = Sprite.Create(
+                    texture,
+                    image.sprite.rect,
+                    image.sprite.bounds.center);
+
+                image.sprite.name = texture.name;
             }
         }
 
@@ -88,7 +101,11 @@ namespace Assets.Scripts.UnityBase
         // when an item is selected, all displayed options must be removed and the box's visual need to be updated.
         public override T SelectedItem
         {
-            get { return base.SelectedItem; }
+            get
+            {
+                return base.SelectedItem;
+            }
+
             set
             {
                 s_selectableOptions.Remove(value);
@@ -96,6 +113,7 @@ namespace Assets.Scripts.UnityBase
                 {
                     s_selectableOptions.Add(base.SelectedItem);
                 }
+
                 base.SelectedItem = value;
                 RemoveButtons();
             }
@@ -105,47 +123,47 @@ namespace Assets.Scripts.UnityBase
 
         #region public methods
 
-        public virtual void Awake()
-        {
-            ClickableAction = ClickedOn;
-        }
-
-        // Update is called once per frame
-        public override void Update()
-        {
-            base.Update();
-            if (m_frameCounter > 0)
-            {
-                m_frameCounter--;
-            }
-            else
-            {
-                //if the mouse is pressed and not on me, remove selection
-                if (Input.GetMouseButtonDown(0) && !m_clickedOn)
-                {
-                    RemoveButtons();
-                }
-            }
-            m_clickedOn = false;
-        }
-
         // sets all possible selection options
         public static void Init(List<T> items)
         {
             s_selectableOptions = items;
         }
 
-        #endregion public methods
+        public virtual void Awake()
+        {
+            gameObject.GetComponent<Button>().onClick.AddListener(this.ClickedOn);
+        }
 
-        #region private method
+        // Update is called once per frame
+        public virtual void Update()
+        {
+            if (m_frameCounter > 0)
+            {
+                m_frameCounter--;
+            }
+            else
+            {
+                // if the mouse is pressed and not on me, remove selection
+                if (Input.GetMouseButtonDown(0) && !m_clickedOn)
+                {
+                    RemoveButtons();
+                }
+            }
 
-        private void ClickedOn()
+            m_clickedOn = false;
+        }
+
+        public void ClickedOn()
         {
             m_clickedOn = true;
             RemoveButtons();
             m_buttons = new ButtonCluster(CreateButtons().Materialize());
             m_frameCounter = 5;
         }
+
+        #endregion public methods
+
+        #region private method
 
         private IEnumerable<IUnityButton> CreateButtons()
         {
@@ -158,6 +176,7 @@ namespace Assets.Scripts.UnityBase
             yield return button;
 
             var choices = s_selectableOptions.Distinct();
+
             // reverse the list if in the bottom part of the screen
             foreach (var item in buttomPartOfScreen ? choices.Reverse() : choices)
             {
@@ -172,8 +191,10 @@ namespace Assets.Scripts.UnityBase
             var buttonObject = UnityHelper.Instantiate<SimpleButton>(currentPosition, "CircularButton");
             buttonObject.Scale = new Vector3(0.1f, 0.1f, 0.1f);
             button = buttonObject;
-            TextureHandler.ReplaceTexture(button.Renderer, GetTexture(item), "selection button");
+            var texture = GetTexture(item);
+            TextureHandler.ReplaceTexture(button.Renderer, texture);
             button.ClickableAction = () => SelectedItem = item;
+            buttonObject.name = texture.name + "Button";
             if (buttonsGoingDown)
             {
                 return new Vector3(currentPosition.x, currentPosition.y - 0.2f * buttonObject.GetComponent<CircleCollider2D>().radius, 0);

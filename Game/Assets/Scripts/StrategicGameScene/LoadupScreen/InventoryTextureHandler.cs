@@ -4,7 +4,7 @@ using Assets.Scripts.UnityBase;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Scripts.InventoryScreen
+namespace Assets.Scripts.StrategicGameScene.LoadupScreen
 {
     /// <summary>
     /// Texture handler for the inventory screen
@@ -30,7 +30,7 @@ namespace Assets.Scripts.InventoryScreen
 
         public void UpdateMarkerTexture(SpecificEntity ent, SpriteRenderer renderer)
         {
-            ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player), ent.Template.Name);
+            ReplaceTexture(renderer, GetEntityTexture(ent.Template, Loyalty.Player));
         }
 
         public void UpdateMarkerTexture(SubsystemTemplate item, SpriteRenderer renderer)
@@ -51,6 +51,11 @@ namespace Assets.Scripts.InventoryScreen
         public Texture2D GetNullTexture()
         {
             return this.r_buttonTextures.Get("Null");
+        }
+
+        public Texture2D GetEmptyTexture()
+        {
+            return this.r_buttonTextures.Get("Empty");
         }
 
         #endregion public methods
