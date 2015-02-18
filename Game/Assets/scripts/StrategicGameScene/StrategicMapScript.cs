@@ -226,6 +226,10 @@ namespace Assets.Scripts.StrategicGameScene
                 GlobalState.Instance.Configurations.ActiveEntities.GetAllConfigurations().ChooseRandomValue()));
             GlobalState.Instance.StrategicMap.State.AvailableSystems.Add(
                 GlobalState.Instance.Configurations.Subsystems.GetAllConfigurations().ChooseRandomValue());
+            GlobalState.Instance.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(
+                GlobalState.Instance.Configurations.ActiveEntities.GetAllConfigurations().ChooseRandomValue()));
+            GlobalState.Instance.StrategicMap.State.AvailableSystems.Add(
+                GlobalState.Instance.Configurations.Subsystems.GetAllConfigurations().ChooseRandomValue());
 
             CreateLocations();
         }

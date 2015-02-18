@@ -54,9 +54,9 @@ namespace Assets.Scripts.UnityBase
             return from2.GetAngleBetweenTwoPoints(to2);
         }
 
-        public static void DestroyGameObject(this MonoBehaviour unityObject)
+        public static void DestroyGameObject(this MonoBehaviour unityObject, float time = 0f)
         {
-            UnityEngine.Object.Destroy(unityObject.gameObject);
+            UnityEngine.Object.Destroy(unityObject.gameObject, time);
         }
 
         public static float Distance(this Vector3 point, Vector3 otherPoint)

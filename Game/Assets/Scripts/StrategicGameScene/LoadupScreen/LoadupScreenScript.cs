@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.StrategicGameScene.LoadupScreen
 {
+    using Assets.Scripts.Base;
     using Assets.Scripts.InterSceneCommunication;
     using Assets.Scripts.UnityBase;
     using System.Collections.Generic;
@@ -53,7 +54,7 @@ namespace Assets.Scripts.StrategicGameScene.LoadupScreen
         public void OnDisable()
         {
             GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(
-                m_entitySelectionBoxes.Select(box => box.GetEquippedEntity()));
+                m_entitySelectionBoxes.Select(box => box.GetEquippedEntity()).Materialize());
         }
 
         private void InitializeSelectionBoxes()

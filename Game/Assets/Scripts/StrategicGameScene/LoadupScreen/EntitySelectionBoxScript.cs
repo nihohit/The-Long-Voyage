@@ -25,12 +25,6 @@ namespace Assets.Scripts.StrategicGameScene.LoadupScreen
 
         #region public methods
 
-        public static void Init(List<SpecificEntity> entities, InventoryTextureHandler textureHandler)
-        {
-            Init(entities);
-            s_textureHandler = textureHandler;
-        }
-
         public override void Awake()
         {
             base.Awake();
@@ -44,7 +38,7 @@ namespace Assets.Scripts.StrategicGameScene.LoadupScreen
         {
             var ent = new EquippedEntity(
                 SelectedItem,
-                m_systems.Select(systemBox => systemBox.SelectedItem).Where(system => system != null));
+                m_systems.Select(systemBox => systemBox.SelectedItem).Where(system => system != null).Materialize());
 
             SelectedItem = null;
             foreach (var box in m_systems)
@@ -87,13 +81,20 @@ namespace Assets.Scripts.StrategicGameScene.LoadupScreen
             {
                 this.FindSystems();
 
-                if (item == null)
+                int i = 0;
+
+                foreach (var system in m_systems)
                 {
-                    m_systems.ForEach(system => system.gameObject.SetActive(false));
-                }
-                else
-                {
-                    m_systems.Take(item.Template.SystemSlots).ForEach(system => system.gameObject.SetActive(true));
+                    if (item != null && i < item.Template.SystemSlots)
+                    {
+                        i++;
+                        system.gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        system.SelectedItem = null;
+                        system.gameObject.SetActive(false);
+                    }
                 }
             }
         }

@@ -6,16 +6,16 @@ namespace Assets.Scripts.UnityBase
 {
     public static class UnityHelper
     {
-        private readonly static Vector3 r_defaultLocation = Vector3.zero;
+        private static readonly Vector3 sr_defaultLocation = Vector3.zero;
 
         public static T Instantiate<T>() where T : MonoBehaviour
         {
-            return Instantiate<T>(r_defaultLocation, GetResourceName(typeof(T)));
+            return Instantiate<T>(sr_defaultLocation, GetResourceName(typeof(T)));
         }
 
         public static T Instantiate<T>(string resourceName) where T : MonoBehaviour
         {
-            return Instantiate<T>(r_defaultLocation, resourceName);
+            return Instantiate<T>(sr_defaultLocation, resourceName);
         }
 
         public static T Instantiate<T>(Vector3 location) where T : MonoBehaviour
