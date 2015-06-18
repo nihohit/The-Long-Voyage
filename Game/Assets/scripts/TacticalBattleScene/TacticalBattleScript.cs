@@ -74,7 +74,7 @@ namespace Assets.Scripts.TacticalBattleScene
             // create new hexes from a given entry point and of a given size
             var hexes = new List<HexReactor>();
             var entryPoint = Vector3.zero;
-            var hexSize = greenHex.renderer.bounds.size;
+            var hexSize = greenHex.GetComponent<Renderer>().bounds.size;
 
             // reset the global state's tactical battle information
             var state = GlobalState.Instance.TacticalBattle;

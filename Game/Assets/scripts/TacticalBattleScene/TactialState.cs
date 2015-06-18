@@ -104,7 +104,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             s_activeEntities = new HashSet<ActiveEntity>(entities);
             sr_radarableEntity.Clear();
-            entities.ForEach(ent => TextureManager.UpdateEntityTexture(ent));
+            //entities.ForEach(ent => TextureManager.UpdateEntityTexture(ent));
             var loaylties = entities.Select(ent => ent.Loyalty).Distinct();
             SetTurnOrder(loaylties);
             s_hexes = hexes;

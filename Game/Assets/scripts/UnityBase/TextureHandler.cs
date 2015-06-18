@@ -87,6 +87,7 @@ namespace Assets.Scripts.UnityBase
         {
             Assert.NotNull(renderer, "renderer");
             Assert.NotNull(renderer.sprite, "sprite");
+            var oldSpriteBounds = renderer.sprite.bounds;
             renderer.sprite = Sprite.Create(newTexture, renderer.sprite.rect, new Vector2(0.5f, 0.5f));
             renderer.sprite.name = newTexture.name;
         }

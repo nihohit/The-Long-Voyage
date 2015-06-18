@@ -262,13 +262,13 @@ namespace Assets.Scripts.TacticalBattleScene
             bool rayCastAll, HexCheck breakCheck, string layerName, Func<T, HexReactor> hexExtractor) where T : MonoBehaviour
         {
             Assert.NotNull(Content, "Operating out of empty hex {0}".FormatWith(this));
-
-            Content.collider2D.enabled = false;
+            var contentCollider = Content.GetComponent<Collider2D>();
+            contentCollider.enabled = false;
             var results = new HashSet<HexReactor>();
             var layerMask = 1 << LayerMask.NameToLayer(layerName);
             var amountOfHexesToCheck = 6 * maxRange;
             var angleSlice = 360f / amountOfHexesToCheck;
-            var rayDistance = renderer.bounds.size.x * maxRange;
+            var rayDistance = GetComponent<Renderer>().bounds.size.x * maxRange;
 
             for (float currentAngle = 0f; currentAngle < 360f; currentAngle += angleSlice)
             {
@@ -309,7 +309,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 }
             }
 
-            Content.collider2D.enabled = true;
+            contentCollider.enabled = true;
             return results;
         }
 
@@ -324,19 +324,19 @@ namespace Assets.Scripts.TacticalBattleScene
 
             if (Content != null)
             {
-                Content.collider2D.enabled = false;
+                Content.GetComponent<Collider2D>().enabled = false;
             }
             var layerMask = 1 << LayerMask.NameToLayer(layerName);
             var angle = Position.GetAngleBetweenTwoPoints(targetHex.Position);
             var radianAngle = angle.DegreesToRadians();
             var directionVector = new Vector2(Mathf.Sin(radianAngle), Mathf.Cos(radianAngle));
-            var rayHit = Physics2D.Raycast(Position, directionVector, renderer.bounds.size.x * distance, layerMask);
+            var rayHit = Physics2D.Raycast(Position, directionVector, GetComponent<Renderer>().bounds.size.x * distance, layerMask);
 
             Assert.NotNull(rayHit.collider, "ray collider");
             var hex = rayHit.collider.gameObject.GetComponent<EntityReactor>().Hex;
             if (Content != null)
             {
-                Content.collider2D.enabled = true;
+                Content.GetComponent<Collider2D>().enabled = true;
             }
             return hex.Equals(targetHex);
         }
@@ -611,7 +611,7 @@ namespace Assets.Scripts.TacticalBattleScene
             {
                 m_displayCommandsAmount = commandCount;
                 Vector2 displayOffset = default(Vector2);
-                var size = ((CircleCollider2D)collider2D).radius;
+                var size = ((CircleCollider2D)GetComponent<Collider2D>()).radius;
 
                 int i = 0;
                 foreach (var action in activeCommands)

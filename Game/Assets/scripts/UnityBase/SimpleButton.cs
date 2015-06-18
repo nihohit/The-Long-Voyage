@@ -60,6 +60,14 @@ namespace Assets.Scripts.UnityBase
         // to see if there's a higher layer collider the click was aimed for.
         protected Action CheckIfClickIsOnUI(Action action)
         {
+            return CheckIfClickIsOnLayer(action, "AddedUI");
+        }
+
+        // This method is necessary due to a known Unity bug - sometimes a click is received
+        // By a collider in a lower layer. This function sets a default check,
+        // to see if there's a higher layer collider the click was aimed for.
+        protected Action CheckIfClickIsOnLayer(Action action, string layer)
+        {
             return () =>
                 {
                     //TODO - check if the Unity bug which makes this necessary is fixed, and remove this.
@@ -67,7 +75,7 @@ namespace Assets.Scripts.UnityBase
                     var mousePosition = Input.mousePosition;
                     var clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
 
-                    var layerMask = LayerMask.NameToLayer("AddedUI");
+                    var layerMask = LayerMask.NameToLayer(layer);
 
                     var UIOnPoint = ObjectOnPoint(clickPosition, layerMask);
 

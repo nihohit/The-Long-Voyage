@@ -33,7 +33,6 @@ namespace Assets.Scripts.TacticalBattleScene
 
         public void UpdateEntityTexture(EntityReactor ent)
         {
-            var name = "{0}_{1}".FormatWith(ent.Loyalty, ent.Template.Name);
             var renderer = ent.GetComponent<SpriteRenderer>();
             var newTexture = GetEntityTexture(ent.Template, ent.Loyalty);
             ReplaceTexture(renderer, newTexture);
