@@ -42,7 +42,10 @@ namespace Assets.Scripts.TacticalBattleScene
         protected EntityReactor()
         {
             m_id = s_idCounter++;
-        }
+			ClickableAction = () => TacticalState.SelectedHex = this.Hex;
+			OnMouseExitAction = () => this.Hex.OnMouseExitAction();
+			OnMouseOverAction = () => this.Hex.OnMouseOverAction();
+		}
 
         #endregion constructor
 

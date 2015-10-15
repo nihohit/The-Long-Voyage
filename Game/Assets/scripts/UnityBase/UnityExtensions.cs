@@ -10,8 +10,19 @@ namespace Assets.Scripts.UnityBase
     /// Extension class for unity engine objects
     /// </summary>
     public static class UnityExtensions
-    {
-        public static Vector3 LerpAngle(this Vector3 direction, Vector3 other, float time)
+	{
+		public static GameObject SetAsChildren<T>(this IEnumerable<T> objects, string parentName) where T : MonoBehaviour
+		{
+			var parentObject = new GameObject(parentName);
+			foreach (var obj in objects)
+			{
+				obj.transform.SetParent(parentObject.transform);
+			}
+
+			return parentObject;
+		}
+
+		public static Vector3 LerpAngle(this Vector3 direction, Vector3 other, float time)
         {
             return new Vector3(0, 0, Mathf.LerpAngle(direction.z, other.z, time));
         }
@@ -121,6 +132,14 @@ namespace Assets.Scripts.UnityBase
         public static float TimePerAmount(this float baseTime, int amountOfItems, float minimum)
         {
             return Mathf.Max(baseTime / amountOfItems, minimum);
-        }
-    }
+		}
+
+		public static void SetSize(this RectTransform trans, Vector2 newSize)
+		{
+			Vector2 oldSize = trans.rect.size;
+			Vector2 deltaSize = newSize - oldSize;
+			trans.offsetMin = trans.offsetMin - new Vector2(deltaSize.x * trans.pivot.x, deltaSize.y * trans.pivot.y);
+			trans.offsetMax = trans.offsetMax + new Vector2(deltaSize.x * (1f - trans.pivot.x), deltaSize.y * (1f - trans.pivot.y));
+		}
+	}
 }
