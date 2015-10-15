@@ -15,4 +15,7 @@ namespace Assets.Scripts.StrategicGameScene
         None,
         RelationsWith,
     }
+
+
+    public enum Biome { Jungle, Mountain, Forest, Hills, Undefined, Desert, Sea, Plains }
 }

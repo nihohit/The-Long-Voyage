@@ -14,10 +14,13 @@ namespace Assets.Scripts.InterSceneCommunication
 
         public InventoryTextureHandler InventoryTextureHandler { get; private set; }
 
+        public StrategicMapTextureHandler StrategicMapTextureHandler { get; private set; }
+
         public StrategicMapInformation(string playerName)
         {
             State = new PlayerState(playerName);
             InventoryTextureHandler = new InventoryTextureHandler();
+            StrategicMapTextureHandler = new StrategicMapTextureHandler();
         }
     }
 }

@@ -1,19 +1,21 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.UnityBase;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets.Scripts.StrategicGameScene
 {
-    internal class StrategicMapTextureHandler
+    public class StrategicMapTextureHandler : TextureHandler
     {
-        private readonly Texture r_guiBackground;
+        private readonly Dictionary<string, Texture2D> m_hexes;
 
         public StrategicMapTextureHandler()
         {
-            this.r_guiBackground = Resources.Load<Texture2D>("StrategicMapUI/LocationMessageBackground");
+            m_hexes = base.GetDictionary("Hexes");
         }
 
-        internal UnityEngine.Texture GetUIBackground()
+        public void UpdateHexTexture(SpriteRenderer renderer, Biome biome)
         {
-            return this.r_guiBackground;
+            base.UpdateTexture(biome.ToString(), renderer, m_hexes, "hexes");
         }
     }
 }

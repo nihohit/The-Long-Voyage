@@ -100,6 +100,14 @@ namespace Assets.Scripts.Base
         {
             var chooser = new WeightedValuesChooser<T>();
 
+            // if the chances don't sum to 1, normalize the values.
+            var chancesSum = dictionary.Values.Sum();
+            if(Math.Abs(chancesSum - 1) > 0.001)
+            {
+                //TODO - log a warning
+                dictionary = dictionary.ToDictionary(pair => pair.Key, pair => pair.Value / chancesSum);
+            }
+
             return chooser.ChooseWeightedValues(dictionary, amount);
         }
 

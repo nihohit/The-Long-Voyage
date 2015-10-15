@@ -129,5 +129,24 @@ namespace Assets.Scripts.UnityBase
         }
     }
 
-    #endregion TextureHandler
+	#endregion TextureHandler
+
+	#region BasicTextureHandler
+
+	public class BasicTextureHandler : TextureHandler
+	{
+		private readonly Dictionary<string, Texture2D> m_textureDict;
+
+		public BasicTextureHandler(string folder)
+		{
+			m_textureDict = base.GetDictionary(folder);
+		}
+
+		public void UpdateHexTexture(SpriteRenderer renderer, string textureName)
+		{
+			base.UpdateTexture(textureName, renderer, m_textureDict, "images");
+		}
+	}
+
+	#endregion
 }

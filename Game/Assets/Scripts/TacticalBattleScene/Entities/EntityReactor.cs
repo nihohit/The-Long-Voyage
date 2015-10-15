@@ -1,13 +1,11 @@
-﻿using System;
-using Assets.Scripts.Base;
+﻿using Assets.Scripts.Base;
 using Assets.Scripts.LogicBase;
 using Assets.Scripts.UnityBase;
+using System;
 using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
-	#region EntityReactor
-
 	/// <summary>
 	/// A script wrapper for entities
 	/// </summary>
@@ -161,6 +159,4 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		#endregion protected methods
 	}
-
-	#endregion EntityReactor
 }

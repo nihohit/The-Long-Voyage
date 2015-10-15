@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Assets.Scripts.TacticalBattleScene.AI
 {
 	#region interfaces
-
+	
 	// used to estimate if some result passed some kind of condition
 	public delegate bool ResultEvaluator();
 
@@ -19,7 +19,9 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 
 		void Clear();
 	}
-
+	
+	// TODO - consider the option to run the AI synchronously after every player action, so that we have the time between action and end turn to compute more information.
+	// TODO - consider using TPL dataflow to handle AI asynchronously.
 	public interface IAIRunner
 	{
 		void Act(IEnumerable<ActiveEntity> entities);

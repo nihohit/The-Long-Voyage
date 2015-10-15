@@ -8,6 +8,7 @@ using UnityEngine.UI;
 namespace Assets.Scripts.StrategicGameScene
 {
     using Assets.Scripts.LogicBase;
+    using MapGeneration;
     using Assets.Scripts.UnityBase;
 
     public class StrategicMapScript : MonoBehaviour
@@ -47,7 +48,7 @@ namespace Assets.Scripts.StrategicGameScene
 
             m_currentLocation = GlobalState.Instance.StrategicMap.CurrentLocation;
 
-            // if we're after a battle, add the battle salvage to our eqiupment
+            // if we're after a battle, add the battle salvage to our equipment
             if (GlobalState.Instance.BattleSummary != null)
             {
                 var battleResult = GlobalState.Instance.BattleSummary;
@@ -236,7 +237,7 @@ namespace Assets.Scripts.StrategicGameScene
 
         private void CreateLocations()
         {
-            var currentLocation = new StrategicMapGenerator().GenerateStrategicMap();
+            var currentLocation = new MutatingAreasMapGenerator().GenerateStrategicMap();
 
             GlobalState.Instance.StrategicMap.CurrentLocation = currentLocation;
         }
