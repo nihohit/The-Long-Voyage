@@ -5,6 +5,7 @@ using Assets.Scripts.UnityBase;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using System;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
@@ -19,6 +20,10 @@ namespace Assets.Scripts.TacticalBattleScene
         private readonly List<HexReactor> m_emptyHexes = new List<HexReactor>();
 
         private int m_screenSpeed;
+
+		private GameObject m_hexes;
+		private GameObject m_terrainEntities;
+		private GameObject m_activeEntities;
 
         #endregion private members
 
@@ -68,6 +73,7 @@ namespace Assets.Scripts.TacticalBattleScene
         // Use this for initialization
         private void Start()
         {
+			FindBaseObjects();
             InitClasses();
             m_screenSpeed = SimpleConfigurationHandler.GetIntProperty("screen movement speed", FileAccessor.General);
 
@@ -91,9 +97,18 @@ namespace Assets.Scripts.TacticalBattleScene
                 var entryCoordinate = (float)-i / 2 - state.AmountOfHexes + 1;
                 for (float j = 0; j < amountOfHexesInRow; j++)
                 {
-                    hexes.Add(CreateRandomHex(
-                        new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
-                        new Vector2(entryCoordinate + j, i)));
+					if (entryCoordinate + j == 0 && i == 0)
+					{
+						hexes.Add(CreateGrassHex(
+							new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
+							new Vector2(entryCoordinate + j, i)));
+					}
+					else
+					{
+						hexes.Add(CreateLightTreesHex(
+							new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
+							new Vector2(entryCoordinate + j, i)));
+					}
                 }
             }
 
@@ -109,7 +124,7 @@ namespace Assets.Scripts.TacticalBattleScene
                 var entryCoordinate = (float)i / 2 - state.AmountOfHexes + 1;
                 for (float j = 0; j < amountOfHexesInRow; j++)
                 {
-                    hexes.Add(CreateRandomHex(
+                    hexes.Add(CreateLightTreesHex(
                         new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
                         new Vector2(entryCoordinate + j, i)));
                 }
@@ -124,11 +139,18 @@ namespace Assets.Scripts.TacticalBattleScene
             chosenHexes.ForEach(hex => hex.Content = state.EntitiesInBattle.First(ent => ent.Hex == null));
         }
 
-        #endregion MonoBehaviour overrides
+		private void FindBaseObjects()
+		{
+			m_hexes = GameObject.Find("Hexes");
+			m_terrainEntities = GameObject.Find("TerrainEntities");
+			m_activeEntities = GameObject.Find("ActiveEntities");
+		}
 
-        #region private methods
+		#endregion MonoBehaviour overrides
 
-        private void InitClasses()
+		#region private methods
+
+		private void InitClasses()
         {
             TacticalState.Init();
             InitiateGlobalState();
@@ -163,6 +185,7 @@ namespace Assets.Scripts.TacticalBattleScene
             var terrainEntity = UnityHelper.Instantiate<TerrainEntity>(transform.position);
             reactor.Content = terrainEntity;
             terrainEntity.Init(GlobalState.Instance.Configurations.TerrainEntities.GetConfiguration(configurationName));
+			terrainEntity.transform.SetParent(m_terrainEntities.transform);
             return reactor;
         }
 
@@ -172,6 +195,7 @@ namespace Assets.Scripts.TacticalBattleScene
             var hex = (GameObject)Instantiate(prefab, nextPosition, Quaternion.identity);
             var reactor = hex.GetComponent<HexReactor>();
             reactor.Init(hexCoordinates);
+			reactor.transform.SetParent(m_hexes.transform);
             return reactor;
         }
 
@@ -202,15 +226,12 @@ namespace Assets.Scripts.TacticalBattleScene
             //TODO - replace with exception throwing when we remove the direct access to level generation
             if (GlobalState.Instance.TacticalBattle == null)
             {
-                var state = new TacticalBattleInformation
-                    {
-                        AmountOfHexes = SimpleConfigurationHandler.GetIntProperty(
-                            "default map size",
-                            FileAccessor.TerrainGeneration),
-                        EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4)
-                            .Union(GlobalState.Instance.StrategicMap == null
-                                       ? CreateMechs(Loyalty.Player, 4)
-                                       : CreateMechs(GlobalState.Instance.StrategicMap.State.EquippedEntities, Loyalty.Player))
+				var state = new TacticalBattleInformation
+				{
+					AmountOfHexes = SimpleConfigurationHandler.GetIntProperty(
+							"default map size",
+							FileAccessor.TerrainGeneration),
+					EntitiesInBattle = CreateMechs(new[] { new EquippedEntity(new SpecificEntity("ScoutMech"), new[] { "Flamer","Laser","Missile" })}, Loyalty.Player)
                     };
                 GlobalState.Instance.TacticalBattle = state;
             }
@@ -239,7 +260,7 @@ namespace Assets.Scripts.TacticalBattleScene
                         equippedEntity.InternalEntity,
                         loyalty,
                         equippedEntity.Subsystems);
-
+					entity.transform.SetParent(m_activeEntities.transform);
                     return entity;
                 }).Materialize();
         }

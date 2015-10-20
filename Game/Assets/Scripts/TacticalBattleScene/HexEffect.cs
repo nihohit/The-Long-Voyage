@@ -33,6 +33,7 @@ namespace Assets.Scripts.TacticalBattleScene
             Template = template;
             m_remainingDuration = template.Duration;
             m_affectedHex = hex;
+			this.transform.SetParent(hex.transform);
         }
 
         #endregion constructors
