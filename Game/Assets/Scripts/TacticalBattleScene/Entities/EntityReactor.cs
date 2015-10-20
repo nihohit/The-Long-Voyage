@@ -11,7 +11,7 @@ namespace Assets.Scripts.TacticalBattleScene
     /// <summary>
     /// A script wrapper for entities
     /// </summary>
-    public abstract class EntityReactor : SimpleButton
+    public abstract class EntityReactor : MarkerScript
     {
         #region private fields
 
@@ -42,9 +42,6 @@ namespace Assets.Scripts.TacticalBattleScene
         protected EntityReactor()
         {
             m_id = s_idCounter++;
-			ClickableAction = () => TacticalState.SelectedHex = this.Hex;
-			OnMouseExitAction = () => this.Hex.OnMouseExitAction();
-			OnMouseOverAction = () => this.Hex.OnMouseOverAction();
 		}
 
         #endregion constructor

@@ -89,14 +89,6 @@ namespace Assets.Scripts.UnityBase
                 };
         }
 
-        //returns an object on a layer, in a certain point
-        protected GameObject ObjectOnPoint(Vector3 point, Int32 layerMask)
-        {
-            var rayHits = Physics2D.RaycastAll(point, new Vector2(0, 0));
-            return rayHits.Select(rayHit => rayHit.collider.gameObject).
-                FirstOrDefault(gameObject => gameObject.layer == layerMask);
-        }
-
         private void OnMouseOver()
         {
             if (enabled)

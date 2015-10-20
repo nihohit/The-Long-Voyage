@@ -218,7 +218,7 @@ namespace Assets.Scripts.TacticalBattleScene
         {
             var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.enabled).ToList();
             inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
-            var results = Hex.RaycastAndResolveEntities(0, Template.RadarRange, (hex) => hex.Content != null, true);
+            var results = Hex.RaycastAndResolveHexes(0, Template.RadarRange, (hex) => hex.Content != null, false, hex => false);
             inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);
             return results;
         }

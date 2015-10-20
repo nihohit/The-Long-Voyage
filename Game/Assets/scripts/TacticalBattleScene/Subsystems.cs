@@ -189,12 +189,7 @@ namespace Assets.Scripts.TacticalBattleScene
                         !targetedHex.Equals(this.r_containingEntity.Hex));
             }
 
-            if (unobstructedShot)
-            {
-                return hex.RaycastAndResolveEntities(Template.MinRange, Template.MaxRange, TargetingCheck, true);
-            }
-
-            return hex.RaycastAndResolveEntities(Template.MinRange, Template.MaxRange, TargetingCheck, false);
+            return hex.RaycastAndResolveHexes(Template.MinRange, Template.MaxRange, TargetingCheck, unobstructedShot, hit => false);
         }
 
         #endregion private methods

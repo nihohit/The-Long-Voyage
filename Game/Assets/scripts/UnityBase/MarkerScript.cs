@@ -126,11 +126,19 @@ namespace Assets.Scripts.UnityBase
             return m_currentOrder != null;
         }
 
-        #endregion public methods
+		//returns an object on a layer, in a certain point
+		protected GameObject ObjectOnPoint(Vector3 point, int layerMask)
+		{
+			var rayHits = Physics2D.RaycastAll(point, new Vector2(0, 0));
+			return rayHits.Select(rayHit => rayHit.collider.gameObject).
+				FirstOrDefault(gameObject => gameObject.layer == layerMask);
+		}
 
-        #region private methods
+		#endregion public methods
 
-        private void MoveTowardsCurrentPoint()
+		#region private methods
+
+		private void MoveTowardsCurrentPoint()
         {
             // if the last frame took too much time, skip this frame.
             if (Time.deltaTime > 0.05f)
