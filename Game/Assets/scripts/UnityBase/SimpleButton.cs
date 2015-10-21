@@ -4,113 +4,115 @@ using UnityEngine;
 
 namespace Assets.Scripts.UnityBase
 {
-    /// <summary>
-    /// Button class that wraps button-relevant events with Action properties.
-    /// Simplifies the creation of clickable objects in play.
-    /// </summary>
-    public class SimpleButton : MarkerScript, IUnityButton
-    {
-        #region properties
+	/// <summary>
+	/// Button class that wraps button-relevant events with Action properties.
+	/// Simplifies the creation of clickable objects in play.
+	/// </summary>
+	public class SimpleButton : MarkerScript, IUnityButton
+	{
+		#region properties
 
-        public Action ClickableAction { get; set; }
+		public Action ClickableAction { get; set; }
 
-        public virtual Action OnMouseOverAction { get; set; }
+		public virtual Action OnMouseOverAction { get; set; }
 
-        public virtual Action OnMouseExitAction { get; set; }
+		public virtual Action OnMouseExitAction { get; set; }
 
-        #endregion properties
+		#endregion properties
 
-        #region constructor
+		#region constructor
 
-        public SimpleButton()
-        {
-            //just in case those value aren't inserted afterwards
-            OnMouseOverAction = () => { };
-            OnMouseExitAction = () => { };
-            ClickableAction = () => { };
-        }
+		public SimpleButton()
+		{
+			//just in case those value aren't inserted afterwards
+			OnMouseOverAction = () => { };
+			OnMouseExitAction = () => { };
+			ClickableAction = () => { };
+		}
 
-        #endregion constructor
+		#endregion constructor
 
-        #region overrides
+		#region overrides
 
-        public override void Mark()
-        {
-            Mark(transform.position);
-        }
+		public override void Mark()
+		{
+			Mark(transform.position);
+		}
 
-        public override void Mark(Vector3 position)
-        {
-            base.Mark(position);
-            GetComponent<Collider2D>().enabled = true;
-        }
+		public override void Mark(Vector3 position)
+		{
+			base.Mark(position);
+			GetComponent<Collider2D>().enabled = true;
+		}
 
-        public override void Unmark()
-        {
-            base.Unmark();
-            GetComponent<Collider2D>().enabled = false;
-        }
+		public override void Unmark()
+		{
+			base.Unmark();
+			GetComponent<Collider2D>().enabled = false;
+		}
 
-        #endregion overrides
+		#endregion overrides
 
-        #region private and protected methods
+		#region private and protected methods
 
-        // This method is necessary due to a known Unity bug - sometimes a click is received
-        // By a collider in a lower layer. This function sets a default check,
-        // to see if there's a higher layer collider the click was aimed for.
-        protected Action CheckIfClickIsOnUI(Action action)
-        {
-            return CheckIfClickIsOnLayer(action, "AddedUI");
-        }
+		// This method is necessary due to a known Unity bug - sometimes a click is received
+		// By a collider in a lower layer. This function sets a default check,
+		// to see if there's a higher layer collider the click was aimed for.
+		protected Action CheckIfClickIsOnUI(Action action)
+		{
+			return CheckIfClickIsOnLayer(action, "AddedUI");
+		}
 
-        // This method is necessary due to a known Unity bug - sometimes a click is received
-        // By a collider in a lower layer. This function sets a default check,
-        // to see if there's a higher layer collider the click was aimed for.
-        protected Action CheckIfClickIsOnLayer(Action action, string layer)
-        {
-            return () =>
-                {
-                    //TODO - check if the Unity bug which makes this necessary is fixed, and remove this.
-                    // Store the point where the user has clicked as a Vector3
-                    var mousePosition = Input.mousePosition;
-                    var clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
+		// This method is necessary due to a known Unity bug - sometimes a click is received
+		// By a collider in a lower layer. This function sets a default check,
+		// to see if there's a higher layer collider the click was aimed for.
+		protected Action CheckIfClickIsOnLayer(Action action, string layer)
+		{
+			return () =>
+				{
+					//TODO - check if the Unity bug which makes this necessary is fixed, and remove this.
+					// Store the point where the user has clicked as a Vector3
+					var mousePosition = Input.mousePosition;
+					var clickPosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, -Camera.main.transform.position.z));
 
-                    var layerMask = LayerMask.NameToLayer(layer);
+					var layerMask = LayerMask.NameToLayer(layer);
 
-                    var UIOnPoint = ObjectOnPoint(clickPosition, layerMask);
+					var UIOnPoint = ObjectOnPoint(clickPosition, layerMask);
 
-                    if (UIOnPoint != null)
-                    {
-                        var button = UIOnPoint.GetComponent<SimpleButton>();
-                        button.ClickableAction();
-                        return;
-                    }
-                    action();
-                };
-        }
+					if (UIOnPoint != null)
+					{
+						var button = UIOnPoint.GetComponent<SimpleButton>();
+						button.ClickableAction();
+						return;
+					}
+					action();
+				};
+		}
 
-        private void OnMouseOver()
-        {
-            if (enabled)
-            {
-                OnMouseOverAction();
-            }
-        }
+		private void OnMouseOver()
+		{
+			if (enabled)
+			{
+				OnMouseOverAction();
+			}
+		}
 
-        private void OnMouseExit()
-        {
-            if (enabled)
-                OnMouseExitAction();
-        }
+		private void OnMouseExit()
+		{
+			if (enabled)
+			{
+				OnMouseExitAction();
+			}
+		}
 
-        private void OnMouseDown()
-        {
-            if (enabled)
-            {
-                ClickableAction();
-            }
-        }
+		private void OnMouseDown()
+		{
+			if (enabled)
+			{
+				ClickableAction();
+			}
+		}
 
-        #endregion private and protected methods
-    }
+		#endregion private and protected methods
+	}
 }

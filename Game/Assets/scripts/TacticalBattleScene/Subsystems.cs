@@ -112,11 +112,11 @@ namespace Assets.Scripts.TacticalBattleScene
             return m_workingCondition == SystemCondition.Operational;
         }
 
-        public IEnumerable<OperateSystemAction> ActionsInRange(Dictionary<HexReactor, List<OperateSystemAction>> dict)
+        public IEnumerable<OperateSystemAction> ActionsInRange()
         {
             // if we can't operate the system, return no actions
             Assert.AssertConditionMet(Operational(), "System {0} can't act now".FormatWith(this));
-            return TargetsInRange().Select(targetedHex => CreateAction(targetedHex, dict));
+			return TargetsInRange().Select(targetedHex => new OperateSystemAction(this.r_containingEntity, Effect, this, targetedHex));
         }
 
         public void Act()
@@ -151,20 +151,6 @@ namespace Assets.Scripts.TacticalBattleScene
             return (Template.PossibleTargets.HasFlag(TargetingType.EmptyHexes) && targetedHex.Content == null) ||
                     (Template.PossibleTargets.HasFlag(TargetingType.Enemy) && targetedHex.Content != null && targetedHex.Content.Loyalty != this.r_containingEntity.Loyalty) ||
                     (Template.PossibleTargets.HasFlag(TargetingType.Friendly) && targetedHex.Content != null && targetedHex.Content.Loyalty == this.r_containingEntity.Loyalty);
-        }
-
-        private OperateSystemAction CreateAction(HexReactor targetedHex, Dictionary<HexReactor, List<OperateSystemAction>> dict)
-        {
-            var list = dict.TryGetOrAdd(targetedHex, () => new List<OperateSystemAction>());
-            Assert.EqualOrLesser(list.Count, 6, "Too many subsystems");
-
-            var operation = new OperateSystemAction(this.r_containingEntity, Effect, this, targetedHex);
-            if (operation.NecessaryConditions())
-            {
-                list.Add(operation);
-            }
-
-            return operation;
         }
 
         private IEnumerable<HexReactor> TargetsInRange()

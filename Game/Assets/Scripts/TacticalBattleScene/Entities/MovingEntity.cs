@@ -8,92 +8,96 @@ using Assets.Scripts.UnityBase;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
-    #region MovingEntity
+	#region MovingEntity
 
-    /// <summary>
-    /// an entity that can move
-    /// </summary>
-    public class MovingEntity : ActiveEntity
-    {
-        private const float c_speedModifier = 6;
+	/// <summary>
+	/// an entity that can move
+	/// </summary>
+	public class MovingEntity : ActiveEntity
+	{
+		private const float c_speedModifier = 6;
 
-        #region properties
+		#region properties
 
-        public double AvailableSteps { get; set; }
+		public double AvailableSteps { get; set; }
 
-        #endregion properties
+		#endregion properties
 
-        #region constructor
+		#region constructor
 
-        public override void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<SubsystemTemplate> systems)
-        {
-            base.Init(entity, loyalty, systems);
-            AvailableSteps = Template.MaxSpeed;
-        }
+		public override void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<SubsystemTemplate> systems)
+		{
+			base.Init(entity, loyalty, systems);
+			AvailableSteps = Template.MaxSpeed;
+		}
 
-        #endregion constructor
+		#endregion constructor
 
-        #region public methods
+		#region public methods
 
-        public override void Update()
-        {
-            base.Update();
-            if (IsMoving())
-            {
-                var hexObject = ObjectOnPoint(transform.position, UnityEngine.LayerMask.NameToLayer("Hexes"));
-                Assert.NotNull(hexObject, "hexObject");
-                var hex = hexObject.GetComponent<HexReactor>();
-                Assert.NotNull(hex, "hex");
-                if (!hex.Equals(Hex))
-                {
-                    hex.Content = this;
-                }
-            }
-        }
+		public override void Update()
+		{
+			base.Update();
+			if (IsMoving())
+			{
+				var hexObject = ObjectOnPoint(transform.position, UnityEngine.LayerMask.NameToLayer("Hexes"));
+				Assert.NotNull(hexObject, "hexObject");
+				var hex = hexObject.GetComponent<HexReactor>();
+				Assert.NotNull(hex, "hex");
+				if (!hex.Equals(Hex))
+				{
+					hex.Content = this;
+				}
+			}
+		}
 
-        public void Move(IEnumerable<HexReactor> path, Action callback)
-        {
-            Assert.NotNullOrEmpty(path, "path");
-            var lastHex = path.Last();
-            BeginMove(path.Select(hex =>
-                new MoveOrder(hex.Position,
-                hex == lastHex ? callback : () => { })),
-                Template.MaxSpeed * c_speedModifier, true);
-        }
+		public void Move(IEnumerable<HexReactor> path, Action callback)
+		{
+			Assert.NotNullOrEmpty(path, "path");
+			var lastHex = path.Last();
+			BeginMove(path.Select(hex =>
+				new MoveOrder(hex.Position,
+				hex == lastHex ? callback : () => { })),
+				Template.MaxSpeed * c_speedModifier, true);
+		}
 
-        #endregion public methods
+		#endregion public methods
 
-        #region overrides
+		#region overrides
 
-        // actions are also all potential movement targets
-        protected override IEnumerable<PotentialAction> ComputeActions()
-        {
-            var baseActions = base.ComputeActions();
-            var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, Template.MovementMethod);
-            List<PotentialAction> movementActions = possibleHexes.Values.Select(movement => (PotentialAction)movement).ToList();
-            var shuffledActions = movementActions.Shuffle().ToList();
-            return baseActions.Union(shuffledActions);
-        }
+		// actions are also all potential movement targets
+		protected override IDictionary<HexReactor, List<PotentialAction>> ComputeActions()
+		{
+			var dict = base.ComputeActions();
+			var possibleHexes = AStar.FindAllAvailableHexes(Hex, AvailableSteps, Template.MovementMethod);
 
-        // compute moves at start of turn
-        public override bool StartTurn()
-        {
-            if (base.StartTurn())
-            {
-                AvailableSteps = Template.MaxSpeed;
-                return true;
-            }
-            AvailableSteps = 0;
-            return false;
-        }
+			foreach (var action in possibleHexes)
+			{
+				dict.TryGetOrAdd(action.Key, () => new List<PotentialAction>()).Add(action.Value);
+			}
 
-        public override string FullState()
-        {
-            return "{0} movement {1}/{2}".FormatWith(base.FullState(), AvailableSteps, Template.MaxSpeed);
-        }
+			return dict;
+		}
 
-        #endregion overrides
-    }
+		// compute moves at start of turn
+		public override bool StartTurn()
+		{
+			if (base.StartTurn())
+			{
+				AvailableSteps = Template.MaxSpeed;
+				return true;
+			}
+			AvailableSteps = 0;
+			return false;
+		}
 
-    #endregion MovingEntity
+		public override string FullState()
+		{
+			return "{0} movement {1}/{2}".FormatWith(base.FullState(), AvailableSteps, Template.MaxSpeed);
+		}
+
+		#endregion overrides
+	}
+
+	#endregion MovingEntity
 }

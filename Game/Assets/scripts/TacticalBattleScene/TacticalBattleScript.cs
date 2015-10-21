@@ -62,10 +62,6 @@ namespace Assets.Scripts.TacticalBattleScene
             // if right mouse button is pressed
             if (Input.GetMouseButton(1))
             {
-                if (TacticalState.SelectedHex != null && TacticalState.SelectedHex.Content != null)
-                {
-                    Debug.Log(TacticalState.SelectedHex.Content);
-                }
                 TacticalState.SelectedHex = null;
             }
         }

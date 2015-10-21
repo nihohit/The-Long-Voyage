@@ -6,91 +6,92 @@ using UnityEngine;
 
 namespace Assets.Scripts.TacticalBattleScene
 {
-    #region HexEffect
+	#region HexEffect
 
-    public class HexEffect : MarkerScript
-    {
-        #region private fields
+	public class HexEffect : MarkerScript
+	{
+		#region private fields
 
-        private HexReactor m_affectedHex;
+		private HexReactor m_affectedHex;
 
-        private int m_remainingDuration;
+		private int m_remainingDuration;
 
-        private static readonly List<HexEffect> s_effects = new List<HexEffect>();
+		private static readonly List<HexEffect> s_effects = new List<HexEffect>();
 
-        #endregion private fields
+		#endregion private fields
 
-        #region properties
+		#region properties
 
-        public HexEffectTemplate Template { get; private set; }
+		public HexEffectTemplate Template { get; private set; }
 
-        #endregion properties
+		#endregion properties
 
-        #region constructors
+		#region constructors
 
-        public void Init(HexEffectTemplate template, HexReactor hex)
-        {
-            Template = template;
-            m_remainingDuration = template.Duration;
-            m_affectedHex = hex;
+		public void Init(HexEffectTemplate template, HexReactor hex)
+		{
+			Template = template;
+			m_remainingDuration = template.Duration;
+			m_affectedHex = hex;
 			this.transform.SetParent(hex.transform);
-        }
+			this.gameObject.name = template.Name;
+		}
 
-        #endregion constructors
+		#endregion constructors
 
-        public void AffectEntity(EntityReactor entity)
-        {
-            entity.Affect(Template.Power, Template.EffectType);
-        }
+		public void AffectEntity(EntityReactor entity)
+		{
+			entity.Affect(Template.Power, Template.EffectType);
+		}
 
-        public bool Act()
-        {
-            Debug.Log("{0} acts with remaining duration {1}".FormatWith(Template.Name, m_remainingDuration));
+		public bool Act()
+		{
+			Debug.Log("{0} acts with remaining duration {1}".FormatWith(Template.Name, m_remainingDuration));
 
-            Assert.Greater(m_remainingDuration, 0);
+			Assert.Greater(m_remainingDuration, 0);
 
-            if (m_affectedHex.Content != null)
-            {
-                AffectEntity(m_affectedHex.Content);
-            }
+			if (m_affectedHex.Content != null)
+			{
+				AffectEntity(m_affectedHex.Content);
+			}
 
-            if (--m_remainingDuration > 0) return false;
+			if (--m_remainingDuration > 0) return false;
 
-            DestroyGameObject();
+			DestroyGameObject();
 
-            return true;
-        }
+			return true;
+		}
 
-        #region static methods
+		#region static methods
 
-        public static void Create(HexEffectTemplate hexEffectTemplate, HexReactor hex)
-        {
-            var newEffect = UnityHelper.Instantiate<HexEffect>(hex.transform.position);
-            newEffect.Init(hexEffectTemplate, hex);
-            s_effects.Add(newEffect);
-            TacticalState.TextureManager.UpdateHexEffectTexture(hexEffectTemplate, newEffect.GetComponent<SpriteRenderer>());
-        }
+		public static void Create(HexEffectTemplate hexEffectTemplate, HexReactor hex)
+		{
+			var newEffect = UnityHelper.Instantiate<HexEffect>(hex.transform.position);
+			newEffect.Init(hexEffectTemplate, hex);
+			s_effects.Add(newEffect);
+			TacticalState.TextureManager.UpdateHexEffectTexture(hexEffectTemplate, newEffect.GetComponent<SpriteRenderer>());
+		}
 
-        public static void OperateEffects()
-        {
-            Debug.Log("Operate effects");
-            foreach (var effect in s_effects.Duplicate())
-            {
-                if (effect.Act())
-                {
-                    s_effects.Remove(effect);
-                }
-            }
-        }
+		public static void OperateEffects()
+		{
+			Debug.Log("Operate effects");
+			foreach (var effect in s_effects.Duplicate())
+			{
+				if (effect.Act())
+				{
+					s_effects.Remove(effect);
+				}
+			}
+		}
 
-        public static void Clear()
-        {
-            s_effects.ForEach(effect => effect.DestroyGameObject());
-            s_effects.Clear();
-        }
+		public static void Clear()
+		{
+			s_effects.ForEach(effect => effect.DestroyGameObject());
+			s_effects.Clear();
+		}
 
-        #endregion static methods
-    }
+		#endregion static methods
+	}
 
-    #endregion HexEffect
+	#endregion HexEffect
 }
