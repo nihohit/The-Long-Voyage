@@ -93,11 +93,8 @@ namespace Assets.Scripts.UnityBase
     {
         #region fields
 
-        // a list of all available items
+		// a list of all available items
         protected static List<T> s_selectableOptions;
-
-        // marks whether the last mouse click registered on the button
-        private bool m_clickedOn;
 
         // serves to prevent a click from registering twice
         private int m_frameCounter;
@@ -116,6 +113,11 @@ namespace Assets.Scripts.UnityBase
 
             set
             {
+				if(value == base.SelectedItem || (base.SelectedItem != null && base.SelectedItem.Equals(value)))
+				{
+					return;
+				}
+
                 if (value != null)
                 {
                     s_selectableOptions.Remove(value);
@@ -167,7 +169,6 @@ namespace Assets.Scripts.UnityBase
         public void ClickedOn()
         {
             Debug.Log(gameObject.name + " clicked on");
-            m_clickedOn = true;
             RemoveButtons();
             CreateButtons();
             m_frameCounter = 5;
@@ -184,7 +185,7 @@ namespace Assets.Scripts.UnityBase
 
             var bottomPartOfScreen = currentWorldPosition.y > Camera.main.transform.position.y;
 
-            var choices = s_selectableOptions.Distinct();
+            var choices = s_selectableOptions.Union(new[] { SelectedItem}).Distinct();
 
             currentPosition = CreateButton(null, currentPosition, bottomPartOfScreen);
 
@@ -200,7 +201,7 @@ namespace Assets.Scripts.UnityBase
         {
             var button = UnityHelper.Instantiate<Button>(currentPosition);
             button.onClick.AddListener(() => Debug.Log("button clicked"));
-            button.transform.parent = gameObject.transform.parent;
+            button.transform.SetParent(gameObject.transform.parent);
             var image = button.transform.FindChild("Image").GetComponent<Image>();
             var scale = button.GetComponent<RectTransform>().localScale;
             button.GetComponent<RectTransform>().localScale = Vector3.one;
