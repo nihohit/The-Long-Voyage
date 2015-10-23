@@ -228,7 +228,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		private IEnumerable<HexReactor> FindRadarHexes()
 		{
-			var results = Hex.RaycastAndResolveHexes(0, Template.RadarRange, (hex) => hex.Content != null, hex => false, Color.clear);
+			var results = Hex.RaycastAndResolveHexes(0, Template.RadarRange, (hex) => hex.Content != null && hex.Content.Template.Visuals.HasFlag(VisualProperties.AppearsOnRadar), hex => false, Color.clear);
 			return results;
 		}
 

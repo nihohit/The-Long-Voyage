@@ -93,18 +93,9 @@ namespace Assets.Scripts.TacticalBattleScene
 				var entryCoordinate = (float)-i / 2 - state.AmountOfHexes + 1;
 				for (float j = 0; j < amountOfHexesInRow; j++)
 				{
-					if (entryCoordinate + j == 0 && i == 0)
-					{
-						hexes.Add(CreateGrassHex(
-							new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
-							new Vector2(entryCoordinate + j, i)));
-					}
-					else
-					{
-						hexes.Add(CreateLightTreesHex(
-							new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
-							new Vector2(entryCoordinate + j, i)));
-					}
+					hexes.Add(CreateRandomHex(
+						new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
+						new Vector2(entryCoordinate + j, i)));
 				}
 			}
 
@@ -120,7 +111,7 @@ namespace Assets.Scripts.TacticalBattleScene
 				var entryCoordinate = (float)i / 2 - state.AmountOfHexes + 1;
 				for (float j = 0; j < amountOfHexesInRow; j++)
 				{
-					hexes.Add(CreateLightTreesHex(
+					hexes.Add(CreateRandomHex(
 						new Vector3(entryPoint.x + j * hexSize.x, entryPoint.y, entryPoint.z),
 						new Vector2(entryCoordinate + j, i)));
 				}
@@ -227,8 +218,11 @@ namespace Assets.Scripts.TacticalBattleScene
 					AmountOfHexes = SimpleConfigurationHandler.GetIntProperty(
 							"default map size",
 							FileAccessor.TerrainGeneration),
-					EntitiesInBattle = CreateMechs(new[] { new EquippedEntity(new SpecificEntity("ScoutMech"), new[] { "Flamer","Laser","Missile" })}, Loyalty.Player)
-					};
+					EntitiesInBattle = CreateMechs(Loyalty.EnemyArmy, 4)
+							.Union(GlobalState.Instance.StrategicMap == null
+									   ? CreateMechs(Loyalty.Player, 4)
+									   : CreateMechs(GlobalState.Instance.StrategicMap.State.EquippedEntities, Loyalty.Player))
+				};
 				GlobalState.Instance.TacticalBattle = state;
 			}
 		}
