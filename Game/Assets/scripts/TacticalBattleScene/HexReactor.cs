@@ -213,7 +213,11 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		public int Distance(HexReactor other)
 		{
-			return Convert.ToInt32(Coordinates.Distance(other.Coordinates));
+			var yDifference = Math.Abs(Coordinates.y - other.Coordinates.y);
+			var xDifference = Math.Abs(Coordinates.x - other.Coordinates.x);
+			var complexDifference = Math.Abs(yDifference /2 + xDifference);
+			return Convert.ToInt32(
+				new[] {xDifference, yDifference, complexDifference }.Max());
 		}
 
 		// ray cast in a certain direction, and over a certain layer.
@@ -222,9 +226,9 @@ namespace Assets.Scripts.TacticalBattleScene
 		public IEnumerable<HexReactor> RaycastAndResolveHexes(
 			int minRange, 
 			int maxRange, 
-			HexCheck addToListCheck, 
-			bool rayCastAll, 
-			HexCheck breakCheck)
+			HexCheck addToListCheck,
+			HexCheck breakCheck,
+			Color color)
 		{
 			Assert.NotNull(Content, "Operating out of empty hex {0}".FormatWith(this));
 			var results = new HashSet<HexReactor>();
@@ -235,38 +239,21 @@ namespace Assets.Scripts.TacticalBattleScene
 
 			for (float currentAngle = 0f; currentAngle < 360f; currentAngle += angleSlice)
 			{
-				if (rayCastAll)
+				var angleInRadians = currentAngle.DegreesToRadians();
+				// return all colliders that the ray passes through
+				var rayHits = Physics2D.RaycastAll(Position, new Vector2(Mathf.Cos(angleInRadians), Mathf.Sin(angleInRadians)), rayDistance, layerMask);
+				Debug.DrawRay(Position, new Vector2(Mathf.Cos(angleInRadians), Mathf.Sin(angleInRadians)) * rayDistance, color, 30);
+				foreach (var hex in
+					rayHits.Select(rayHit => rayHit.collider.gameObject.GetComponent<HexReactor>()))
 				{
-					// return all colliders that the ray passes through
-					var rayHits = Physics2D.RaycastAll(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
-					foreach (var hex in
-						rayHits.Select(rayHit => rayHit.collider.gameObject.GetComponent<HexReactor>()))
-					{
-						if (RangeAndConditionalCheck(minRange, maxRange, addToListCheck, hex))
-						{
-							results.Add(hex);
-						}
-
-						if (breakCheck(hex))
-						{
-							break;
-						}
-					}
-				}
-				else
-				{
-					//TODO - can all cases use raycastall, and just check for raycast all in the break check.
-					// return the first active collider in the ray's way
-					var rayHit = Physics2D.Raycast(Position, new Vector2(Mathf.Cos(currentAngle), Mathf.Sin(currentAngle)), rayDistance, layerMask);
-					if (rayHit.collider == null)
-					{
-						continue;
-					}
-
-					var hex = rayHit.collider.gameObject.GetComponent<HexReactor>();
 					if (RangeAndConditionalCheck(minRange, maxRange, addToListCheck, hex))
 					{
 						results.Add(hex);
+					}
+
+					if (breakCheck(hex))
+					{
+						break;
 					}
 				}
 			}
@@ -413,7 +400,7 @@ namespace Assets.Scripts.TacticalBattleScene
 			s_selected.Unmark();
 		}
 
-		// Select this hex, and if there's an active, selectable entity in it, display all of its possible actions
+		// Select this hex
 		public void Select()
 		{
 			//Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex));
@@ -442,24 +429,13 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		private bool RangeAndConditionalCheck(int minRange, int maxRange, HexCheck addToListCheck, HexReactor hex)
 		{
-			return this.Distance(hex) <= maxRange && this.Distance(hex) >= minRange && addToListCheck(hex);
+			var distance = this.Distance(hex);
+			return distance <= maxRange && distance >= minRange && addToListCheck(hex);
 		}
 
 		private void Awake()
 		{
 			DisplayFogOfWarMarker();
-		}
-
-		// returns null if can't return actions, otherwise returns all available actions
-		private IEnumerable<PotentialAction> ActionCheck()
-		{
-			var entity = Content as ActiveEntity;
-			if (entity == null || entity.Loyalty != TacticalState.CurrentTurn)
-			{
-				return null;
-			}
-
-			return entity.Actions.Materialize();
 		}
 
 		private void RemoveMarker(IUnityMarker marker)

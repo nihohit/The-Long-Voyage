@@ -105,7 +105,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
         }
 
         /// <summary>
-        /// combines all seen entities, and send them to all cotrolled entities to evaluate their actions.
+        /// combines all seen entities, and send them to all controlled entities to evaluate their actions.
         /// </summary>
         private void EvaluateActions()
         {
@@ -206,9 +206,9 @@ namespace Assets.Scripts.TacticalBattleScene.AI
             }
 
             // evaluate each action. We're shuffling the actions so that there will be no preference based on order of examination.
-            foreach (var action in actingEntity.Actions)
+            foreach (var action in actingEntity.Actions.Where(action => action.NecessaryConditions()))
             {
-                // TODO - possible to create an AI usage hint enumerator, which will say whether a given system should be used on friendlies or enemies, weakend or strong, etc.
+                // TODO - possible to create an AI usage hint enumerator, which will say whether a given system should be used on friendlies or enemies, weakened or strong, etc.
                 var systemAction = action as OperateSystemAction;
                 var movementAction = action as MovementAction;
 

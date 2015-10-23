@@ -33,7 +33,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		public IEnumerable<PotentialAction> Actions
 		{
-			get { return (m_actions ?? (m_actions = ComputeActions())).SelectMany(pair => pair.Value); }
+			get { return ActionsPerHex.SelectMany(pair => pair.Value); }
 		}
 
 		public IDictionary<HexReactor, List<PotentialAction>> ActionsPerHex
@@ -220,18 +220,15 @@ namespace Assets.Scripts.TacticalBattleScene
 				0,
 				Template.SightRange,
 				hex => true,
-				true,
 				hex =>
 					(hex.Content != null &&
-					 hex.Content.Template.Visuals.HasFlag(VisualProperties.BlocksSight)));
+					 hex.Content.Template.Visuals.HasFlag(VisualProperties.BlocksSight)),
+				Color.red);
 		}
 
 		private IEnumerable<HexReactor> FindRadarHexes()
 		{
-			var inactiveRadarVisibleEntityMarkers = TacticalState.RadarVisibleEntities.Where(ent => !ent.enabled).ToList();
-			inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = true);
-			var results = Hex.RaycastAndResolveHexes(0, Template.RadarRange, (hex) => hex.Content != null, false, hex => false);
-			inactiveRadarVisibleEntityMarkers.ForEach(marker => marker.GetComponent<Collider2D>().enabled = false);
+			var results = Hex.RaycastAndResolveHexes(0, Template.RadarRange, (hex) => hex.Content != null, hex => false, Color.clear);
 			return results;
 		}
 

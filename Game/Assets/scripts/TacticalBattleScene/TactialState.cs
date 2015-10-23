@@ -106,7 +106,6 @@ namespace Assets.Scripts.TacticalBattleScene
 			{
 				DestroyEntity(entity);
 			}
-			ResetAllActions();
 		}
 
 		public static void Init()

@@ -24,7 +24,7 @@
 	"MaxHeatLoss":1.0,
 	"ShieldRechargeRate":5.0,
 	"MaximumSpeed":5.0,
-	"RadarRange":30,
-	"SightRange":15,
+	"RadarRange":6,
+	"SightRange":5,
 }
 ]
