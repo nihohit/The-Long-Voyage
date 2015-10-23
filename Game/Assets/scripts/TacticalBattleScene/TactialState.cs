@@ -80,8 +80,6 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		public static Loyalty CurrentTurn { get { return s_currentTurn.Value; } }
 
-		public static PotentialActionsMarker ActionsMarker { get; private set; }
-
 		public static ActiveEntity SelectedActiveEntity { get; private set; }
 
 		#endregion properties
@@ -112,8 +110,6 @@ namespace Assets.Scripts.TacticalBattleScene
 		{
 			TextureManager = new TacticalTextureHandler();
 			BattleStarted = false;
-			ActionsMarker = GameObject.Find("PotentialActionsMarker").GetComponent<PotentialActionsMarker>();
-			ActionsMarker.gameObject.SetActive(false);
 		}
 
 		// initiate a new battle with the relevant information on all active entities

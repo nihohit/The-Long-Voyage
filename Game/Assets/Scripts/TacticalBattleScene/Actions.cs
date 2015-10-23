@@ -163,7 +163,6 @@ namespace Assets.Scripts.TacticalBattleScene
 		protected override void Act(Action callback)
 		{
 			TacticalState.SelectedHex = null;
-			TacticalState.ResetAllActions();
 			((MovingEntity)ActingEntity).Move(m_path, callback);
 		}
 

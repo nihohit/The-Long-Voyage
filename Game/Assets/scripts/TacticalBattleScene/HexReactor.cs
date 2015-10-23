@@ -21,6 +21,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		// Only a single hex reactor can be selected at any time
 		private static MarkerScript s_selected;
+		private static PotentialActionsMarker s_actionsMarker;
 
 		// markers
 		private IUnityMarker m_movementPathMarker;
@@ -69,12 +70,9 @@ namespace Assets.Scripts.TacticalBattleScene
 						(m_content.Hex != null &&
 						!m_content.Hex.Equals(this)),
 						"When replaced with a null value, entity should either move to another hex or be destroyed");
-					if (m_content.Destroyed())
-					{
-						TacticalState.ResetAllActions();
-					}
 
 					m_content = null;
+					TacticalState.ResetAllActions();
 					return;
 				}
 
@@ -190,11 +188,11 @@ namespace Assets.Scripts.TacticalBattleScene
 				List<PotentialAction> actions;
 				if(!TacticalState.SelectedActiveEntity.ActionsPerHex.TryGetValue(this, out actions) || actions == null || actions.None())
 				{
-					TacticalState.ActionsMarker.gameObject.SetActive(false);
+					s_actionsMarker.gameObject.SetActive(false);
 					return;
 				}
 
-				TacticalState.ActionsMarker.SetOnHex(this, actions);
+				s_actionsMarker.SetOnHex(this, actions);
 			}
 		}
 
@@ -398,6 +396,8 @@ namespace Assets.Scripts.TacticalBattleScene
 			sr_repository.Clear();
 			s_selected = GameObject.Find("Marker").GetComponent<MarkerScript>();
 			s_selected.Unmark();
+			s_actionsMarker = GameObject.Find("PotentialActionsMarker").GetComponent<PotentialActionsMarker>();
+			s_actionsMarker.gameObject.SetActive(false);
 		}
 
 		// Select this hex
@@ -412,6 +412,7 @@ namespace Assets.Scripts.TacticalBattleScene
 		{
 			//Debug.Log("Deselecting hex {0}".FormatWith(MarkedHex));
 			s_selected.Unmark();
+			s_actionsMarker.gameObject.SetActive(false);
 		}
 
 		#endregion public methods
