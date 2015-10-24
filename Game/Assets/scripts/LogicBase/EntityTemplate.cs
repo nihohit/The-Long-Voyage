@@ -121,7 +121,20 @@ namespace Assets.Scripts.LogicBase
             Template = template;
             Variant = variant;
         }
-    }
+
+		public override int GetHashCode()
+		{
+			return Hasher.GetHashCode(Template, Variant);
+		}
+
+		public override bool Equals(object obj)
+		{
+			var ent = obj as SpecificEntity;
+			return ent != null &&
+				ent.Variant.Equals(Variant) &&
+				ent.Template.Equals(Template);
+        }
+	}
 
     #endregion SpecificEntity
 }
