@@ -25,9 +25,8 @@ namespace Assets.Scripts.StrategicGameScene.MapGeneration
 
         private List<BiomeInformation> m_existingBiomes = new List<BiomeInformation>();
         private readonly Dictionary<Vector2, Biome> m_map = new Dictionary<Vector2, Biome>();
-		private GameObject m_locationsParent;
 
-        public LocationInformation GenerateStrategicMap()
+        public IEnumerable<LocationInformation> GenerateStrategicMap()
         {
             GenerateBaseCoords();
 
@@ -37,10 +36,8 @@ namespace Assets.Scripts.StrategicGameScene.MapGeneration
 
             Assert.IsEmpty<Biome>(m_map.Values.Where(biome => biome == Biome.Undefined), "undefined tiles in map");
 
-            CreateTiles();
-
-            return null;
-        }
+            return CreateTiles();
+		}
 
         private void CreateFirstBiome()
         {
@@ -48,18 +45,34 @@ namespace Assets.Scripts.StrategicGameScene.MapGeneration
             CreateNewBiome(m_map.Keys.ChooseRandomValue(), initialBiomeType);
         }
 
-        private void CreateTiles()
+        private IEnumerable<LocationInformation> CreateTiles()
         {
-			m_locationsParent = new GameObject();
-			m_locationsParent.name = "Locations";
+			var createdLocations = m_map.Keys.ToDictionary(
+				vector => vector,
+				vector => new LocationInformation(
+					vector,
+					GlobalState.Instance.Configurations.Encounters.GetAllConfigurations().ChooseRandomValue(),
+					new List<LocationInformation>()));
 
 			foreach (var tile in m_map)
             {
-                var location = UnityHelper.Instantiate<LocationScript>(tile.Key);
-				location.transform.SetParent(m_locationsParent.transform);
-                GlobalState.Instance.StrategicMap.StrategicMapTextureHandler.UpdateHexTexture(location.Renderer, tile.Value);
-				location.name = "{0} {1}".FormatWith(tile.Value.ToString(), tile.Key.ToString());
+				createdLocations[tile.Key].Biome = tile.Value;
+
+				if (IsPassableBiome(tile.Value))
+				{
+					foreach(var neighbour in GetNeighbours(tile.Key).Where(neighbour => IsPassableBiome(m_map[neighbour])))
+					{
+						((List<LocationInformation>)createdLocations.Get(tile.Key, "createdLocations").ConnectedLocations).Add(createdLocations[neighbour]);
+					}
+				}
             }
+
+			return createdLocations.Values;
+        }
+
+		private bool IsPassableBiome(Biome biome)
+		{
+			return biome != Biome.Mountain && biome != Biome.Sea;
         }
 
         private void ExpandBiomes()

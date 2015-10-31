@@ -1,4 +1,6 @@
-﻿using Assets.Scripts.UnityBase;
+﻿using Assets.Scripts.Base;
+using Assets.Scripts.InterSceneCommunication;
+using Assets.Scripts.UnityBase;
 
 namespace Assets.Scripts.StrategicGameScene
 {
@@ -22,7 +24,9 @@ namespace Assets.Scripts.StrategicGameScene
             LocationInformation information)
         {
             var newLocation = UnityHelper.Instantiate<LocationScript>(information.Coordinates);
-            newLocation.Information = information;
+			GlobalState.Instance.StrategicMap.StrategicMapTextureHandler.UpdateHexTexture(newLocation.Renderer, information.Biome);
+			newLocation.name = "{0} {1}".FormatWith(information.Biome.ToString(), information.Coordinates);
+			newLocation.Information = information;
             return newLocation;
         }
 

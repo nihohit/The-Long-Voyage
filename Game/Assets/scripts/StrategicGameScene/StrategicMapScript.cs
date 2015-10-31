@@ -7,11 +7,12 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts.StrategicGameScene
 {
-    using Assets.Scripts.LogicBase;
-    using MapGeneration;
-    using Assets.Scripts.UnityBase;
+	using Assets.Scripts.LogicBase;
+	using MapGeneration;
+	using Assets.Scripts.UnityBase;
+	using System;
 
-    public class StrategicMapScript : MonoBehaviour
+	public class StrategicMapScript : MonoBehaviour
     {
         #region private fields
 
@@ -19,12 +20,14 @@ namespace Assets.Scripts.StrategicGameScene
 
         private List<Button> m_choiceButtonList;
 
-        #endregion private fields
+		private GameObject m_locationsParent;
 
-        #region properties
+		#endregion private fields
 
-        // ReSharper disable InconsistentNaming
-        public GameObject TextPanel;
+		#region properties
+
+		// ReSharper disable InconsistentNaming
+		public GameObject TextPanel;
 
         public Button LoadupButton;
         public Button Choice1Button;
@@ -41,12 +44,15 @@ namespace Assets.Scripts.StrategicGameScene
 
         // Use this for initialization
         private void Start()
-        {
-            m_choiceButtonList = new List<Button> { Choice1Button, Choice2Button, Choice3Button, Choice4Button };
+		{
+			m_locationsParent = new GameObject();
+			m_locationsParent.name = "Locations";
+			m_choiceButtonList = new List<Button> { Choice1Button, Choice2Button, Choice3Button, Choice4Button };
 
             InitGlobalState();
 
             m_currentLocation = GlobalState.Instance.StrategicMap.CurrentLocation;
+			Camera.main.transform.position = new Vector3(m_currentLocation.Coordinates.x, m_currentLocation.Coordinates.y, Camera.main.transform.position.z);
 
             // if we're after a battle, add the battle salvage to our equipment
             if (GlobalState.Instance.BattleSummary != null)
@@ -158,51 +164,39 @@ namespace Assets.Scripts.StrategicGameScene
         {
             TextPanel.SetActive(false);
             LoadupButton.gameObject.SetActive(true);
-            DisplayNextLocations(m_currentLocation, new HashSet<LocationInformation>());
+			DisplayWorldMap();
             Marker.Mark(m_currentLocation.Coordinates);
         }
 
-        private void DisplayNextLocations(LocationInformation currentLocation, HashSet<LocationInformation> locationInformations)
-        {
-            if (!currentLocation.WasVisited)
-            {
-                return;
-            }
+		private void DisplayWorldMap()
+		{
+			foreach (var currentLocationInfo in GlobalState.Instance.StrategicMap.Map)
+			{
+				var newLocation = LocationScript.CreateLocationScript(currentLocationInfo);
+				newLocation.transform.SetParent(m_locationsParent.transform);
 
-            if (locationInformations.None())
-            {
-                LocationScript.CreateLocationScript(currentLocation);
-            }
+				foreach (var nextLocationInfo in currentLocationInfo.ConnectedLocations)
+				{
+					// TODO: if we want to avoid double lines, we ca add an order, or name the objects and check
+					var lineRenderer = new GameObject().AddComponent<LineRenderer>();
+					lineRenderer.gameObject.name = "LineFrom {0} to {1}".FormatWith(
+						nextLocationInfo.Coordinates,
+						currentLocationInfo.Coordinates);
+					lineRenderer.SetVertexCount(2);
+					lineRenderer.SetPosition(0, nextLocationInfo.Coordinates);
+					lineRenderer.SetPosition(1, currentLocationInfo.Coordinates);
+					lineRenderer.SetColors(Color.black, Color.black);
+					lineRenderer.SetWidth(0.1f, 0.1f);
+					var whiteDiffuseMat = new Material(Shader.Find("Sprites/Default"));
+					lineRenderer.material = whiteDiffuseMat;
+				}
 
-            locationInformations.Add(currentLocation);
-
-            foreach (var location in currentLocation.ConnectedLocations)
-            {
-                // TODO: if we want to avoid double lines, we ca add an order, or name the objects and check
-                var lineRenderer = new GameObject().AddComponent<LineRenderer>();
-                lineRenderer.gameObject.name = "LineFrom {0} to {1}".FormatWith(
-                    location.Coordinates,
-                    currentLocation.Coordinates);
-                lineRenderer.SetVertexCount(2);
-                lineRenderer.SetPosition(0, location.Coordinates);
-                lineRenderer.SetPosition(1, currentLocation.Coordinates);
-                lineRenderer.SetColors(Color.black, Color.black);
-                lineRenderer.SetWidth(0.1f, 0.1f);
-                var whiteDiffuseMat = new Material(Shader.Find("Sprites/Default"));
-                lineRenderer.material = whiteDiffuseMat;
-
-                if (!locationInformations.Contains(location))
-                {
-                    var nextLocation = LocationScript.CreateLocationScript(location);
-                    if (m_currentLocation.ConnectedLocations.Contains(location))
-                    {
-                        nextLocation.ClickableAction = () => MoveToLocation(nextLocation.Information);
-                    }
-
-                    DisplayNextLocations(location, locationInformations);
-                }
-            }
-        }
+				if (m_currentLocation.ConnectedLocations.Contains(currentLocationInfo))
+				{
+					newLocation.ClickableAction = () => MoveToLocation(newLocation.Information);
+				}
+			}
+		}
 
         private void MoveToLocation(LocationInformation locationInformation)
         {
@@ -237,9 +231,12 @@ namespace Assets.Scripts.StrategicGameScene
 
         private void CreateLocations()
         {
-            var currentLocation = new MutatingAreasMapGenerator().GenerateStrategicMap();
-
-            GlobalState.Instance.StrategicMap.CurrentLocation = currentLocation;
+            var worldMap = new MutatingAreasMapGenerator().GenerateStrategicMap();
+			GlobalState.Instance.StrategicMap.Map.AddRange(worldMap);
+            GlobalState.Instance.StrategicMap.CurrentLocation = worldMap
+				.First(
+					location => location.Biome != Biome.Mountain && 
+					location.Biome != Biome.Sea);
         }
     }
 }

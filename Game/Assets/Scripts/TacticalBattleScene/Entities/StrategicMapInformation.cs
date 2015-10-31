@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.StrategicGameScene;
+﻿using System.Collections.Generic;
+using Assets.Scripts.StrategicGameScene;
 using Assets.Scripts.StrategicGameScene.LoadupScreen;
 
 namespace Assets.Scripts.InterSceneCommunication
@@ -16,11 +17,14 @@ namespace Assets.Scripts.InterSceneCommunication
 
         public StrategicMapTextureHandler StrategicMapTextureHandler { get; private set; }
 
+		public List<LocationInformation> Map { get; private set; }
+
         public StrategicMapInformation(string playerName)
         {
             State = new PlayerState(playerName);
             InventoryTextureHandler = new InventoryTextureHandler();
             StrategicMapTextureHandler = new StrategicMapTextureHandler();
+			Map = new List<LocationInformation>();
         }
     }
 }

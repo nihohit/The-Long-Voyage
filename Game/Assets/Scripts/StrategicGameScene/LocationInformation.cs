@@ -22,6 +22,8 @@ namespace Assets.Scripts.StrategicGameScene
 
         public bool WasSeen { get; set; }
 
+		public Biome Biome { get; set; }
+
         #endregion properties
 
         #region constructors
