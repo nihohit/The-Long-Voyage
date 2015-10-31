@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Assets.Scripts.UnityBase;
 
 namespace Assets.Scripts.TacticalBattleScene.AI
 {
@@ -102,7 +103,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 		{
 			m_controlledEntities = controlledEntities;
 			this.r_actionEvaluator.Clear();
-			EvaluateActions();
+			Timer.Instance.TimedAction(EvaluateActions, "EvaluateActions");
 			NextAction();
 		}
 
@@ -130,7 +131,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 		{
 			if (m_currentAction != null && m_currentAction.AchievedGoal())
 			{
-				EvaluateActions();
+				Timer.Instance.TimedAction(EvaluateActions, "EvaluateActions");
 			}
 
 			m_currentAction = this.r_prioritizedActions.Peek();

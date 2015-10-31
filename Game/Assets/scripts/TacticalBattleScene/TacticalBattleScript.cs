@@ -12,7 +12,7 @@ namespace Assets.Scripts.TacticalBattleScene
 	/// <summary>
 	/// The main script for the tactical battle scene
 	/// </summary>
-	public class TacticalBattleScript : MonoBehaviour
+	public class TacticalBattleScript : SceneBehaviour
 	{
 		#region private members
 
@@ -69,17 +69,30 @@ namespace Assets.Scripts.TacticalBattleScene
 		// Use this for initialization
 		private void Start()
 		{
-			FindBaseObjects();
+			CreateBaseObjects();
 			InitClasses();
 			m_screenSpeed = SimpleConfigurationHandler.GetIntProperty("screen movement speed", FileAccessor.General);
+			var state = GlobalState.Instance.TacticalBattle;
 
+			var hexes = Timer.Instance.TimedAction<IEnumerable<HexReactor>>(() => CreateHexes(state), "CreateHexes");
+
+			// initiate the tactical state
+			TacticalState.EnterEntitiesAndHexes(state.EntitiesInBattle, hexes);
+
+			// position the entities
+			//HACK - to be removed. in charge of positioning the first entities
+			var chosenHexes = m_emptyHexes.ChooseRandomValues(state.EntitiesInBattle.Count()).OrderBy(x => Randomiser.Next());
+			chosenHexes.ForEach(hex => hex.Content = state.EntitiesInBattle.First(ent => ent.Hex == null));
+		}
+
+		private IEnumerable<HexReactor> CreateHexes(TacticalBattleInformation state)
+		{
 			// create new hexes from a given entry point and of a given size
 			var hexes = new List<HexReactor>();
 			var entryPoint = Vector3.zero;
 			var hexSize = greenHex.GetComponent<Renderer>().bounds.size;
 
 			// reset the global state's tactical battle information
-			var state = GlobalState.Instance.TacticalBattle;
 			GlobalState.Instance.TacticalBattle = null;
 
 			var target = 2 * state.AmountOfHexes - 1;
@@ -117,20 +130,14 @@ namespace Assets.Scripts.TacticalBattleScene
 				}
 			}
 
-			// inititate the tactical state
-			TacticalState.EnterEntitiesAndHexes(state.EntitiesInBattle, hexes);
-
-			// position the entities
-			//HACK - to be removed. in charge of positioning the first entities
-			var chosenHexes = m_emptyHexes.ChooseRandomValues(state.EntitiesInBattle.Count()).OrderBy(x => Randomiser.Next());
-			chosenHexes.ForEach(hex => hex.Content = state.EntitiesInBattle.First(ent => ent.Hex == null));
+			return hexes;
 		}
 
-		private void FindBaseObjects()
+		private void CreateBaseObjects()
 		{
-			m_hexes = GameObject.Find("Hexes");
-			m_terrainEntities = GameObject.Find("TerrainEntities");
-			m_activeEntities = GameObject.Find("ActiveEntities");
+			m_hexes = new GameObject("Hexes");
+			m_terrainEntities = new GameObject("TerrainEntities");
+			m_activeEntities = new GameObject("ActiveEntities");
 		}
 
 		#endregion MonoBehaviour overrides
@@ -178,12 +185,15 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		private HexReactor CreateHex(Vector3 nextPosition, Vector2 hexCoordinates, GameObject prefab)
 		{
-			// TODO - remove usage of prefab and use UnityHelper instead
-			var hex = (GameObject)Instantiate(prefab, nextPosition, Quaternion.identity);
-			var reactor = hex.GetComponent<HexReactor>();
-			reactor.Init(hexCoordinates);
-			reactor.transform.SetParent(m_hexes.transform);
-			return reactor;
+			return Timer.Instance.TimedAction<HexReactor>(() =>
+			{
+				// TODO - remove usage of prefab and use UnityHelper instead
+				var hex = (GameObject)Instantiate(prefab, nextPosition, Quaternion.identity);
+				var reactor = hex.GetComponent<HexReactor>();
+				reactor.Init(hexCoordinates);
+				reactor.transform.SetParent(m_hexes.transform);
+				return reactor;
+			}, "create hex");
 		}
 
 		private HexReactor CreateRandomHex(Vector3 nextPosition, Vector2 hexCoordinates)
