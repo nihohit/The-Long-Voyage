@@ -157,7 +157,7 @@ namespace Assets.Scripts.TacticalBattleScene
 			Debug.Log("Starting {0}'s turn.".FormatWith(CurrentTurn));
 
 			// start the turn to all of this turn's group's active entities
-			thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn).Materialize();
+			thisTurnActiveEntities = s_activeEntities.Where(ent => ent.Loyalty == CurrentTurn).ToList();
 			thisTurnActiveEntities.ForEach(ent => ent.StartTurn());
 			SelectedHex = null;
 

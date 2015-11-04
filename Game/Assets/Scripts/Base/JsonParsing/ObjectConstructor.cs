@@ -45,7 +45,7 @@
             var markedConstructors =
                 type.GetConstructors().Where(ctor =>
                     ctor.GetCustomAttributes(false).Any(attr =>
-                        attr.GetType() == typeof(ChosenConstructorForParsing))).Materialize();
+                        attr.GetType() == typeof(ChosenConstructorForParsing))).ToList();
 
             Assert.EqualOrLesser(markedConstructors.Count(), 1, "More than a single marked constructor");
 

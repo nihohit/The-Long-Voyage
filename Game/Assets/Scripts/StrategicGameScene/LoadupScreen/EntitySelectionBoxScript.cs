@@ -38,7 +38,7 @@ namespace Assets.Scripts.StrategicGameScene.LoadupScreen
         {
             var ent = new EquippedEntity(
                 SelectedItem,
-                m_systems.Select(systemBox => systemBox.SelectedItem).Where(system => system != null).Materialize());
+                m_systems.Select(systemBox => systemBox.SelectedItem).Where(system => system != null).ToList());
 
             SelectedItem = null;
             foreach (var box in m_systems)
@@ -103,7 +103,7 @@ namespace Assets.Scripts.StrategicGameScene.LoadupScreen
         {
             if (m_systems == null)
             {
-                m_systems = gameObject.GetComponentsInChildren<SystemSelectionBoxScript>(true).Materialize();
+                m_systems = gameObject.GetComponentsInChildren<SystemSelectionBoxScript>(true).ToList();
                 m_systems.ForEach(system => system.gameObject.SetActive(false));
             }
         }

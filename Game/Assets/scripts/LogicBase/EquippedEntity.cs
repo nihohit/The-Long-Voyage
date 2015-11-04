@@ -19,7 +19,7 @@ namespace Assets.Scripts.LogicBase
 
         [ChosenConstructorForParsing]
         public EquippedEntity(SpecificEntity entity, IEnumerable<string> subsystems) :
-            this(entity, subsystems.Select(name => GlobalState.Instance.Configurations.Subsystems.GetConfiguration(name)).Materialize())
+            this(entity, subsystems.Select(name => GlobalState.Instance.Configurations.Subsystems.GetConfiguration(name)).ToList())
         {
         }
 

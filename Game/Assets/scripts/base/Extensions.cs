@@ -68,7 +68,7 @@ namespace Assets.Scripts.Base
 
         public static IEnumerable<T> Duplicate<T>(this IEnumerable<T> enumerable)
         {
-            return enumerable.Select(item => item).Materialize();
+            return enumerable.Select(item => item).ToList();
         }
 
         // returns an enumerable with all values of an enumerator
@@ -86,17 +86,6 @@ namespace Assets.Scripts.Base
         {
             Assert.NotNull(group, "group");
             return Randomiser.Shuffle(group);
-        }
-
-        // this function ensures that a given enumeration materializes
-        public static IEnumerable<T> Materialize<T>(this IEnumerable<T> enumerable)
-        {
-            if (enumerable is ICollection<T>)
-            {
-                return enumerable;
-            }
-
-            return enumerable.ToList();
         }
 
         public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> op)

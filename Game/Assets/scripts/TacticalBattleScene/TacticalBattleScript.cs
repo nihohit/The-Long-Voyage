@@ -262,7 +262,7 @@ namespace Assets.Scripts.TacticalBattleScene
 						equippedEntity.Subsystems);
 					entity.transform.SetParent(m_activeEntities.transform);
 					return entity.SafeCast<ActiveEntity>("Instantiated entity");
-				}).Materialize();
+				}).ToList();
 		}
 
 		#endregion private methods

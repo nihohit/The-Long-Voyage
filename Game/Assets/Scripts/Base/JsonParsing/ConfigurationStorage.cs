@@ -46,7 +46,7 @@ namespace Assets.Scripts.Base.JsonParsing
         // return all parsed configurations
         public IEnumerable<TConfiguration> GetAllConfigurations()
         {
-            return this.r_configurationsDictionary.Values.Materialize();
+            return this.r_configurationsDictionary.Values.ToList();
         }
 
         #endregion public methods

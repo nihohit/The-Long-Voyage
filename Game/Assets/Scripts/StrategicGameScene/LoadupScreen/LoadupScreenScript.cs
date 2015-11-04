@@ -54,7 +54,7 @@ namespace Assets.Scripts.StrategicGameScene.LoadupScreen
         public void OnDisable()
         {
             GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(
-                m_entitySelectionBoxes.Select(box => box.GetEquippedEntity()).Materialize());
+                m_entitySelectionBoxes.Select(box => box.GetEquippedEntity()).ToList());
         }
 
         private void InitializeSelectionBoxes()

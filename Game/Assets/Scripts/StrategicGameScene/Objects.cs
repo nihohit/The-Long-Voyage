@@ -8,6 +8,7 @@ namespace Assets.Scripts.StrategicGameScene
         None = 0,
         Fight = 1,
         AffectRelations = 2,
+		AdditionalEncounter = 4,
     }
 
     public enum ConditionType

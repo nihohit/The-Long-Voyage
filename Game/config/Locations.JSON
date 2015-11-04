@@ -44,6 +44,46 @@
 					"value" : 0.0,
 				}
             },
+			{
+                "Message": "Discuss future!",
+                "result": 
+				{
+					"message" : "You sit down for a nice chat"
+					"result": "AdditionalEncounter"
+					"encounter":
+					{
+						"name" : "debate"
+						"message" : "You sit down to discuss the situation"
+						"choices" : [
+						{
+							"Message": "say nothing",
+							"result": 
+							{
+								"result" : "AffectRelations",
+								"message" : "You say nothing",
+								"key" : "flogiston",
+								"value" : -10
+							}
+						},
+						{
+							"Message": "Sing",
+							"result": 
+							{
+								"result" : "AffectRelations",
+								"message" : "You sing beautifully",
+								"key" : "flogiston",
+								"value" : 10
+							}
+						},],
+					}
+				}
+				"condition" : 
+				{
+					"condition" : "RelationsWith",
+					"key" : "flogiston",
+					"value" : 10.0,
+				}
+            },
         ]
     }
 ]

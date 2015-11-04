@@ -31,10 +31,6 @@ namespace Assets.Scripts.StrategicGameScene
 		public GameObject TextPanel;
 
 		public Button LoadupButton;
-		public Button Choice1Button;
-		public Button Choice2Button;
-		public Button Choice3Button;
-		public Button Choice4Button;
 		public Button DoneButton;
 		public Text LocationText;
 		public MarkerScript Marker;
@@ -48,7 +44,7 @@ namespace Assets.Scripts.StrategicGameScene
 		{
 			m_locationsParent = new GameObject();
 			m_locationsParent.name = "Locations";
-			m_choiceButtonList = new List<Button> { Choice1Button, Choice2Button, Choice3Button, Choice4Button };
+			m_choiceButtonList = GameObject.Find("MainUI").GetComponentsInChildren<Button>().Where(button => button.name.Equals("ChoiceButton")).ToList();
 
 			InitGlobalState();
 
@@ -90,22 +86,23 @@ namespace Assets.Scripts.StrategicGameScene
 			DoneButton.gameObject.SetActive(false);
 			LocationText.text = encounter.Message;
 
-			var options = encounter.Choices.Select(choice => choice.Description).ToJoinedString("\n");
+			var availableChoices = encounter.Choices.Where(choice => choice.Condition.Passed()).ToList();
+			var options = availableChoices.Select(choice => choice.Description).ToJoinedString("\n");
 
 			Assert.EqualOrGreater(
 				m_choiceButtonList.Count,
-				encounter.Choices.Count(),
+				availableChoices.Count,
 				"There are more LocationScript options then buttons.\n options: {0}".FormatWith(options));
 
-			for (int i = 0; i < encounter.Choices.Count(); i++)
+			for (int i = 0; i < availableChoices.Count; i++)
 			{
 				var button = m_choiceButtonList[i];
 
-				var choice = m_currentLocation.Encounter.Choices.ElementAt(i);
+				var choice = availableChoices.ElementAt(i);
 				SetButton(button, choice);
 			}
 
-			for (int i = encounter.Choices.Count(); i < m_choiceButtonList.Count; i++)
+			for (int i = availableChoices.Count; i < m_choiceButtonList.Count; i++)
 			{
 				m_choiceButtonList[i].gameObject.SetActive(false);
 			}
@@ -126,11 +123,22 @@ namespace Assets.Scripts.StrategicGameScene
 
 		private void HandleResult(ChoiceResult choiceResult)
 		{
-			LocationText.text = choiceResult.Message;
 			if (choiceResult.Result.HasFlag(ChoiceResultType.AffectRelations))
 			{
 				AffectRelations(choiceResult.Key, choiceResult.Value);
 			}
+
+			if(choiceResult.Result.HasFlag(ChoiceResultType.AdditionalEncounter))
+			{
+				foreach (var button in m_choiceButtonList)
+				{
+					button.gameObject.SetActive(true);
+				}
+				SetupTextualGui(choiceResult.Encounter);
+				return;
+			}
+
+			LocationText.text = choiceResult.Message;
 
 			if (choiceResult.Result.HasFlag(ChoiceResultType.Fight))
 			{

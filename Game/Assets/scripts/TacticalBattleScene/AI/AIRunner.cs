@@ -191,7 +191,7 @@ namespace Assets.Scripts.TacticalBattleScene.AI
 		public IEnumerable<EvaluatedAction> EvaluateActions(ActiveEntity actingEntity, IEnumerable<EntityReactor> entitiesSeenByTeam)
 		{
 			// initiate relevant information
-			var potentialTargets = entitiesSeenByTeam.Where(ent => this.r_entityEvaluator.EvaluateValue(ent) > 0).Materialize();
+			var potentialTargets = entitiesSeenByTeam.Where(ent => this.r_entityEvaluator.EvaluateValue(ent) > 0).ToList();
 			var minRange = 10000;
 			var maxRange = 0;
 

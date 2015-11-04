@@ -18,7 +18,7 @@
                 var fileAsString = fileReader.ReadToEnd();
                 var items = Json.Deserialize(fileAsString).SafeCast<IEnumerable<object>>("items");
                 var itemsAsDictionaries = items.Select(item => item as Dictionary<string, object>);
-                return itemsAsDictionaries.Select(item => this.ConvertToObject(item)).Materialize();
+                return itemsAsDictionaries.Select(item => this.ConvertToObject(item)).ToList();
             }
         }
 

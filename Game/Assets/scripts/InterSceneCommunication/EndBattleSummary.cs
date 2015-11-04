@@ -25,9 +25,9 @@ namespace Assets.Scripts.InterSceneCommunication
             IEnumerable<SpecificEntity> salvagedEntities,
             IEnumerable<SubsystemTemplate> salvagedEquipement)
         {
-            SurvivingEntities = survivingEntities.Materialize();
-            SalvagedEntities = salvagedEntities.Materialize();
-            SalvagedSystems = salvagedEquipement.Materialize();
+            SurvivingEntities = survivingEntities.ToList();
+            SalvagedEntities = salvagedEntities.ToList();
+            SalvagedSystems = salvagedEquipement.ToList();
             Debug.Log("Entities survived: {0}".FormatWith(SurvivingEntities.ToJoinedString()));
             Debug.Log("Entities were salvaged: {0}".FormatWith(SalvagedEntities.ToJoinedString()));
             Debug.Log("Systems were salvaged: {0}".FormatWith(SalvagedSystems.Select(system => system.Name).ToJoinedString()));
