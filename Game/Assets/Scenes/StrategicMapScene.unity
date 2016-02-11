@@ -4212,10 +4212,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TextPanel: {fileID: 1994534964}
   LoadupButton: {fileID: 2099190679}
-  Choice1Button: {fileID: 2070119424}
-  Choice2Button: {fileID: 1156582744}
-  Choice3Button: {fileID: 741419655}
-  Choice4Button: {fileID: 1578947476}
   DoneButton: {fileID: 440594364}
   LocationText: {fileID: 1007725632}
   Marker: {fileID: 1022094951}
