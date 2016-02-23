@@ -76,15 +76,15 @@ namespace Assets.Scripts.StrategicGameScene
 		private void SetupTextualGui(EncounterTemplate encounter)
 		{
 			LoadupButton.gameObject.SetActive(false);
+			LocationText.text = encounter.Message;
 
-			if (encounter.Choices == null)
+			if (encounter.Choices.IsNullOrEmpty())
 			{
 				RemoveChoices();
 				return;
 			}
 
 			DoneButton.gameObject.SetActive(false);
-			LocationText.text = encounter.Message;
 
 			var availableChoices = encounter.Choices.Where(choice => choice.Condition.Passed()).ToList();
 			var options = availableChoices.Select(choice => choice.Description).ToJoinedString("\n");

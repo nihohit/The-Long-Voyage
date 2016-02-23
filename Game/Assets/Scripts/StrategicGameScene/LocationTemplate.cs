@@ -22,12 +22,8 @@ namespace Assets.Scripts.StrategicGameScene
 		{
 			Name = name;
 			Message = message;
-			if (choices == null)
-			{
-				return;
-			}
 
-			Choices = choices.ToList();
+			Choices = choices == null ? new List<ChoiceTemplate>() : choices.ToList();
 		}
 
 		public override string ToString()
@@ -42,11 +38,13 @@ namespace Assets.Scripts.StrategicGameScene
 
 	public class ChoiceTemplate
 	{
+		Dictionary<ChoiceResult, double> resultOptions;
+
 		#region properties
 
 		public string Description { get; private set; }
 
-		public ChoiceResult Result { get; private set; }
+		public ChoiceResult Result { get { return Randomiser.ChooseWeightedValues<ChoiceResult>(resultOptions, 1).First(); } }
 
 		public Condition Condition { get; private set; }
 
@@ -55,10 +53,14 @@ namespace Assets.Scripts.StrategicGameScene
 		public ChoiceTemplate(
 			string message,
 			ChoiceResult result = null,
-			Condition condition = null)
+			Condition condition = null,
+			Dictionary<ChoiceResult, double> resultOptions = null)
 		{
-			Result = result;
 			Description = message;
+			Assert.AssertConditionMet(result != null || resultOptions != null, "Either result or resultOptions shouldn't be null");
+			Assert.AssertConditionMet(result == null || resultOptions == null, "result or resultOptions should be null");
+			this.resultOptions = resultOptions != null ? resultOptions : new Dictionary<ChoiceResult, double> { { result, 1.0 } };
+
 			if (condition == null)
 			{
 				condition = Condition.AlwaysTrue;

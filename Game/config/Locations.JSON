@@ -1,5 +1,56 @@
 [
     {
+		"Name": "EmptyEncounter",
+		"Message": "You see nothing"
+	},
+	{
+		"Name": "Bandits",
+		"Message": "A small group of bandits in ramshackle mechs is blocking the road. They call over loudspeakers: \"We see you're heavily armed. Pay us some scrap and we'll both go our way in peace.\" \r\nWhat do you do?",
+		"choices": [
+			{
+				"Message": "Pay the price",
+				"result": 
+				{
+					"message": "You pay a small amount of scrap, and they go on their way."
+					"result" : "LoseScrap"
+				}	
+			},
+			{
+				"Message": "Attack them",
+				"result": 
+				{
+					"message": "your mechs open fire, and soon a battle is on."
+					"result" : "Fight"
+				}	
+			},
+			{
+				"Message": "Try to negotiate",
+				"resultOptions": 
+				{
+					{
+						"Message": "you fail"
+						"result": "fight"
+					} : 1.0
+				}	
+			},
+			{
+				"Message": "Identify yourself",
+				"result": 
+				{
+					"message": "The bandits recognize your name, and let you pass."
+					"result" : "None"
+				},
+				"condition":
+				{
+					"condition": "RelationsWith",
+					"key": "bandits",
+					"value": 40
+				}	
+			},
+		]
+		
+	},
+	{
         "Name": "BasicEncounter",
         "Message": "This is just a basic encounter",
         "Choices": [
@@ -34,9 +85,9 @@
                 "Message": "Use relations!",
                 "result": 
 				{
-					"message" : "You fight"
+					"message" : "You fight",
 					"result": "Fight"
-				}
+				},
 				"condition" : 
 				{
 					"condition" : "RelationsWith",
@@ -48,12 +99,12 @@
                 "Message": "Discuss future!",
                 "result": 
 				{
-					"message" : "You sit down for a nice chat"
-					"result": "AdditionalEncounter"
+					"message" : "You sit down for a nice chat",
+					"result": "AdditionalEncounter",
 					"encounter":
 					{
-						"name" : "debate"
-						"message" : "You sit down to discuss the situation"
+						"name" : "debate",
+						"message" : "You sit down to discuss the situation",
 						"choices" : [
 						{
 							"Message": "say nothing",
@@ -76,7 +127,7 @@
 							}
 						},],
 					}
-				}
+				},
 				"condition" : 
 				{
 					"condition" : "RelationsWith",

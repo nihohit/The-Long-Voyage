@@ -165,16 +165,12 @@ namespace Assets.Scripts.Base
 
             public IEnumerable<T> ChooseWeightedValues(IEnumerable<KeyValuePair<T, double>> dictionary, int amount)
             {
-                var values = new List<T>();
-
                 var nodesHeap = GenerateHeap(dictionary);
 
                 for (int i = 0; i < amount; i++)
                 {
-                    values.Add(PopFromHeap(nodesHeap));
+                    yield return PopFromHeap(nodesHeap);
                 }
-
-                return values;
             }
 
             private class Node
