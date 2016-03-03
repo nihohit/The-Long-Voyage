@@ -34,6 +34,8 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		private static Dictionary<Loyalty, IAIRunner> s_nonPlayerTeams;
 
+		private static UnitDataDisplay s_dataDisplay;
+
 		#endregion fields
 
 		#region properties
@@ -65,13 +67,18 @@ namespace Assets.Scripts.TacticalBattleScene
 				if (s_selectedHex != null)
 				{
 					s_selectedHex.Select();
+					s_dataDisplay.DisplayInfo(s_selectedHex.Content);
+					var activeEntity = s_selectedHex.Content as ActiveEntity;
 
-					SelectedActiveEntity = s_selectedHex.Content as ActiveEntity;
-
-					if(SelectedActiveEntity!= null)
+					if(activeEntity != null && activeEntity.Loyalty == s_currentTurn.Value)
 					{
+						SelectedActiveEntity = activeEntity;
 						SelectedActiveEntity.DisplayActions();
 					}
+				}
+				else
+				{
+					s_dataDisplay.DisplayInfo(null);
 				}
 			}
 		}
@@ -110,6 +117,7 @@ namespace Assets.Scripts.TacticalBattleScene
 		{
 			TextureManager = new TacticalTextureHandler();
 			BattleStarted = false;
+			s_dataDisplay = GameObject.Find("Unit Data").GetComponent<UnitDataDisplay>();
 		}
 
 		// initiate a new battle with the relevant information on all active entities

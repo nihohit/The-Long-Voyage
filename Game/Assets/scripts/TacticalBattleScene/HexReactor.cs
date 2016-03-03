@@ -24,12 +24,6 @@ namespace Assets.Scripts.TacticalBattleScene
 		private static MarkerScript s_selected;
 		private static PotentialActionsMarker s_actionsMarker;
 
-		private static GameObject s_unitData;
-
-		private static Text s_unitLoyaltyLabel;
-		private static Text s_unitNameLabel;
-		private static Text s_unitIdLabel;
-
 		// markers
 		private IUnityMarker m_movementPathMarker;
 		private IUnityMarker m_fogOfWarMarker;
@@ -405,11 +399,6 @@ namespace Assets.Scripts.TacticalBattleScene
 			s_selected.Unmark();
 			s_actionsMarker = GameObject.Find("PotentialActionsMarker").GetComponent<PotentialActionsMarker>();
 			s_actionsMarker.gameObject.SetActive(false);
-			s_unitNameLabel = GameObject.Find ("UnitNameLabel").GetComponent<Text> ();
-			s_unitLoyaltyLabel = GameObject.Find ("UnitLoyaltyLabel").GetComponent<Text> ();
-			s_unitIdLabel = GameObject.Find ("UnitIdLabel").GetComponent<Text> ();
-			s_unitData = GameObject.Find ("Unit Data");
-			s_unitData.SetActive (false);
 		}
 
 		// Select this hex
@@ -417,25 +406,6 @@ namespace Assets.Scripts.TacticalBattleScene
 		{
 			//Debug.Log( "Highlighting hex {0}".FormatWith(MarkedHex));
 			s_selected.Mark(transform.position);
-			s_unitNameLabel.text = "";
-			s_unitLoyaltyLabel.text = "";
-			s_unitIdLabel.text = "";
-
-			if (m_content == null) {
-				s_unitData.SetActive (false);
-				return;
-			}
-			s_unitData.SetActive (true);
-			if (m_content.Template.Name != null) {
-				s_unitNameLabel.text = m_content.Template.Name;
-			}
-			if (m_content.Loyalty != null) {
-				s_unitLoyaltyLabel.text = "{0}".FormatWith(m_content.Loyalty);
-			}
-			if (m_content.ID != null) {
-				s_unitIdLabel.text = m_content.ID.ToString();
-			}
-
 		}
 
 		// Unselect the hex, and remove all action markers
