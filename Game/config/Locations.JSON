@@ -26,12 +26,22 @@
 			{
 				"Message": "Try to negotiate",
 				"resultOptions": 
-				{
+				[
 					{
-						"Message": "you fail"
-						"result": "fight"
-					} : 1.0
-				}	
+						"Key" : {
+							"Message": "you fail"
+							"result": "Fight"
+						} 
+						"chance" : 0.5
+					},
+					{
+						"Key" : {
+							"Message": "you succeed"
+							"result": "None"
+						} 
+						"chance" : 0.5
+					},
+				]	
 			},
 			{
 				"Message": "Identify yourself",

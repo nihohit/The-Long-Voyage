@@ -38,13 +38,13 @@ namespace Assets.Scripts.StrategicGameScene
 
 	public class ChoiceTemplate
 	{
-		Dictionary<ChoiceResult, double> resultOptions;
+		WeightedChoices<ChoiceResult> resultOptions;
 
 		#region properties
 
 		public string Description { get; private set; }
 
-		public ChoiceResult Result { get { return Randomiser.ChooseWeightedValues<ChoiceResult>(resultOptions, 1).First(); } }
+		public ChoiceResult Result { get { return Randomiser.ChooseWeightedValues(resultOptions, 1).First(); } }
 
 		public Condition Condition { get; private set; }
 
@@ -54,12 +54,13 @@ namespace Assets.Scripts.StrategicGameScene
 			string message,
 			ChoiceResult result = null,
 			Condition condition = null,
-			Dictionary<ChoiceResult, double> resultOptions = null)
+			IEnumerable<ObjectChancePair<ChoiceResult>> resultOptions = null)
 		{
 			Description = message;
-			Assert.AssertConditionMet(result != null || resultOptions != null, "Either result or resultOptions shouldn't be null");
-			Assert.AssertConditionMet(result == null || resultOptions == null, "result or resultOptions should be null");
-			this.resultOptions = resultOptions != null ? resultOptions : new Dictionary<ChoiceResult, double> { { result, 1.0 } };
+			Assert.AssertConditionMet(result != null || (resultOptions != null && resultOptions.Any()), "Either result or resultOptions shouldn't be null");
+			Assert.AssertConditionMet(result == null || (resultOptions == null || resultOptions.None()), "result or resultOptions should be null");
+			this.resultOptions = resultOptions != null ? new WeightedChoices<ChoiceResult>(resultOptions) : 
+				new WeightedChoices<ChoiceResult>(new Dictionary<ChoiceResult, double> { { result, 1.0 } });
 
 			if (condition == null)
 			{
