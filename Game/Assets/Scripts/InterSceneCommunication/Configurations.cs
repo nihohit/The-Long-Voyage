@@ -19,9 +19,9 @@
 
         private ConfigurationStorage<SubsystemTemplate> m_subsystems;
 
-        private ConfigurationStorage<EncounterTemplate> m_encounters;
+        private ConfigurationStorage<VignetteTemplate> m_vignettes;
 
-        private ConfigurationStorage<ScenarioTemplate> m_scenarios;
+        private ConfigurationStorage<StartingScenarioTemplate> m_scenarios;
 
         #endregion fields
 
@@ -79,26 +79,26 @@
             }
         }
 
-        public ConfigurationStorage<EncounterTemplate> Encounters
+        public ConfigurationStorage<VignetteTemplate> Vignettes
         {
             get
             {
-                if (m_encounters == null)
+                if (m_vignettes == null)
                 {
-                    m_encounters = new ConfigurationStorage<EncounterTemplate>("Locations");
+                    m_vignettes = new ConfigurationStorage<VignetteTemplate>("Vignettes");
                 }
 
-                return m_encounters;
+                return m_vignettes;
             }
         }
 
-        public ConfigurationStorage<ScenarioTemplate> Scenarios
+        public ConfigurationStorage<StartingScenarioTemplate> StartingScenarios
         {
             get
             {
                 if (m_scenarios == null)
                 {
-                    m_scenarios = new ConfigurationStorage<ScenarioTemplate>("Scenarios");
+                    m_scenarios = new ConfigurationStorage<StartingScenarioTemplate>("StartingScenarios");
                 }
 
                 return m_scenarios;

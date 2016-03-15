@@ -51,7 +51,7 @@ namespace Assets.Scripts.StrategicGameScene.MapGeneration
 				vector => vector,
 				vector => new LocationInformation(
 					vector,
-					GlobalState.Instance.Configurations.Encounters.GetAllConfigurations().ChooseRandomValue(),
+					GlobalState.Instance.Configurations.Vignettes.GetAllConfigurations().Where(vignette => vignette.IsFirstPart).ChooseRandomValue(),
 					new List<LocationInformation>()));
 
 			foreach (var tile in m_map)

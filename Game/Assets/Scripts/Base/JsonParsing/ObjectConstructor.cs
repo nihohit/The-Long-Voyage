@@ -33,9 +33,9 @@
 				{
 					parsedObject = ParseObject(parsedObject, type);
 				}
-				catch(AssertedException ex)
+				catch(Exception ex)
 				{
-					throw new AssertedException(" in type {0}".FormatWith(type.Name), ex);
+					throw new Exception("Failed parsing:{0}".FormatWith(parsedObject), ex);
 				}
 			}
 
@@ -83,11 +83,11 @@
 				}
 				catch(AssertedException ex)
 				{
-					throw new AssertedException(" for parameter {0}".FormatWith(param.Name), ex);
+					throw new AssertedException(" for parameter {0} in type {1}".FormatWith(param.Name, type.Name), ex);
 				}
 				catch(TargetInvocationException ex)
 				{
-					throw new AssertedException(" for parameter {0}".FormatWith(param.Name), (AssertedException)ex.InnerException);
+					throw new AssertedException(" for parameter {0} in type {1}".FormatWith(param.Name, type.Name), (AssertedException)ex.InnerException);
 				}
 			}
 

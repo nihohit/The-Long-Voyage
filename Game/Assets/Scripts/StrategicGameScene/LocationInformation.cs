@@ -2,7 +2,7 @@
 
 namespace Assets.Scripts.StrategicGameScene
 {
-	using Assets.Scripts.Base;
+	using Base;
 
 	using UnityEngine;
 
@@ -14,7 +14,7 @@ namespace Assets.Scripts.StrategicGameScene
 
 		public Vector2 Coordinates { get; private set; }
 
-		public EncounterTemplate Encounter { get; private set; }
+		public VignetteTemplate Vignette { get; private set; }
 
 		public IEnumerable<LocationInformation> ConnectedLocations { get; private set; }
 
@@ -28,10 +28,10 @@ namespace Assets.Scripts.StrategicGameScene
 
 		#region constructors
 
-		public LocationInformation(Vector2 coordinates, EncounterTemplate encounter, IEnumerable<LocationInformation> connectedLocations)
+		public LocationInformation(Vector2 coordinates, VignetteTemplate vignette, IEnumerable<LocationInformation> connectedLocations)
 		{
 			Coordinates = coordinates;
-			Encounter = encounter;
+			Vignette = vignette;
 			ConnectedLocations = connectedLocations;
 		}
 
@@ -40,7 +40,7 @@ namespace Assets.Scripts.StrategicGameScene
 		public override string ToString()
 		{
 			return "{0} at {1}, {2} visited, {3}".FormatWith(
-				Encounter,
+				Vignette,
 				Coordinates,
 				WasVisited ? "was" : "wasn't",
 				WasSeen ? "Seen" : "unseen");

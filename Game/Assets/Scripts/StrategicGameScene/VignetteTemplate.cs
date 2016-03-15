@@ -7,10 +7,13 @@ namespace Assets.Scripts.StrategicGameScene
 {
 	using System.Linq;
 
-	#region EncounterTemplate
+	#region VignetteTemplate
 
-	public class EncounterTemplate : IIdentifiable<string>
+	public class VignetteTemplate : IIdentifiable<string>
 	{
+		public bool IsFirstPart { get; private set; }
+
+		public EventResult Result { get; private set; }
 
 		public string Name { get; private set; }
 
@@ -18,12 +21,13 @@ namespace Assets.Scripts.StrategicGameScene
 
 		public IEnumerable<ChoiceTemplate> Choices { get; private set; }
 
-		public EncounterTemplate(string name, string message, IEnumerable<ChoiceTemplate> choices = null)
+		public VignetteTemplate(string name, string message, IEnumerable<ChoiceTemplate> choices = null, EventResult result = null, bool starting = false)
 		{
 			Name = name;
 			Message = message;
-
 			Choices = choices == null ? new List<ChoiceTemplate>() : choices.ToList();
+			Result = result;
+			IsFirstPart = starting;
 		}
 
 		public override string ToString()
@@ -32,19 +36,24 @@ namespace Assets.Scripts.StrategicGameScene
 		}
 	}
 
-	#endregion EncounterTemplate
+	#endregion VignetteTemplate
 
 	#region ChoiceTemplate
 
 	public class ChoiceTemplate
 	{
-		WeightedChoices<ChoiceResult> resultOptions;
+		WeightedChoices<string> resultOptions;
 
 		#region properties
 
 		public string Description { get; private set; }
 
-		public ChoiceResult Result { get { return Randomiser.ChooseWeightedValues(resultOptions, 1).First(); } }
+		public VignetteTemplate Result { get
+			{
+				return GlobalState.Instance.Configurations.Vignettes
+					.GetConfiguration(Randomiser.ChooseWeightedValues(resultOptions, 1).First());
+			}
+		}
 
 		public Condition Condition { get; private set; }
 
@@ -52,15 +61,15 @@ namespace Assets.Scripts.StrategicGameScene
 
 		public ChoiceTemplate(
 			string message,
-			ChoiceResult result = null,
+			string nextEvent = null,
 			Condition condition = null,
-			IEnumerable<ObjectChancePair<ChoiceResult>> resultOptions = null)
+			IEnumerable<ObjectChancePair<string>> nextEventOptions = null)
 		{
 			Description = message;
-			Assert.AssertConditionMet(result != null || (resultOptions != null && resultOptions.Any()), "Either result or resultOptions shouldn't be null");
-			Assert.AssertConditionMet(result == null || (resultOptions == null || resultOptions.None()), "result or resultOptions should be null");
-			this.resultOptions = resultOptions != null ? new WeightedChoices<ChoiceResult>(resultOptions) : 
-				new WeightedChoices<ChoiceResult>(new Dictionary<ChoiceResult, double> { { result, 1.0 } });
+			Assert.AssertConditionMet(!nextEvent.IsNullOrEmpty() || !nextEventOptions.IsNullOrEmpty(), "Either nextEvent or nextEventOptions shouldn't be null");
+			Assert.AssertConditionMet(nextEvent.IsNullOrEmpty() || nextEventOptions.IsNullOrEmpty(), "nextEvent or nextEventOptions should be null");
+			this.resultOptions = !nextEventOptions.IsNullOrEmpty() ? new WeightedChoices<string>(nextEventOptions) : 
+				new WeightedChoices<string>(new Dictionary<string, double> { { nextEvent, 1.0 } });
 
 			if (condition == null)
 			{
@@ -108,7 +117,7 @@ namespace Assets.Scripts.StrategicGameScene
 			r_condition = condition;
 		}
 
-		public bool Passed()
+		public bool Available()
 		{
 			return sr_conditions.Get(r_condition)(r_key, r_value);
 		}
@@ -130,36 +139,29 @@ namespace Assets.Scripts.StrategicGameScene
 
 	#endregion Condition
 
-	#region ChoiceResult
+	#region EventResult
 
-	public class ChoiceResult
+	public class EventResult
 	{
 		#region properties
 
-		public string Message { get; private set; }
-
-		public ChoiceResultType Result { get; private set; }
+		public EventResultType ResultType { get; private set; }
 
 		public string Key { get; private set; }
 
 		public double Value { get; private set; }
 
-		public EncounterTemplate Encounter { get; private set; }
-
 		#endregion properties
 
-		public ChoiceResult(string message, ChoiceResultType result = ChoiceResultType.None, string key = "", double value = 0, EncounterTemplate encounter = null)
+		public EventResult(EventResultType result = EventResultType.None, string key = "", double value = 0)
 		{
 			Key = key;
 			Value = value;
-			Result = result;
-			Message = message;
-			Encounter = encounter;
+			ResultType = result;
 
-			Assert.AssertConditionMet(!result.HasFlag(ChoiceResultType.AdditionalEncounter) || encounter != null, "Encounter missing from choice result");
-			Assert.AssertConditionMet(!result.HasFlag(ChoiceResultType.AffectRelations) || (!string.IsNullOrEmpty(key) && value != 0), "key or value missing from choice result");
+			Assert.AssertConditionMet(!result.HasFlag(EventResultType.AffectRelations) || (!string.IsNullOrEmpty(key) && value != 0), "key or value missing from choice result");
 		}
 	}
 
-	#endregion ChoiceResult
+	#endregion EventResult
 }

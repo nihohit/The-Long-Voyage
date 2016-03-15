@@ -7,11 +7,9 @@ using UnityEngine.UI;
 
 namespace Assets.Scripts.StrategicGameScene
 {
-	using Assets.Scripts.LogicBase;
+	using LogicBase;
 	using MapGeneration;
-	using Assets.Scripts.UnityBase;
-	using System;
-	using System.Diagnostics;
+	using UnityBase;
 
 	public class StrategicMapScript : SceneBehaviour
 	{
@@ -69,16 +67,18 @@ namespace Assets.Scripts.StrategicGameScene
 			else
 			{
 				m_currentLocation.WasVisited = true;
-				this.SetupTextualGui(m_currentLocation.Encounter);
+				this.SetupTextualGui(m_currentLocation.Vignette);
 			}
 		}
 
-		private void SetupTextualGui(EncounterTemplate encounter)
+		private void SetupTextualGui(VignetteTemplate vignette)
 		{
 			LoadupButton.gameObject.SetActive(false);
-			LocationText.text = encounter.Message;
+			LocationText.text = vignette.Message;
 
-			if (encounter.Choices.IsNullOrEmpty())
+			HandleResult(vignette.Result);
+
+			if (vignette.Choices.IsNullOrEmpty())
 			{
 				RemoveChoices();
 				return;
@@ -86,7 +86,7 @@ namespace Assets.Scripts.StrategicGameScene
 
 			DoneButton.gameObject.SetActive(false);
 
-			var availableChoices = encounter.Choices.Where(choice => choice.Condition.Passed()).ToList();
+			var availableChoices = vignette.Choices.Where(choice => choice.Condition.Available()).ToList();
 			var options = availableChoices.Select(choice => choice.Description).ToJoinedString("\n");
 
 			Assert.EqualOrGreater(
@@ -118,29 +118,22 @@ namespace Assets.Scripts.StrategicGameScene
 		private void Choose(ChoiceTemplate choiceTemplate)
 		{
 			RemoveChoices();
-			HandleResult(choiceTemplate.Result);
+			SetupTextualGui(choiceTemplate.Result);
 		}
 
-		private void HandleResult(ChoiceResult choiceResult)
+		private void HandleResult(EventResult eventResult)
 		{
-			if (choiceResult.Result.HasFlag(ChoiceResultType.AffectRelations))
+			if(eventResult == null)
 			{
-				AffectRelations(choiceResult.Key, choiceResult.Value);
-			}
-
-			if(choiceResult.Result.HasFlag(ChoiceResultType.AdditionalEncounter))
-			{
-				foreach (var button in m_choiceButtonList)
-				{
-					button.gameObject.SetActive(true);
-				}
-				SetupTextualGui(choiceResult.Encounter);
 				return;
 			}
 
-			LocationText.text = choiceResult.Message;
+			if (eventResult.ResultType.HasFlag(EventResultType.AffectRelations))
+			{
+				AffectRelations(eventResult.Key, eventResult.Value);
+			}
 
-			if (choiceResult.Result.HasFlag(ChoiceResultType.Fight))
+			if (eventResult.ResultType.HasFlag(EventResultType.Fight))
 			{
 				DoneButton.onClick.RemoveAllListeners();
 				DoneButton.onClick.AddListener(() => this.StartBattle());
@@ -149,7 +142,7 @@ namespace Assets.Scripts.StrategicGameScene
 
 		private void StartBattle()
 		{
-			Application.LoadLevel("TacticalBattleScene");
+			UnityEngine.SceneManagement.SceneManager.LoadScene("TacticalBattleScene");
 		}
 
 		private void AffectRelations(string faction, double affect)
@@ -215,7 +208,7 @@ namespace Assets.Scripts.StrategicGameScene
 		{
 			UnityEngine.Debug.Log("Moving to {0}".FormatWith(locationInformation));
 			GlobalState.Instance.StrategicMap.CurrentLocation = locationInformation;
-			Application.LoadLevel("StrategicMapScene");
+			UnityEngine.SceneManagement.SceneManager.LoadScene("StrategicMapScene");
 		}
 
 		// TODO - remove when this scene won't be accessed directly.
@@ -228,8 +221,8 @@ namespace Assets.Scripts.StrategicGameScene
 
 			GlobalState.Instance.StartNewGame("Default");
 
-			var scenario = GlobalState.Instance.Configurations.Scenarios.GetAllConfigurations().First();
-			GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(scenario.Mechs);
+			var scenario = GlobalState.Instance.Configurations.StartingScenarios.GetAllConfigurations().First();
+			GlobalState.Instance.StrategicMap.State.EquippedEntities.AddRange(scenario.PlayerMechs);
 			GlobalState.Instance.StrategicMap.State.AvailableEntities.Add(new SpecificEntity(
 				GlobalState.Instance.Configurations.ActiveEntities.GetAllConfigurations().ChooseRandomValue()));
 			GlobalState.Instance.StrategicMap.State.AvailableSystems.Add(

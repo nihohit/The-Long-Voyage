@@ -3,12 +3,12 @@
 namespace Assets.Scripts.StrategicGameScene
 {
 	[Flags]
-	public enum ChoiceResultType
+	public enum EventResultType
 	{
 		None = 0,
 		Fight = 1,
 		AffectRelations = 2,
-		AdditionalEncounter = 4,
+
 		LoseScrap = 8,
 		LoseItem = 16,
 		LoseMech = 32

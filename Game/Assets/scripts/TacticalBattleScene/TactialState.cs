@@ -212,7 +212,7 @@ namespace Assets.Scripts.TacticalBattleScene
 				GetSurvivingPlayerEntities(),
 				GetSalvagedEntities(),
 				GetSalvagedEquipment());
-			Application.LoadLevel("StrategicMapScene");
+			UnityEngine.SceneManagement.SceneManager.LoadScene("StrategicMapScene");
 		}
 
 		// returns all player controlled active entities, with all of their non-destroyed equipment

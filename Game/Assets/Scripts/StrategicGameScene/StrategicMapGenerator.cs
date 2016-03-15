@@ -18,7 +18,7 @@ namespace Assets.Scripts.StrategicGameScene
             Vector2 currentLocation = new Vector2(377, 370);
             LocationInformation first = new LocationInformation(
                 currentLocation,
-                GlobalState.Instance.Configurations.Encounters.GetAllConfigurations().ChooseRandomValue(),
+                GlobalState.Instance.Configurations.Vignettes.GetAllConfigurations().ChooseRandomValue(),
                 new List<LocationInformation>());
 
             var dict = new Dictionary<Vector2, LocationInformation>();
@@ -40,7 +40,7 @@ namespace Assets.Scripts.StrategicGameScene
                 location,
                 () => new LocationInformation(
                         location,
-                        GlobalState.Instance.Configurations.Encounters.GetAllConfigurations().ChooseRandomValue(),
+                        GlobalState.Instance.Configurations.Vignettes.GetAllConfigurations().ChooseRandomValue(),
                         new List<LocationInformation>()));
 
             var newVector = new Vector2(location.x + 3, location.y - 1);
@@ -58,7 +58,7 @@ namespace Assets.Scripts.StrategicGameScene
                 location,
                 () => new LocationInformation(
                         location,
-                        GlobalState.Instance.Configurations.Encounters.GetAllConfigurations().ChooseRandomValue(),
+                        GlobalState.Instance.Configurations.Vignettes.GetAllConfigurations().ChooseRandomValue(),
                         new List<LocationInformation>()));
 
             ((List<LocationInformation>)first.ConnectedLocations).Add(second);
