@@ -315,6 +315,12 @@ namespace Assets.Scripts.TacticalBattleScene
 			RemoveTargetMarker();
 		}
 
+		// check whether this hex is currently visible (not in Fog of War)
+		public bool VisibleContent()
+		{
+			return m_seen > 0;
+		}
+
 		#endregion sight
 
 		#region object overrides
