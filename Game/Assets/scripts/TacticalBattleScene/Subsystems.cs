@@ -17,10 +17,6 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		private SystemCondition m_workingCondition;
 
-		private int m_ammo;
-
-		private int m_actionsThisTurn;
-
 		#endregion fields
 
 		#region properties
@@ -44,6 +40,10 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		public SubsystemTemplate Template { get; private set; }
 
+		public int Ammo { get; private set; }
+
+		public int RemainingActions { get; private set; }
+
 		public Event OutOfActionsForThisTurn;
 
 		#endregion properties
@@ -55,7 +55,7 @@ namespace Assets.Scripts.TacticalBattleScene
 			this.r_containingEntity = containingEntity;
 			m_workingCondition = SystemCondition.Operational;
 			Template = template;
-			m_ammo = Template.MaxAmmo;
+			Ammo = Template.MaxAmmo;
 			this.r_hexEffectTemplate = Template.HexEffect;
 		}
 
@@ -79,7 +79,7 @@ namespace Assets.Scripts.TacticalBattleScene
 		public void StartTurn()
 		{
 			Debug.Log("{0} started turn".FormatWith(this.Template.Name));
-			m_actionsThisTurn = Template.ActionsPerTurn;
+			RemainingActions = Template.ActionsPerTurn;
 		}
 
 		public void Hit(EntityEffectType type, double damage)
@@ -122,14 +122,14 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		public void Act()
 		{
-			Assert.Greater(m_actionsThisTurn, 0, "No actions left.");
+			Assert.Greater(RemainingActions, 0, "No actions left.");
 
-			m_actionsThisTurn--;
+			RemainingActions--;
 
-			if (this.m_ammo > 0)
+			if (this.Ammo > 0)
 			{
-				--this.m_ammo;
-				if (this.m_ammo == 0)
+				--this.Ammo;
+				if (this.Ammo == 0)
 				{
 					this.m_workingCondition = SystemCondition.OutOfAmmo;
 				}
@@ -147,7 +147,7 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		private bool CanOperate()
 		{
-			return this.r_containingEntity.CurrentEnergy >= Template.EnergyCost && m_actionsThisTurn > 0 && m_ammo != 0;
+			return this.r_containingEntity.CurrentEnergy >= Template.EnergyCost && RemainingActions > 0 && Ammo != 0;
 		}
 
 		public bool TargetingCheck(HexReactor targetedHex)

@@ -7,7 +7,7 @@ namespace Assets.Scripts.LogicBase
     #region SubsystemTemplate
 
     /// <summary>
-    /// Immutable templates for usable systems, and a static factory intializer.
+    /// Immutable templates for usable systems, and a static factory initializer.
     /// </summary>
     public class SubsystemTemplate : IIdentifiable<string>
     {
