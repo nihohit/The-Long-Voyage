@@ -44,3 +44,4 @@ Game/UnityVS.*
 Game/Assets/UnityVS/Editor/*.dll
 Game/Library/CurrentLayout.dwlt
 Game/Assets/UnityVS/*
+Game/ProjectSettings/UnityAdsSettings.asset
