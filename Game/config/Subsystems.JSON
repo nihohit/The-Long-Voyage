@@ -30,7 +30,7 @@
 	"ActionsPerTurn": 2,
 },
 {
-	"Name":"IncediaryGun",
+	"Name":"Incediary Gun",
 	"Ammo":10,
 	"EnergyCost" : 0.5,
 	"HeatGenerated": 0.5,
@@ -40,7 +40,7 @@
 	"ActionsPerTurn": 3,
 },
 {
-	"Name":"HeatWave",
+	"Name":"Heat Beam",
 	"EnergyCost" : 2.0,
 	"HeatGenerated": 1.0,
 	"MaxRange":3,
