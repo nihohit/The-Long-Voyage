@@ -57,8 +57,11 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		public virtual void Init(SpecificEntity entity, Loyalty loyalty, IEnumerable<SubsystemTemplate> systems)
 		{
+			Assert.NotNull(entity, "entity");
+			Assert.NotNull(entity.Template, "entity template");
+			Assert.NotNull(systems, "systems for entity " + entity.Template.Name);
 			Assert.EqualOrGreater(entity.Template.SystemSlots, systems.Count(), "more systems than system slots.");
-			Assert.IsNull(Systems, "Systems", "Entity was already initialised.");
+			Assert.IsNull(Systems, "Systems", "Entity was already initialized.");
 			Init(entity, loyalty);
 			Systems = systems.Where(template => template != null).Select(template => new Subsystem(template, this)).ToList();
 			CurrentEnergy = Template.MaxEnergy;
@@ -77,7 +80,7 @@ namespace Assets.Scripts.TacticalBattleScene
 		}
 
 		// update all hexes seen by this entity
-		// Unsee al seen hexes which are no longer seen, undetect all detected hexes which are no longer detected,
+		// Unsee al seen hexes which are no longer seen, remove detection of all detected hexes which are no longer detected,
 		// and mark as seen & detected newly seen & detected hexes.
 		public void SetSeenHexes()
 		{
@@ -137,13 +140,13 @@ namespace Assets.Scripts.TacticalBattleScene
 		// all preparations an entity does at the beginning of its turn
 		public virtual bool StartTurn()
 		{
-			//Debug.Log("Atstart of turn: {0}".FormatWith(FullState()));
+			//Debug.Log("At start of turn: {0}".FormatWith(FullState()));
 			ResetActions();
 			ResetSeenHexes();
 			CurrentEnergy = m_tempMaxEnergy;
 			CurrentHeat = Math.Max(CurrentHeat - Template.HeatLossRate, 0);
 
-			// an entity shutsdown if its temp max energy is negative, or it overheats
+			// an entity shuts down if its temp max energy is negative, or it overheats
 			if (m_tempMaxEnergy <= 0 || CurrentHeat >= Template.MaxHeat)
 			{
 				Debug.Log("{0} shuts down.".FormatWith(FullState()));

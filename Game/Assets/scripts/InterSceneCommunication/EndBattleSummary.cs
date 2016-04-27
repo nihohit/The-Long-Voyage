@@ -28,9 +28,9 @@ namespace Assets.Scripts.InterSceneCommunication
             SurvivingEntities = survivingEntities.Materialize();
             SalvagedEntities = salvagedEntities.Materialize();
             SalvagedSystems = salvagedEquipement.Materialize();
-            Debug.Log("{0} Entities survived".FormatWith(SurvivingEntities.Count()));
-            Debug.Log("{0} Entities were salvaged".FormatWith(SalvagedEntities.Count()));
-            Debug.Log("{0} systems survived".FormatWith(SalvagedSystems.Count()));
+            Debug.Log("Entities survived: {0}".FormatWith(SurvivingEntities.ToJoinedString()));
+            Debug.Log("Entities were salvaged: {0}".FormatWith(SalvagedEntities.ToJoinedString()));
+            Debug.Log("Systems were salvaged: {0}".FormatWith(SalvagedSystems.Select(system => system.Name).ToJoinedString()));
         }
     }
 }

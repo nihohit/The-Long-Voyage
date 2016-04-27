@@ -209,14 +209,14 @@ namespace Assets.Scripts.TacticalBattleScene
 		{
 			HexEffect.Clear();
 			GlobalState.Instance.BattleSummary = new EndBattleSummary(
-				GetSurvivingEntities(),
+				GetSurvivingPlayerEntities(),
 				GetSalvagedEntities(),
 				GetSalvagedEquipment());
 			Application.LoadLevel("StrategicMapScene");
 		}
 
-		// returns all player controlled active entities, with all of their undestroyed equipment
-		private static IEnumerable<EquippedEntity> GetSurvivingEntities()
+		// returns all player controlled active entities, with all of their non-destroyed equipment
+		private static IEnumerable<EquippedEntity> GetSurvivingPlayerEntities()
 		{
 			return s_activeEntities.Where(ent => ent.Loyalty == Loyalty.Player)
 				// TODO - handle variants
@@ -229,19 +229,19 @@ namespace Assets.Scripts.TacticalBattleScene
 		// return a random sample of destroyed entities as salvage
 		private static IEnumerable<SpecificEntity> GetSalvagedEntities()
 		{
-			Debug.Log("{0} entities were destroyed".FormatWith(sr_destroyedEntities.Count));
+			Debug.Log("Destroyed entities: {0}".FormatWith(sr_destroyedEntities.ToJoinedString()));
 			// TODO - the way they were destroyed should affect the chance of salvage
 			// TODO - handle variants
 			return sr_destroyedEntities.Where(ent => Randomiser.ProbabilityCheck(0.5))
 				.Select(ent => new SpecificEntity(ent.Template.Name));
 		}
 
-		// return a random sample of undestroyed equipment from destroyed entities as salvage
+		// return a random sample of non-destroyed equipment from destroyed entities as salvage
 		private static IEnumerable<SubsystemTemplate> GetSalvagedEquipment()
 		{
-			Debug.Log("{0} systems are salvageable".FormatWith(
-				sr_destroyedEntities.SelectMany(ent => ent.Systems).Count(
-					system => system.OperationalCondition != SystemCondition.Destroyed)));
+			Debug.Log("Salvageable systems: {0}".FormatWith(
+				sr_destroyedEntities.SelectMany(ent => ent.Systems).Where(
+					system => system.OperationalCondition != SystemCondition.Destroyed).ToJoinedString()));
 			return sr_destroyedEntities.SelectMany(ent => ent.Systems)
 				.Where(system => system.OperationalCondition != SystemCondition.Destroyed)
 				.Where(system => Randomiser.ProbabilityCheck(0.5)).Select(system => system.Template);

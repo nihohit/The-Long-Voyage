@@ -17,6 +17,7 @@ namespace Assets.Scripts.Base
     {
         public static T SafeCast<T>(this object obj, string name) where T : class
         {
+			Assert.NotNull(obj, name, "Tried to cast null to {0}".FormatWith(typeof(T)));
             var result = obj as T;
 
             Assert.NotNull(result, name, "Tried to cast {0} to {1}".FormatWith(obj, typeof(T)), 3);
@@ -163,7 +164,7 @@ namespace Assets.Scripts.Base
             return enumerator;
         }
 
-        public static string ToJoinedString<T>(this IEnumerable<T> enumerable, string separator)
+		public static string ToJoinedString<T>(this IEnumerable<T> enumerable, string separator = ", ")
         {
             return string.Join(separator, enumerable.Select(item => item.ToString()).ToArray());
         }

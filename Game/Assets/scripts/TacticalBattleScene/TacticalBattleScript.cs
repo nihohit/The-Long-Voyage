@@ -245,13 +245,13 @@ namespace Assets.Scripts.TacticalBattleScene
 		{
 			return equippedEntities.Select(equippedEntity =>
 				{
-					var entity = (ActiveEntity)UnityHelper.Instantiate<MovingEntity>(transform.position);
+					var entity = UnityHelper.Instantiate<MovingEntity>(transform.position);
 					entity.Init(
 						equippedEntity.InternalEntity,
 						loyalty,
 						equippedEntity.Subsystems);
 					entity.transform.SetParent(m_activeEntities.transform);
-					return entity;
+					return entity.SafeCast<ActiveEntity>("Instantiated entity");
 				}).Materialize();
 		}
 

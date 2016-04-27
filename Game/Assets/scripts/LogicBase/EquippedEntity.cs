@@ -28,5 +28,10 @@ namespace Assets.Scripts.LogicBase
             InternalEntity = entity;
             Subsystems = subsystems;
         }
-    }
+
+		public override string ToString()
+		{
+			return InternalEntity.ToString(); 
+		}
+	}
 }

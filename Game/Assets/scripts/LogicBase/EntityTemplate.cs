@@ -134,6 +134,11 @@ namespace Assets.Scripts.LogicBase
 				ent.Variant.Equals(Variant) &&
 				ent.Template.Equals(Template);
         }
+
+		public override string ToString()
+		{
+			return Template.Name + Variant;
+		}
 	}
 
     #endregion SpecificEntity
