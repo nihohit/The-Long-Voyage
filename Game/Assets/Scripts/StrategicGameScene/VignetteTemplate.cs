@@ -32,7 +32,8 @@ namespace Assets.Scripts.StrategicGameScene
 
 		public override string ToString()
 		{
-			return "{0}, message: {1}, choices: {2}".FormatWith(Name, Message, Choices == null? "none." : Choices.ToJoinedString(","));
+			return "{0}, message: {1}, choices: {2}".FormatWith(Name, Message, 
+				Choices == null? "none." : Choices.Select(choice => choice.Description).ToJoinedString());
 		}
 	}
 
