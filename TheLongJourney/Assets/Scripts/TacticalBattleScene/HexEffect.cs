@@ -13,7 +13,6 @@ namespace Assets.Scripts.TacticalBattleScene
 		#region private fields
 
 		private HexReactor m_affectedHex;
-		private int m_remainingDuration;
 		private static readonly List<HexEffect> s_effects = new List<HexEffect>();
 
 		#endregion private fields
@@ -29,7 +28,6 @@ namespace Assets.Scripts.TacticalBattleScene
 		public void Init(HexEffectTemplate template, HexReactor hex)
 		{
 			Template = template;
-			m_remainingDuration = template.Duration;
 			m_affectedHex = hex;
 			this.transform.SetParent(hex.transform);
 			this.gameObject.name = template.Name;
@@ -44,9 +42,9 @@ namespace Assets.Scripts.TacticalBattleScene
 
 		public bool Act()
 		{
-			Debug.Log("{0} acts with remaining duration {1}".FormatWith(Template.Name, m_remainingDuration));
+			//Debug.Log("{0} acts with remaining duration {1}".FormatWith(Template.Name, m_remainingDuration));
 
-			Assert.Greater(m_remainingDuration, 0);
+			//Assert.Greater(m_remainingDuration, 0);
 
 			if (m_affectedHex.Content != null)
 			{
@@ -54,14 +52,17 @@ namespace Assets.Scripts.TacticalBattleScene
 			}
 			AffectNeighbours ();
 
-			if (--m_remainingDuration > 0) return false;
+			//if (--m_remainingDuration > 0) return false;
 
 			DestroyGameObject();
 
 			return true;
 		}
 
+		private void AffectNeighbours()
+		{
 
+		}
 
 		#region static methods
 
