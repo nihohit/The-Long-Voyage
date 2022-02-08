@@ -1,17 +1,17 @@
 [
-{
-	"Name":"Building",
-	"Health" :  6,
-	"VisualProperties" :  7
-},
-{
-	"Name":"SparseTrees",
-	"Health": 3, 
-	"VisualProperties" :  1
-},
-{
-	"Name":"DenseTrees",
-	"Health" :  5,
-	"VisualProperties" :  3
-}
+	{
+		"Name": "Building",
+		"Health": 6,
+		"VisualProperties": 7
+	},
+	{
+		"Name": "SparseTrees",
+		"Health": 3,
+		"VisualProperties": 1
+	},
+	{
+		"Name": "DenseTrees",
+		"Health": 5,
+		"VisualProperties": 3
+	}
 ]

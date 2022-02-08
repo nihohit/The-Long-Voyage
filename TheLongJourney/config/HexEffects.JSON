@@ -1,8 +1,8 @@
 [
-{
-	"Name":"Fire",
-	"EffectType":2,
-	"Power" : 3.0,
-	"Duration": 2,
-},
+	{
+		"Name": "Fire",
+		"EffectType": 2,
+		"Power": 3.0,
+		"Duration": 2,
+	},
 ]

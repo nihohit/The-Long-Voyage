@@ -2,44 +2,39 @@
 using Assets.Scripts.InterSceneCommunication;
 using Assets.Scripts.UnityBase;
 
-namespace Assets.Scripts.StrategicGameScene
-{
-	public class LocationScript : SimpleButton
-	{
-		#region fields
+namespace Assets.Scripts.StrategicGameScene {
+  public class LocationScript : SimpleButton {
+    #region fields
 
-		private bool m_seen;
+    private bool m_seen;
 
-		#endregion fields
+    #endregion fields
 
-		#region properties
+    #region properties
 
-		public LocationInformation Information { get; set; }
+    public LocationInformation Information { get; set; }
 
-		#endregion properties
+    #endregion properties
 
-		#region public methods
+    #region public methods
 
-		public static LocationScript CreateLocationScript(
-			LocationInformation information)
-		{
-			var newLocation = UnityHelper.Instantiate<LocationScript>(information.Coordinates);
-			GlobalState.Instance.StrategicMap.StrategicMapTextureHandler.UpdateHexTexture(newLocation.Renderer, information.Biome);
-			newLocation.name = "{0} {1}".FormatWith(information.Biome.ToString(), information.Coordinates);
-			newLocation.Information = information;
-			return newLocation;
-		}
+    public static LocationScript CreateLocationScript(
+      LocationInformation information) {
+      var newLocation = UnityHelper.Instantiate<LocationScript>(information.Coordinates);
+      GlobalState.Instance.StrategicMap.StrategicMapTextureHandler.UpdateHexTexture(newLocation.Renderer, information.Biome);
+      newLocation.name = "{0} {1}".FormatWith(information.Biome.ToString(), information.Coordinates);
+      newLocation.Information = information;
+      return newLocation;
+    }
 
-		public bool WasSeen()
-		{
-			return m_seen;
-		}
+    public bool WasSeen() {
+      return m_seen;
+    }
 
-		public void Seen()
-		{
-			m_seen = true;
-		}
+    public void Seen() {
+      m_seen = true;
+    }
 
-		#endregion public methods
-	}
+    #endregion public methods
+  }
 }

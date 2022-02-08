@@ -1,32 +1,29 @@
 ﻿using System.Collections.Generic;
 
-namespace Assets.Scripts.StrategicGameScene
-{
-    using Base;
-    using LogicBase;
+namespace Assets.Scripts.StrategicGameScene {
+  using Base;
+  using LogicBase;
 
-    #region StartingConditions
+  #region StartingConditions
 
-    public class StartingScenarioTemplate : IIdentifiable<string>
-    {
-        #region properties
+  public class StartingScenarioTemplate : IIdentifiable<string> {
+    #region properties
 
-        public string Name { get; private set; }
+    public string Name { get; private set; }
 
-        public IEnumerable<EquippedEntity> PlayerMechs { get; private set; }
+    public IEnumerable<EquippedEntity> PlayerMechs { get; private set; }
 
-        #endregion properties
+    #endregion properties
 
-        #region constructors
+    #region constructors
 
-        public StartingScenarioTemplate(IEnumerable<EquippedEntity> mechs, string name)
-        {
-            PlayerMechs = mechs;
-            Name = name;
-        }
-
-        #endregion constructors
+    public StartingScenarioTemplate(IEnumerable<EquippedEntity> mechs, string name) {
+      PlayerMechs = mechs;
+      Name = name;
     }
 
-    #endregion StartingConditions
+    #endregion constructors
+  }
+
+  #endregion StartingConditions
 }

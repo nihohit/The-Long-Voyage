@@ -1,23 +1,22 @@
 [
     {
         "Name": "StandardBeginning",
-        "mechs": 
-        [
+        "mechs": [
             {
-                "entity" :  {
+                "entity": {
                     "template": "StandardMech"
                 },
-                "subsystems" : [
+                "subsystems": [
                     "Emp",
                     "Laser",
                     "Missile"
                 ]
             },
             {
-                "entity" :  {
+                "entity": {
                     "template": "ScoutMech"
                 },
-                "subsystems" : [
+                "subsystems": [
                     "Emp",
                     "Laser",
                     "Missile"
