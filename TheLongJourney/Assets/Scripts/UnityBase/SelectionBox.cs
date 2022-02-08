@@ -51,7 +51,7 @@ namespace Assets.Scripts.UnityBase
 
 		public virtual void Awake()
 		{
-			m_image = transform.FindChild("Image").GetComponent<Image>();
+			m_image = transform.Find("Image").GetComponent<Image>();
 			// gameObject.GetComponent<Button>().onClick.AddListener(this.ClickedOn);
 		}
 
@@ -204,7 +204,7 @@ namespace Assets.Scripts.UnityBase
 			var button = UnityHelper.Instantiate<Button>(currentPosition);
 			button.onClick.AddListener(() => Debug.Log("button clicked"));
 			button.transform.SetParent(gameObject.transform.parent);
-			var image = button.transform.FindChild("Image").GetComponent<Image>();
+			var image = button.transform.Find("Image").GetComponent<Image>();
 			var scale = button.GetComponent<RectTransform>().localScale;
 			button.GetComponent<RectTransform>().localScale = Vector3.one;
 

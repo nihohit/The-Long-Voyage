@@ -47,3 +47,4 @@ Game/Assets/UnityVS/*
 Game/ProjectSettings/UnityAdsSettings.asset
 *.orig
 *.orig.meta
+/TheLongJourney/Logs/
